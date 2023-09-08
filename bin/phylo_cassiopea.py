@@ -23,10 +23,10 @@ my_parser = argparse.ArgumentParser(
 # Path_main
 my_parser.add_argument(
     '-p', 
-    '--path_main', 
+    '--path_data', 
     type=str,
     default='..',
-    help='Path to main folder. Default: .. .'
+    help='Path to data folder. Default: .. .'
 )
 
 # Sample
@@ -111,7 +111,7 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 
-path_main = args.path_main
+path_data = args.path_data
 sample = args.sample
 filtering = args.filtering
 metric = args.metric
@@ -153,23 +153,24 @@ if not args.skip:
     job_key = f'{sample}_{filtering}_{metric}_{solver}_{boot_strategy}_{n_boot}'
     
     # Set paths and folders
-    path_data = os.path.join(path_main, 'data') 
-    path_output = os.path.join(path_main, 'results', 'phylo', 'output')
-    path_viz = os.path.join(path_main, 'results', 'phylo', 'visualization')
+    # path_data = os.path.join(path_data, 'data') 
+    # path_output = os.path.join(path_main, 'results', 'phylo', 'output')
+    # path_viz = os.path.join(path_main, 'results', 'phylo', 'visualization')
+    # for x in [path_output, path_viz]:
+    #     make_folder(x, sample, overwrite=False)
+    #     make_folder(os.path.join(x, sample), job_key, overwrite=True)
 
-    for x in [path_output, path_viz]:
-        make_folder(x, sample, overwrite=False)
-        make_folder(os.path.join(x, sample), job_key, overwrite=True)
-
+    os.mkdir(job_key)
+    os.chdir(job_key)
+    os.mkdir('output')
+    os.mkdir('viz')
+    
     # Update
-    path_output = os.path.join(path_output, sample, job_key)
-    path_viz = os.path.join(path_viz, sample, job_key)
+    path_output = os.path.join(os.getcwd(), 'output')
+    path_viz = os.path.join(os.getcwd(), 'viz')
 
     # Set logger
-    logger = set_logger(
-        path_output, 
-        f'log.txt'
-    )
+    logger = set_logger(path_output, f'log.txt')
 
 ########################################################################
 
