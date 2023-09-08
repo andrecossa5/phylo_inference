@@ -14,8 +14,7 @@ process CASSIOPEIA {
         val(filtering),
         val(metric),
         val(solver),
-        val(boot_strategy),
-        val(n_boot)
+        val(boot_strategy)
 
     output:
     path "${sample}_${filtering}_${metric}_${solver}_${boot_strategy}_${params.n_boot}", emit: results
