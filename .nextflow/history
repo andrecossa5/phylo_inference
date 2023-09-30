@@ -1,1 +1,0 @@
-2023-09-30 15:18:26	-	hopeful_wozniak	-	926737ee4ab524a28f80c1fbba77b7de	1234dcfe-1499-4268-ae0b-a0ce08e96618	nextflow run main.nf -c config/nextflow.config -params-file params/params_local.json -profile local -with-tower -entry phylo
