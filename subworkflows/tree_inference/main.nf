@@ -20,14 +20,14 @@ workflow tree_inference_workflow {
     main:
 
         PREP_INPUT(ch_samples.combine(params.filtering))
-        // BOOTSTRAP(
-        //     PREP_INPUT.out.input_folder
-        //     .combine(Channel.of( 1..params.n_boot ))
-        //     .combine(params.boot_strategy)
-        // )
+        BOOTSTRAP(
+            PREP_INPUT.out.input_folder
+            .combine(Channel.of( 1..params.n_boot ))
+            .combine(params.boot_strategy)
+        )
         // BUILD_TREE(BOOTSTRAP.out.features)
 
     emit:
-        results = PREP_INPUT.out.input_folder
+        results = BOOTSTRAP.out.bootstrapped_input
 
 }
