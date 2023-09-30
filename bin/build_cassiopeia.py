@@ -89,6 +89,7 @@ ncores = args.ncores
 # Code
 from scipy.sparse import load_npz
 from anndata import AnnData
+from mito_utils.preprocessing import *
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
@@ -103,6 +104,7 @@ def main():
     AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).A
     DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).A
     afm = AnnData(np.divide(AD, DP), obs=cells, var=variants, dtype=np.float16)
+    afm = nans_as_zeros(afm)
 
     # Build tree
     tree = build_tree(afm, metric=metric, solver=solver, t=t, ncores=ncores)
