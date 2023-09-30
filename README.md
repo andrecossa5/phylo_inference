@@ -1,2 +1,2 @@
 # phylo_inference
-Methods for phylogenetic analysis of single-cell data.
+Pipeline for phylogenetic analysis of single-cell MT-SNVs data.

@@ -1,6 +1,6 @@
 // phylo_inference pipeline
 nextflow.enable.dsl = 2
-include { cassiopeia_workflow } from "./subworkflows/cassiopeia/main"
+include { tree_inference_workflow } from "./subworkflows/tree_inference/main"
 
 // Samples channel
 ch_samples = Channel
@@ -15,10 +15,10 @@ ch_samples = Channel
 
 //
 
-workflow cassiopeia {
+workflow phylo {
 
-    cassiopeia_workflow(ch_samples)
-    cassiopeia_workflow.out.results.view()
+    tree_inference_workflow(ch_samples)
+    tree_inference_workflow.out.results.view()
 
 }
 
