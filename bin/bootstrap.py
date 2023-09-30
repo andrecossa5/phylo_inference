@@ -93,6 +93,8 @@ def main():
     # Save bootstrapped AD and DP
     os.mkdir('bootstrapped_input')
     os.chdir('bootstrapped_input')  
+    cells.to_series().to_csv('cells.csv', index=False, header=None)
+    variants.to_series().to_csv('variants.csv', index=False, header=None)
     save_npz('AD_boot.npz', csr_matrix(AD_boot.astype(np.int16)))
     save_npz('DP_boot.npz', csr_matrix(DP_boot.astype(np.int16)))
 

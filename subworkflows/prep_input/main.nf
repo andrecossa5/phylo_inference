@@ -1,21 +1,21 @@
-// tree_inference_workflow
+// PREPROCESSING
 
 // Include here
 nextflow.enable.dsl = 2
 include { PREP_INPUT } from "./modules/prep_input.nf"
 include { BOOTSTRAP } from "./modules/bootstrap.nf"
-include { BUILD_TREE } from "./modules/build_tree.nf"
 
 // 
  
 //----------------------------------------------------------------------------//
-// tree_inference_workflow subworkflow
+// PREPROCESSING subworkflow
 //----------------------------------------------------------------------------//
 
-workflow tree_inference_workflow {
+// PREPROCESSING subworkflow
+workflow PREPROCESSING {
     
     take:
-        ch_samples 
+        ch_samples  
 
     main:
 
@@ -25,9 +25,14 @@ workflow tree_inference_workflow {
             .combine(Channel.of( 1..params.n_boot ))
             .combine(params.boot_strategy)
         )
-        // BUILD_TREE(BOOTSTRAP.out.features)
-
+        ch_distance = BOOTSTRAP.out.bootstrapped_input
+            .combine(params.distance_based_solver)
+            .combine(params.metric)
+        ch_others = BOOTSTRAP.out.bootstrapped_input
+            .combine(params.other_solver)
+            .combine(Channel.of( 'None' ))
+            
     emit:
-        results = BOOTSTRAP.out.bootstrapped_input
+        ch_input = ch_distance.concat(ch_others)
 
 }

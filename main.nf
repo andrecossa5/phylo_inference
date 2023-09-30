@@ -1,6 +1,7 @@
 // phylo_inference pipeline
 nextflow.enable.dsl = 2
-include { tree_inference_workflow } from "./subworkflows/tree_inference/main"
+include { PREPROCESSING } from "./subworkflows/prep_input/main"
+include { BUILD_TREE } from "./subworkflows/build_tree/main"
 
 // Samples channel
 ch_samples = Channel
@@ -10,15 +11,16 @@ ch_samples = Channel
 //
 
 //----------------------------------------------------------------------------//
-// phylo_inference entry points
+// phylo_inference workflows and entry points
 //----------------------------------------------------------------------------//
 
 //
 
 workflow phylo {
 
-    tree_inference_workflow(ch_samples)
-    tree_inference_workflow.out.results.view()
+    PREPROCESSING(ch_samples)
+    BUILD_TREE(PREPROCESSING.out.ch_input)
+    BUILD_TREE.out.reconstructed_tree.view()
 
 }
 
