@@ -77,7 +77,7 @@ args = my_parser.parse_args()
 
 path_data = args.path_data
 solver = args.solver
-metric = args.metric if solver in ['UPMGA', 'NJ', 'spectral'] else 'cosine'
+metric = args.metric if args.metric in ['UPMGA', 'NJ', 'spectral'] else 'cosine'
 name = args.name
 t = args.treshold_calling
 ncores = args.ncores
@@ -121,7 +121,13 @@ def main():
     # Build tree
     afm = AnnData(np.divide(AD, DP), obs=cells, var=variants, dtype=np.float16)
     afm = nans_as_zeros(afm)
-    tree = build_tree(afm, metric=metric, solver='max_cut', t=t, ncores=ncores)
+
+    if metric is None:
+        m = 'cosine'
+    else:
+        m = metric
+    
+    tree = build_tree(afm, metric=m, solver='max_cut', t=t, ncores=ncores)
 
     # Save tree in .netwick format
     with open(f'{name}.newick', 'w') as f:

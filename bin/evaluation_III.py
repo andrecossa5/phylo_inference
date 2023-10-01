@@ -119,7 +119,13 @@ def main():
     DP = load_npz(os.path.join(input_folder, 'DP.npz'))
     afm = pd.DataFrame(AD.A/DP.A, index=meta.index, columns=variants)
     meta = meta.join(afm)
-    D = pair_d(a=afm, metric=metric)
+
+    if metric is None:
+        m = 'cosine'
+    else:
+        m = metric
+        
+    D = pair_d(a=afm, metric=m)
     D[np.ix_(range(D.shape[0]), range(D.shape[0]))] = 0
     D = pd.DataFrame(D, index=meta.index, columns=meta.index)
 
