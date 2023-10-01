@@ -103,8 +103,8 @@ def main():
     # Write meta, variants, AD and DP
     a.obs.to_csv('meta.csv')
     a.var_names.to_series().to_csv('variants.csv', index=False, header=None)
-    save_npz('AD.npz', AD.astype(np.int16))
-    save_npz('DP.npz', DP.astype(np.int16))
+    save_npz('AD.npz', AD.T.astype(np.int16))
+    save_npz('DP.npz', DP.T.astype(np.int16))
 
 
     ##

@@ -2,6 +2,7 @@
 nextflow.enable.dsl = 2
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
 include { BUILD_TREE } from "./subworkflows/build_tree/main"
+include { EVALUATE_TREE } from "./subworkflows/evaluate_tree/main"
 
 // Samples channel
 ch_samples = Channel
@@ -20,7 +21,11 @@ workflow phylo {
 
     PREPROCESSING(ch_samples)
     BUILD_TREE(PREPROCESSING.out.ch_input)
-    BUILD_TREE.out.reconstructed_tree.view()
+    EVALUATE_TREE(
+        BUILD_TREE.out.ch_tree, 
+        PREPROCESSING.out.original_input
+    )
+    EVALUATE_TREE.out.results.view()
 
 }
 

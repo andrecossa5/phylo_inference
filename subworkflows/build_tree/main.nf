@@ -12,6 +12,8 @@ include { BUILD_SCITE } from "./modules/build_scite.nf"
 // BUILD_TREE subworkflow
 //----------------------------------------------------------------------------//
 
+//
+
 // BUILD_TREE subworkflow
 workflow BUILD_TREE {
     
@@ -42,6 +44,6 @@ workflow BUILD_TREE {
         }
 
     emit:
-        reconstructed_tree = tree
+        ch_tree = tree
 
 }

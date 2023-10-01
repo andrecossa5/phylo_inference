@@ -32,8 +32,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default=None,
-    help='Metric used for cell-cell distance matrix computation. Default: None.'
+    default='cosine',
+    help='Metric used for cell-cell distance matrix computation. Default: cosine.'
 )
 
 # Solver
@@ -76,8 +76,8 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 
 path_data = args.path_data
-metric = args.metric
 solver = args.solver
+metric = args.metric if solver in ['UPMGA', 'NJ', 'spectral'] else 'cosine'
 name = args.name
 t = args.treshold_calling
 ncores = args.ncores
@@ -99,20 +99,33 @@ from mito_utils.phylo import *
 def main():
 
     # Read input 
-    cells = pd.read_csv(os.path.join(path_data, 'cells.csv'), index_col=0, header=None)
-    variants = pd.read_csv(os.path.join(path_data, 'variants.csv'), index_col=0, header=None)
-    AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).A
-    DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).A
-    afm = AnnData(np.divide(AD, DP), obs=cells, var=variants, dtype=np.float16)
-    afm = nans_as_zeros(afm)
+    if name != 'tree':
+        AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).A
+        DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).A
+        cells = pd.read_csv(
+            os.path.join(path_data, 'cells.csv'), index_col=0, header=None
+        )
+        variants = pd.read_csv(
+            os.path.join(path_data, 'variants.csv'), index_col=0, header=None
+        )
+    else:
+        AD = load_npz(os.path.join(path_data, 'AD.npz')).A
+        DP = load_npz(os.path.join(path_data, 'DP.npz')).A
+        cells = pd.read_csv(
+            os.path.join(path_data, 'meta.csv'), index_col=0
+        )
+        variants = pd.read_csv(
+            os.path.join(path_data, 'variants.csv'), index_col=0, header=None
+        )
 
     # Build tree
-    tree = build_tree(afm, metric=metric, solver=solver, t=t, ncores=ncores)
+    afm = AnnData(np.divide(AD, DP), obs=cells, var=variants, dtype=np.float16)
+    afm = nans_as_zeros(afm)
+    tree = build_tree(afm, metric=metric, solver='max_cut', t=t, ncores=ncores)
 
     # Save tree in .netwick format
     with open(f'{name}.newick', 'w') as f:
-        f.write(f'{tree.get_newick()}')
-    
+        f.write(f'{tree.get_newick(record_branch_lengths=True)}')
 
     ##
 

@@ -8,6 +8,9 @@ process PREP_INPUT {
 
     tag "${sample}_${filtering}"
 
+    // Publish
+    publishDir "${params.outdir}/${sample}/${filtering}/", mode: 'copy'
+
     input:
     tuple val(sample), val(filtering)
 

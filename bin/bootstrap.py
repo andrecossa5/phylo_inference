@@ -79,11 +79,11 @@ def main():
     DP_original = load_npz(os.path.join(path_i, 'DP.npz'))
 
     if method == 'jacknife':
-        AD_boot, DP_boot, sel_idx = jackknife_allele_tables(AD_original.A.T, DP_original.A.T)
+        AD_boot, DP_boot, sel_idx = jackknife_allele_tables(AD_original.A, DP_original.A)
     elif method == 'counts_resampling':
-        AD_boot, DP_boot, sel_idx = bootstrap_allele_counts(AD_original.A.T, DP_original.A.T)
+        AD_boot, DP_boot, sel_idx = bootstrap_allele_counts(AD_original.A, DP_original.A)
     elif method == 'feature_resampling':
-        AD_boot, DP_boot, sel_idx = bootstrap_allele_tables(AD_original.A.T, DP_original.A.T)
+        AD_boot, DP_boot, sel_idx = bootstrap_allele_tables(AD_original.A, DP_original.A)
 
     # Cells and variants
     cells = pd.read_csv(os.path.join(path_i, 'meta.csv'), index_col=0).index

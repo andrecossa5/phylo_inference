@@ -34,5 +34,6 @@ workflow PREPROCESSING {
             
     emit:
         ch_input = ch_distance.concat(ch_others)
+        original_input = PREP_INPUT.out.input_folder
 
 }
