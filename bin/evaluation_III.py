@@ -85,8 +85,8 @@ input_folder = args.input_folder
 # filtering = 'miller2022'
 # solver = 'NJ'
 # metric = 'cosine'
-# obs_tree = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/ac/b3347f5d90fdbbe9f8d3b410c3aa46/tree.newick'
-# input_folder = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/0a/2654ea1683563af7d18cbe76aac4f1/input_folder'
+# obs_tree = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/ee/a57ede09b663d5a5f49364edae9db0/tree.newick'
+# input_folder = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/26/1a2298fb3097e777de326f82478e82/input_folder'
 
 
 ##
@@ -112,21 +112,21 @@ def main():
 
     # Load meta and muts
     meta = pd.read_csv(os.path.join(input_folder, 'meta.csv'), index_col=0)
-    variants = pd.read_csv(os.path.join(input_folder, 'variants.csv'), header=None)
+    variants_df = pd.read_csv(os.path.join(input_folder, 'variants.csv'), header=None, index_col=0)
 
     # Get AFM
     AD = load_npz(os.path.join(input_folder, 'AD.npz'))
     DP = load_npz(os.path.join(input_folder, 'DP.npz'))
-    afm = AnnData(np.divide(AD.A, DP.A), obs=meta, var=variants, dtype=np.float16)
+    afm = AnnData(np.divide(AD.A, DP.A), obs=meta, var=variants_df, dtype=np.float16)
     afm = nans_as_zeros(afm)
-    meta = meta.join(pd.DataFrame(afm.X, columns=variants[0], index=meta.index))
+    meta = meta.join(pd.DataFrame(afm.X, columns=variants_df.index, index=meta.index))
 
     if metric is None:
         m = 'cosine'
     else:
         m = metric
         
-    D = pair_d(a=afm, metric=m)
+    D = pair_d(a=afm.X, metric=m)
     D[np.ix_(range(D.shape[0]), range(D.shape[0]))] = 0
     D = pd.DataFrame(D, index=meta.index, columns=meta.index)
 
@@ -134,7 +134,7 @@ def main():
     tree = CassiopeiaTree(tree=tree, cell_meta=meta, dissimilarity_map=D)
 
     # Calc moran'I for each variable
-    morans_muts = cs.tl.compute_morans_i(tree, variants)
+    morans_muts = cs.tl.compute_morans_i(tree, variants_df.index)
     couplings = cs.tl.compute_evolutionary_coupling(tree, meta_variable='GBC')
 
     # Save
