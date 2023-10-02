@@ -118,6 +118,7 @@ def main():
     AD = load_npz(os.path.join(input_folder, 'AD.npz'))
     DP = load_npz(os.path.join(input_folder, 'DP.npz'))
     afm = pd.DataFrame(AD.A/DP.A, index=meta.index, columns=variants)
+    afm = nans_as_zeros(afm)
     meta = meta.join(afm)
 
     if metric is None:
