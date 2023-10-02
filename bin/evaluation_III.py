@@ -112,14 +112,14 @@ def main():
 
     # Load meta and muts
     meta = pd.read_csv(os.path.join(input_folder, 'meta.csv'), index_col=0)
-    variants = pd.read_csv(os.path.join(input_folder, 'variants.csv'), header=None)[0]
+    variants = pd.read_csv(os.path.join(input_folder, 'variants.csv'), header=None)
 
     # Get AFM
     AD = load_npz(os.path.join(input_folder, 'AD.npz'))
     DP = load_npz(os.path.join(input_folder, 'DP.npz'))
-    afm = pd.DataFrame(AD.A/DP.A, index=meta.index, columns=variants)
+    afm = AnnData(np.divide(AD.A, DP.A), obs=meta, var=variants, dtype=np.float16)
     afm = nans_as_zeros(afm)
-    meta = meta.join(afm)
+    meta = meta.join(pd.DataFrame(afm.X, columns=variants[0], index=meta.index))
 
     if metric is None:
         m = 'cosine'
