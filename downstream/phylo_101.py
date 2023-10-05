@@ -65,7 +65,7 @@ tree_list = []
 for i in range(100):
     print(f'Bootstrap sample {i}')
     # AD_, DP_, sel_idx = jackknife_allele_tables(AD.A.T, DP.A.T)
-    AD_, DP_ = bootstrap_allele_counts(AD.A.T, DP.A.T)
+    AD_, DP_, _ = bootstrap_allele_counts(AD.A.T, DP.A.T)
     X = np.divide(AD_, DP_)
     X[np.isnan(X)] = 0
     tree = build_tree(

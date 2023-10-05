@@ -24,8 +24,7 @@ process EVALUATE_I {
         val(metric),
         val(boot_option),
         path('trees.pickle'),
-        path('extended_supports.csv'),
-        path('results.txt'), emit: results
+        path('extended_supports.csv'), emit: results
     
     script:
     """
@@ -36,13 +35,11 @@ process EVALUATE_I {
         --metric ${metric} \
         --boot_method ${boot_option} \
         --obs_tree ${obs_tree} \
-        --boot_trees "${boot_trees}" \
-        --ncores ${task.cpus} 
+        --boot_trees "${boot_trees}"
     """
 
     stub:
     """
-    touch results.txt
     touch trees.pickle
     touch extended_supports.csv
     """

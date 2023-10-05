@@ -1,10 +1,10 @@
 {
-    "path_data" : "/Users/IEO5505/Desktop/mito_bench/data/",
+    "path_data" : "/Users/IEO5505/Desktop/mito_bench/data/test",
     "outdir" : "/Users/IEO5505/Desktop/mito_bench/results/phylo/output/",
-    "filtering" : ["miller2022"],
+    "filtering" : ["MQuad"],
     "metric" : ["cosine", "hamming"],
-    "distance_based_solver" : ["NJ"],
-    "other_solver" : ["max_cut"],
-    "boot_strategy" : ["counts_resampling"],
-    "n_boot" : 10
+    "distance_based_solver" : ["NJ", "UPMGA"],
+    "other_solver" : ["spectral"],
+    "boot_strategy" : ["jacknife"],
+    "n_boot" : 20
 }

@@ -79,14 +79,6 @@ my_parser.add_argument(
     help='Path to observed tree.'
 )
 
-# ncores
-my_parser.add_argument(
-    '--ncores', 
-    type=int,
-    default=4,
-    help='N cores for pairwise distance calculation. Default: 4.'
-)
-
 # Parse arguments
 args = my_parser.parse_args()
 
@@ -97,7 +89,6 @@ solver = args.solver
 boot_method = args.boot_method
 boot_trees_s = args.boot_trees
 obs_tree = args.obs_tree
-ncores = args.ncores
 
 # sample_name = 'MDA_clones'
 # filtering = 'miller2022'
@@ -114,7 +105,6 @@ ncores = args.ncores
 
 # Code
 import pickle
-from itertools import combinations, chain
 from mito_utils.preprocessing import *
 from mito_utils.utils import *
 from mito_utils.phylo import *
@@ -153,8 +143,8 @@ def main():
 
     # Compute median RF distance
     L = []
-    for x, y in combinations([ k for k in TREE_D if k != 'observed'], 2):
-        d, max_d = cs.critique.robinson_foulds(TREE_D[y], TREE_D[x])
+    for x in [ k for k in TREE_D if k != 'observed']:
+        d, max_d = cs.critique.robinson_foulds(TREE_D['observed'], TREE_D[x])
         L.append(d/max_d)
     
     # Add specifics of the run
@@ -169,14 +159,6 @@ def main():
     cats = ['sample', 'filtering', 'bootstrap', 'solver', 'metric']
     conts = ['support', 'time', 'n_cells', 'median_RF']
     df[cats+conts].to_csv('extended_supports.csv')
-
-    m = metric if metric is not None else 'None'
-    s = ','.join(
-        [sample_name, filtering, boot_method, solver, m] + \
-        df[conts].median().astype('str').to_list()
-    )
-    with open('results.txt', 'w') as f:
-        f.write(s)
 
 
     ##

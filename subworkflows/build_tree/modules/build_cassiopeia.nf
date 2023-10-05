@@ -7,7 +7,7 @@ process BUILD_CASSIOPEIA {
 
     tag "${sample}_${filtering}_${boot_option}_${boot_replicate}_${solver}_${metric}"
 
-    input:
+    input: 
     tuple val(sample), 
         val(filtering), 
         path(input_folder), 

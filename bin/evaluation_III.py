@@ -120,13 +120,8 @@ def main():
     afm = AnnData(np.divide(AD.A, DP.A), obs=meta, var=variants_df, dtype=np.float16)
     afm = nans_as_zeros(afm)
     meta = meta.join(pd.DataFrame(afm.X, columns=variants_df.index, index=meta.index))
-
-    if metric is None:
-        m = 'cosine'
-    else:
-        m = metric
         
-    D = pair_d(a=afm.X, metric=m)
+    D = pair_d(a=afm.X, metric=metric)
     D[np.ix_(range(D.shape[0]), range(D.shape[0]))] = 0
     D = pd.DataFrame(D, index=meta.index, columns=meta.index)
 
