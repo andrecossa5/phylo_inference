@@ -10,13 +10,16 @@ library(ape)
 library(picante)
 library(phytools)
 
-use_condaenv("base")                        # Assume we are in our docker image
+# use_condaenv("MI_TO")                        # Assume we are in our docker image
 scipy_sparse <- import("scipy.sparse")
 
 # Parse args
 args <- commandArgs(trailingOnly = TRUE)
 path_tree <- args[1]
 path_input <- args[2]
+ncores <- args[3]
+
+# Paths
 path_meta <- paste0(path_input, '/meta.csv')
 path_variants <- paste0(path_input, '/variants.csv')
 path_AD <- paste0(path_input, '/AD.npz')
@@ -41,7 +44,7 @@ L <- mclapply(
     k <- phytools::phylosig(tree, x, method='K', test=TRUE)
     s <- c(lambda$lambda, k$K, lambda$P, k$P)
   }, 
-  mc.cores = 8
+  mc.cores=ncores
 )
 muts_df <- data.frame(setNames(L, colnames(afm)), check.names=FALSE) %>% t()
 colnames(muts_df) <- c('lambda', 'K', 'lambda_p', 'k_p')
@@ -50,8 +53,8 @@ colnames(muts_df) <- c('lambda', 'K', 'lambda_p', 'k_p')
 clones_df <- picante::ses.mpd(table(meta$GBC, row.names(meta)) %>% as.matrix(), cophenetic(tree))
 
 # Save all
-write.csv(muts_df, paste0(input_folder, '/muts.csv'))
-write.csv(clones_df, paste0(input_folder, '/clones.csv'))
+write.csv(muts_df, 'muts.csv')
+write.csv(clones_df, 'clones.csv')
 
 
 ##

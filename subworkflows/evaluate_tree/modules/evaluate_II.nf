@@ -20,7 +20,7 @@ process EVALUATE_II {
         val(filtering), 
         val(solver),
         val(metric),
-        path('results.txt'), emit: results
+        path('results.csv'), emit: results
     
     script:
     """
@@ -34,7 +34,7 @@ process EVALUATE_II {
 
     stub:
     """
-    touch results.txt
+    touch results.csv
     """
 
 }

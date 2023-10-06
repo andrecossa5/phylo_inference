@@ -26,8 +26,9 @@ process EVALUATE_III {
     script:
     """
     Rscript ${baseDir}/bin/evaluation_III.r \
-        --obs_tree ${obs_tree} \
-        --input_folder ${original_input}
+    ${obs_tree} \
+    ${original_input} \
+    ${task.cpus}
     """
 
     stub:

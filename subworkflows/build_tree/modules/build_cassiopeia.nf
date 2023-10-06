@@ -33,7 +33,7 @@ process BUILD_CASSIOPEIA {
     --metric ${metric} \
     --solver ${solver} \
     --name rep${boot_replicate} \
-    --ncores ${task.cpus}
+    --ncores ${task.cpus} 
     """
 
     stub:

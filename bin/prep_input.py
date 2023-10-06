@@ -44,6 +44,14 @@ my_parser.add_argument(
     help='Method to filter MT-SNVs. Default: ludwig2019.'
 )
 
+# ncores
+my_parser.add_argument(
+    '--ncores', 
+    type=int,
+    default=8,
+    help='ncores filtering. Default: 8.'
+)
+
 # Treshold_calling
 my_parser.add_argument(
     '--treshold_calling', 
@@ -58,6 +66,7 @@ args = my_parser.parse_args()
 path_data = args.path_data
 sample = args.sample
 filtering = args.filtering
+ncores = args.ncores
 t = args.treshold_calling
 
 
@@ -87,7 +96,9 @@ def main():
     if filtering == 'GT':
         _, a = filter_afm_with_gt(afm, min_cells_clone=5)
     else:
-        _, a = filter_cells_and_vars(afm, filtering=filtering, path_=os.getcwd())
+        _, a = filter_cells_and_vars(
+            afm, filtering=filtering, path_=os.getcwd(), nproc=ncores
+        )
 
     # Remove zeros and get AD, DP
     a = nans_as_zeros(a)

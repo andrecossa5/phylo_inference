@@ -99,7 +99,11 @@ def main():
     save_npz('DP_boot.npz', csr_matrix(DP_boot.astype(np.float16)))
 
     # Prep fasta
-    afm = AnnData(X=np.divide(AD_boot, DP_boot), var=pd.DataFrame(index=variants), dtype=np.float16)
+    afm = AnnData(
+        X=np.divide(AD_boot, DP_boot), 
+        var=pd.DataFrame(index=variants), 
+        dtype=np.float16
+    )
     seqs = AFM_to_seqs(afm, t=t)
     with open('sequences.fasta', 'w') as f:
         for k in seqs:

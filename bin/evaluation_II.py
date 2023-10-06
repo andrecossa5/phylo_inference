@@ -116,7 +116,9 @@ def main():
     
     # Save
     s = ','.join([sample_name, filtering, str(np.median(L))])
-    with open('results.txt', 'w') as f:
+    with open('results.csv', 'w') as f:
+        f.write(','.join(['sample_name', 'filtering', 'median_RF']))
+        f.write('\n')
         f.write(s)
 
     ##

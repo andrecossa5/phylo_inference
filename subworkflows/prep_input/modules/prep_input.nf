@@ -22,6 +22,7 @@ process PREP_INPUT {
     python ${baseDir}/bin/prep_input.py \
     -p ${params.path_data} \
     --sample ${sample} \
+    --ncores ${task.cpus} \
     --filtering ${filtering}
     """
 
