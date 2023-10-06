@@ -50,7 +50,10 @@ muts_df <- data.frame(setNames(L, colnames(afm)), check.names=FALSE) %>% t()
 colnames(muts_df) <- c('lambda', 'K', 'lambda_p', 'k_p')
 
 # Calculate phylogenetic clustering of clonal labels
-clones_df <- picante::ses.mpd(table(meta$GBC, row.names(meta)) %>% as.matrix(), cophenetic(tree))
+clones_df <- picante::ses.mpd(
+  table(meta$GBC, row.names(meta)) %>% as.matrix(),
+  cophenetic(tree)
+)
 
 # Save all
 write.csv(muts_df, 'muts.csv')
