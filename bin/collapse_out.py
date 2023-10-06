@@ -109,19 +109,19 @@ plt.show()
 ##
 
 
-# Plot some good trees
+# Plot some good trees, and save for R session
 sample = 'MDA_clones'
 
 (
-    df.query('sample==@sample and filtering!="GT"')
+    df.query('sample==@sample')
     .groupby(['sample', 'filtering', 'bootstrap', 'solver', 'metric'])
     ['support'].median().sort_values(ascending=False)
     #.describe()
 )
 
-filtering = 'MQuad_optimized'
-solver = 'NJ'
-metric = 'cosine'
+filtering = 'GT'
+solver = 'UPMGA'
+metric = 'hamming'
 bootstrap = 'jacknife'
 path_tree = os.path.join(path_data, sample, filtering, solver, metric, bootstrap, 'trees.pickle')
 path_afm = '/Users/IEO5505/Desktop/mito_bench/data/'
@@ -131,10 +131,76 @@ with open(path_tree, 'rb') as f:
     tree = pickle.load(f)
 # Get observed
 obs_tree = tree['observed']
+tree_nw = obs_tree.get_newick(record_branch_lengths=True)
 
 # Get cell meta
+
+# deltaBIC but more...
 afm = read_one_sample(path_afm, sample=sample, with_GBC=True)
+
 a_cells = filter_cells_coverage(afm)
+a_cells = filter_baseline(a_cells)
+df = fit_MQuad_mixtures(a_cells, nproc=8, path_=os.getcwd())
+
+variants = (
+    df
+    .join(summary_stats_vars(a_cells))
+    .sort_values('deltaBIC', ascending=False)
+    .head(100)
+    .query('fr_positives>=.01 and num_cells_nonzero_AD>=1')
+    .index
+)
+
+a = a_cells[:, variants].copy()
+a = remove_excluded_sites(a)
+
+
+plt.plot(np.sort(a[:,variants[-1]].X.flatten()), 'ko')
+plt.show()
+
+
+
+
+
+
+
+
+from mito_utils.distances import pair_d
+from mito_utils.phylo import AFM_to_seqs
+
+
+seqs = AFM_to_seqs(a, .1)
+
+np.unique(list(seqs.values())).size / len(seqs)
+
+
+
+
+
+red = pd.DataFrame((np.sum(D==0, axis=0)/D.shape[0]).flatten(), columns=['red'])
+
+
+(D==0).all()
+
+sns.kdeplot('red', data=red)
+plt.show()
+
+
+
+
+
+# Save data
+path_ = '/Users/IEO5505/Desktop/mito_bench/results/phylo/to_R'
+df_afm = pd.DataFrame(a.X, index=a.obs_names, columns=a.var_names)
+df_afm = df_afm.loc[obs_tree.leaves]
+df_afm.to_csv(os.path.join(path_, 'afm.csv'))
+a.obs.loc[obs_tree.leaves].to_csv(os.path.join(path_, 'meta.csv'))
+with open(os.path.join(path_, 'tree.newick'), 'w') as f:
+    f.write(tree_nw)
+
+
+##
+
 
 # Create annot dfs
 obs_tree.cell_meta = pd.DataFrame(

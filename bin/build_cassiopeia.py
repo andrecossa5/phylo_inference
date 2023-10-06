@@ -100,8 +100,8 @@ def main():
 
     # Read input 
     if name != 'tree':
-        AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).A
-        DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).A
+        AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).astype(np.int16).A
+        DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).astype(np.int16).A
         cells = pd.read_csv(
             os.path.join(path_data, 'cells.csv'), index_col=0, header=None
         )
@@ -109,8 +109,8 @@ def main():
             os.path.join(path_data, 'variants.csv'), index_col=0, header=None
         )
     else:
-        AD = load_npz(os.path.join(path_data, 'AD.npz')).A
-        DP = load_npz(os.path.join(path_data, 'DP.npz')).A
+        AD = load_npz(os.path.join(path_data, 'AD.npz')).astype(np.int16).A
+        DP = load_npz(os.path.join(path_data, 'DP.npz')).astype(np.int16).A
         cells = pd.read_csv(
             os.path.join(path_data, 'meta.csv'), index_col=0
         )
@@ -121,13 +121,8 @@ def main():
     # Build tree
     afm = AnnData(np.divide(AD, DP), obs=cells, var=variants, dtype=np.float16)
     afm = nans_as_zeros(afm)
-
-    if metric is None:
-        m = 'cosine'
-    else:
-        m = metric
-    
-    tree = build_tree(afm, metric=m, solver='max_cut', t=t, ncores=ncores)
+    m = 'cosine' if metric is None else metric
+    tree = build_tree(afm, metric=m, solver=solver, t=t, ncores=ncores)
 
     # Save tree in .netwick format
     with open(f'{name}.newick', 'w') as f:

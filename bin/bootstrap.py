@@ -75,8 +75,8 @@ from mito_utils.phylo import *
 def main():
 
     # AD and DP
-    AD_original = load_npz(os.path.join(path_i, 'AD.npz'))
-    DP_original = load_npz(os.path.join(path_i, 'DP.npz'))
+    AD_original = load_npz(os.path.join(path_i, 'AD.npz')).astype(np.int16)
+    DP_original = load_npz(os.path.join(path_i, 'DP.npz')).astype(np.int16)
 
     if method == 'jacknife':
         AD_boot, DP_boot, sel_idx = jackknife_allele_tables(AD_original.A, DP_original.A)
@@ -95,8 +95,8 @@ def main():
     os.chdir('bootstrapped_input')  
     cells.to_series().to_csv('cells.csv', index=False, header=None)
     variants.to_series().to_csv('variants.csv', index=False, header=None)
-    save_npz('AD_boot.npz', csr_matrix(AD_boot.astype(np.int16)))
-    save_npz('DP_boot.npz', csr_matrix(DP_boot.astype(np.int16)))
+    save_npz('AD_boot.npz', csr_matrix(AD_boot.astype(np.float16)))
+    save_npz('DP_boot.npz', csr_matrix(DP_boot.astype(np.float16)))
 
     # Prep fasta
     afm = AnnData(X=np.divide(AD_boot, DP_boot), var=pd.DataFrame(index=variants), dtype=np.float16)

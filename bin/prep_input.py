@@ -60,12 +60,6 @@ sample = args.sample
 filtering = args.filtering
 t = args.treshold_calling
 
-# path_main = '/Users/IEO5505/Desktop/mito_bench'
-# path_data = os.path.join(path_main, 'data')
-# sample = 'MDA_clones'
-# filtering = 'miller2022'
-# ncores = 8
-
 
 ##
 
@@ -79,7 +73,6 @@ from scipy.sparse import save_npz
 from mito_utils.preprocessing import *
 
 # Paths and dirs
-# os.chdir('/Users/IEO5505/Desktop/MI_TO/scratch')              # REMOVE
 os.mkdir('input_folder')
 os.chdir('input_folder')
 
@@ -103,8 +96,8 @@ def main():
     # Write meta, variants, AD and DP
     a.obs.to_csv('meta.csv')
     a.var_names.to_series().to_csv('variants.csv', index=False, header=None)
-    save_npz('AD.npz', AD.T.astype(np.int16))
-    save_npz('DP.npz', DP.T.astype(np.int16))
+    save_npz('AD.npz', AD.T.astype(np.float16))
+    save_npz('DP.npz', DP.T.astype(np.float16))
 
 
     ##

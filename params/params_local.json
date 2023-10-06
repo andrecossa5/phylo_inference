@@ -2,9 +2,9 @@
     "path_data" : "/Users/IEO5505/Desktop/mito_bench/data/test",
     "outdir" : "/Users/IEO5505/Desktop/mito_bench/results/phylo/output/",
     "filtering" : ["MQuad"],
-    "metric" : ["cosine", "hamming"],
-    "distance_based_solver" : ["NJ", "UPMGA"],
+    "metric" : ["cosine"],
+    "distance_based_solver" : ["UPMGA"],
     "other_solver" : ["spectral"],
     "boot_strategy" : ["jacknife"],
-    "n_boot" : 20
+    "n_boot" : 10
 }

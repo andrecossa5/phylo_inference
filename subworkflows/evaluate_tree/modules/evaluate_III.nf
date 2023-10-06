@@ -20,24 +20,20 @@ process EVALUATE_III {
         val(filtering), 
         val(solver),
         val(metric),
-        path('morans_muts.csv'),
-        path('couplings.csv'), emit: results
+        path('muts.csv'),
+        path('clones.csv'), emit: results
     
     script:
     """
-    python ${baseDir}/bin/evaluation_III.py \
-        --sample_name ${sample} \
-        --filtering ${filtering} \
-        --solver ${solver} \
-        --metric ${metric} \
+    Rscript ${baseDir}/bin/evaluation_III.r \
         --obs_tree ${obs_tree} \
         --input_folder ${original_input}
     """
 
     stub:
     """
-    touch morans_muts.csv
-    touch couplings.csv
+    touch muts.csv
+    touch clones.csv
     """
 
 }
