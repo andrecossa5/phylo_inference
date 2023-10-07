@@ -4,7 +4,6 @@
 
 # Code
 library(tidyverse)
-library(parallel)
 library(reticulate)
 library(ape)
 library(picante)
@@ -36,7 +35,7 @@ colnames(afm) <- variants
 row.names(afm) <- row.names(meta)
 
 # Calculate phylogenetic signal of individual muts
-L <- mclapply(
+L <- lapply(
   colnames(afm), 
   function(mut) {
     x <- setNames(afm[tree$tip.label, mut], tree$tip.label)
@@ -44,7 +43,7 @@ L <- mclapply(
     k <- phytools::phylosig(tree, x, method='K', test=TRUE)
     s <- c(lambda$lambda, k$K, lambda$P, k$P)
   }, 
-  mc.cores=ncores
+  #mc.cores=ncores
 )
 muts_df <- data.frame(setNames(L, colnames(afm)), check.names=FALSE) %>% t()
 colnames(muts_df) <- c('lambda', 'K', 'lambda_p', 'k_p')
