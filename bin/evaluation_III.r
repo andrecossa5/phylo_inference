@@ -42,7 +42,7 @@ L <- lapply(
     lambda <- phytools::phylosig(tree, x, method='lambda', test=TRUE)
     k <- phytools::phylosig(tree, x, method='K', test=TRUE)
     s <- c(lambda$lambda, k$K, lambda$P, k$P)
-  }, 
+  } 
   #mc.cores=ncores
 )
 muts_df <- data.frame(setNames(L, colnames(afm)), check.names=FALSE) %>% t()
