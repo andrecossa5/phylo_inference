@@ -8,14 +8,17 @@ process BOOTSTRAP {
     tag "${sample}_${filtering}_${boot_option}_${boot_replicate}"
 
     input:
-    tuple val(sample), val(filtering), path(input_folder), val(boot_replicate), val(boot_option)
+    tuple val(sample), 
+        val(filtering), 
+        val(boot_option),
+        val(boot_replicate), 
+        path(input_folder)
     
     output:
     tuple val(sample), 
         val(filtering), 
-        path(input_folder), 
-        val(boot_replicate), 
         val(boot_option),
+        val(boot_replicate),  
         path(bootstrapped_input), emit: bootstrapped_input
     
     script:

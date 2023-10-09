@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Build cassiopeia
+# Calculate distances
 
 ########################################################################
 
@@ -10,10 +10,10 @@ import argparse
 
 # Create the parser
 my_parser = argparse.ArgumentParser(
-    prog='build_cassiopeia',
+    prog='calculate_distances',
     description=
     """
-    Build cassiopeia trees.
+    Calc distances among cells AFs.
     """
 )
 
@@ -28,33 +28,12 @@ my_parser.add_argument(
     help='Path to data folder. Default: .. .'
 )
 
-# Path_distances
+# Metric
 my_parser.add_argument(
-    '-d', 
-    '--path_distances', 
+    '--metric', 
     type=str,
-    default='..',
-    help='Path to distance matrix. Default: .. .'
-)
-
-# Solver
-my_parser.add_argument(
-    '--solver', 
-    type=str,
-    default='UPMGA',
-    help='''
-    Bootstrap resampling strategy. Default: UPMGA. Other options: 
-    NJ, spectral, max_cut, greedy. See Cassiopeia (MW Jones et al., 2020) 
-    for docs.
-    '''
-)
-
-# Solver
-my_parser.add_argument(
-    '--name', 
-    type=str,
-    default='tree',
-    help='Name for the saved newick object. Default: tree.'
+    default='cosine',
+    help='Metric used for cell-cell distance matrix computation. Default: cosine.'
 )
 
 # Solver
@@ -77,9 +56,7 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 
 path_data = args.path_data
-path_distances = args.path_distances
-solver = args.solver
-name = args.name
+metric = args.metric if args.metric in ['UPMGA', 'NJ', 'spectral'] else 'cosine'
 t = args.treshold_calling
 ncores = args.ncores
 
@@ -88,7 +65,8 @@ ncores = args.ncores
 # Preparing run: import code, prepare directories, set logger
 
 # Code
-from scipy.sparse import load_npz
+import re
+from scipy.sparse import load_npz, save_npz, csr_matrix
 from anndata import AnnData
 from mito_utils.preprocessing import *
 from mito_utils.utils import *
@@ -100,7 +78,8 @@ from mito_utils.phylo import *
 def main():
 
     # Read input 
-    if name != 'tree':
+    is_boot = any([ True for x in os.listdir(path_data) if bool(re.search('boot', x)) ])
+    if is_boot:
         AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).astype(np.int16).A
         DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).astype(np.int16).A
         cells = pd.read_csv(
@@ -119,20 +98,16 @@ def main():
             os.path.join(path_data, 'variants.csv'), index_col=0, header=None
         )
 
-    # Build tree
-
-    # Charachters
+    # Calc distance matrix
     afm = AnnData(np.divide(AD, DP), obs=cells, var=variants, dtype=np.float16)
-    afm = nans_as_zeros(afm)
+    X = nans_as_zeros(afm).X.astype(np.float16)
+    m = 'cosine' if metric is None else metric
+    D = pair_d(X, ncores=ncores, metric=metric)
+    D[np.isnan(D)] = 0
 
-    # Load distances
-    D = load_npz(os.path.join(path_distances)).A
-    D = pd.DataFrame(D, index=afm.obs_names, columns=afm.obs_names)
-    tree = build_tree(afm, D=D, solver=solver, t=t, ncores=ncores)
+    # Save
+    save_npz('dist.npz', csr_matrix(D))
 
-    # Save tree in .netwick format
-    with open(f'{name}.newick', 'w') as f:
-        f.write(f'{tree.get_newick(record_branch_lengths=True)}')
 
     ##
 

@@ -18,8 +18,6 @@ process EVALUATE_II {
     output:
     tuple val(sample), 
         val(filtering), 
-        val(solver),
-        val(metric),
         path('results.csv'), emit: results
     
     script:

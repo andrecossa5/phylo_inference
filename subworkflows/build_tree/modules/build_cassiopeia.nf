@@ -10,18 +10,18 @@ process BUILD_CASSIOPEIA {
     input: 
     tuple val(sample), 
         val(filtering), 
-        path(input_folder), 
-        val(boot_replicate), 
         val(boot_option),
-        path(bootstrapped_input),
+        val(boot_replicate), 
+        val(metric),
         val(solver),
-        val(metric)
-    
+        path(bootstrap_input),
+        path(dist)
+
     output:
     tuple val(sample), 
         val(filtering), 
-        val(boot_replicate), 
         val(boot_option),
+        val(boot_replicate), 
         val(solver),
         val(metric),
         path("rep${boot_replicate}.newick"), emit: tree
@@ -29,8 +29,8 @@ process BUILD_CASSIOPEIA {
     script:
     """
     python ${baseDir}/bin/build_cassiopeia.py \
-    -p ${bootstrapped_input} \
-    --metric ${metric} \
+    -p ${bootstrap_input} \
+    -d ${dist} \
     --solver ${solver} \
     --name rep${boot_replicate} \
     --ncores ${task.cpus} 

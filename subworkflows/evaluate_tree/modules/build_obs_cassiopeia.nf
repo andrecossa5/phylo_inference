@@ -10,9 +10,10 @@ process BUILD_OBSERVED_CASSIOPEIA {
     input:
     tuple val(sample), 
         val(filtering), 
-        path(input_folder), 
         val(solver),
-        val(metric)
+        val(metric),
+        path(input_folder),
+        path(dist)
     
     output:
     tuple val(sample), 
@@ -25,10 +26,10 @@ process BUILD_OBSERVED_CASSIOPEIA {
     """
     python ${baseDir}/bin/build_cassiopeia.py \
     -p ${input_folder} \
-    --metric ${metric} \
+    -d ${dist} \
     --solver ${solver} \
     --name tree \
-    --ncores ${task.cpus}
+    --ncores ${task.cpus} 
     """
 
     stub:
