@@ -41,7 +41,7 @@ def get_files_l(path, pattern=None, print_all=False, from_tokey=None):
 
 
 # Paths
-path_data = '/Users/IEO5505/Desktop/mito_bench/results/phylo/output'
+path_data = '/Users/IEO5505/Desktop/mito_bench/results/phylo/output_in_vitro'
 
 
 ##
@@ -82,8 +82,5 @@ df.to_csv(os.path.join(path_data, 'clones_df.csv'))
 
 
 ##
-
-
-df['mpd.obs.p'].describe()
 
 

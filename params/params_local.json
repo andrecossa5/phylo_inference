@@ -1,10 +1,10 @@
 {
     "path_data" : "/Users/IEO5505/Desktop/mito_bench/data/test",
-    "outdir" : "/Users/IEO5505/Desktop/mito_bench/results/phylo/output/",
+    "outdir" : "/Users/IEO5505/Desktop/mito_bench/results/phylo_inference/output",
     "filtering" : ["GT"],
-    "metric" : ["cosine", "hamming"],
-    "distance_based_solver" : ["NJ", "UPMGA"],
+    "metric" : ["cosine"],
+    "distance_based_solver" : ["UPMGA"],
     "other_solver" : [],
-    "boot_strategy" : ["jacknife", "counts_resampling"],
+    "boot_strategy" : ["jacknife"],
     "n_boot" : 5
 }

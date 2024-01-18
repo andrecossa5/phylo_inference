@@ -3,7 +3,7 @@
 # Evaluate I
 
 ########################################################################
-
+ 
 # Libraries
 import os
 import argparse
@@ -71,6 +71,14 @@ my_parser.add_argument(
     help='Bootstrapping method used.'
 )
 
+# boot_trees
+my_parser.add_argument(
+    '--boot_support', 
+    type=str,
+    default=None,
+    help='Support type.'
+)
+
 # obs_tree
 my_parser.add_argument(
     '--obs_tree', 
@@ -86,17 +94,18 @@ sample_name = args.sample_name
 filtering = args.filtering
 metric = args.metric
 solver = args.solver
+boot_support =  args.boot_support
 boot_method = args.boot_method
 boot_trees_s = args.boot_trees
 obs_tree = args.obs_tree
 
 # sample_name = 'MDA_clones'
-# filtering = 'miller2022'
+# filtering = 'GT'
 # solver = 'max_cut'
 # metric = None 
 # boot_method = 'counts_resampling'
-# boot_trees_s = '[/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/b2/bd1444eb504cf0166dd4f2a0770c6e/rep8.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/7f/13c20ba54383545085a0df04ccf906/rep6.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/26/a1aa3c18ee5c790a485d83b18164a8/rep3.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/cc/8e3181458e3cfc925f5d5a1604d493/rep4.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/47/df26e5767f218730edb69d132d27d0/rep2.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/ef/a65d1de1b8ddbb5ea61d0014276d0f/rep7.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/90/63e99791575d2551b9150bf6f20bbf/rep5.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/65/3e2c684fb2c5f813d1ca291f43b1a3/rep1.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/6a/cea48666c85eec729f3434e2ce544f/rep9.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/3e/039826b57f5d2b35af065e5e4311df/rep10.newick]'
-# obs_tree = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/7c/8648de1abd8604a943361486b74a5b/tree.newick'
+# boot_trees_s = "[/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/6f/3a59869760daffc096049e4e132c7d/rep5.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/a3/c38059dd1d4bb74313b4914e0a3ecf/rep1.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/f3/60e7de824875a075223800cd61faed/rep3.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/f7/4934b2f9a1f26a3a97856972373318/rep2.newick, /Users/IEO5505/Desktop/MI_TO/phylo_inference/work/94/f2c630bc8660de02deb6a063f9e397/rep4.newick]"
+# obs_tree = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/85/f5fe9702f0864664ab3f066d0d4a56/tree.newick'
 # ncores = 4
 
 ########################################################################
@@ -135,10 +144,25 @@ def main():
         pickle.dump(TREE_D, f)
     
     # Compute supports
-    df, _ = calculate_support(
+        
+    # TBE
+    tbe = calculate_supports(
         TREE_D['observed'], 
         tree_list=[ TREE_D[k] for k in TREE_D if k != 'observed'], 
-        n=len(TREE_D)-1
+        method='tbe_II', 
+        n_jobs=8
+    )
+    # FBP
+    fbp = calculate_supports(
+        TREE_D['observed'], 
+        tree_list=[ TREE_D[k] for k in TREE_D if k != 'observed'], 
+        method='fbp', 
+        n_jobs=8
+    )
+    # Merge
+    df = (
+        tbe.rename(columns={'support':'TBE'})
+        .join(fbp[['support']].rename(columns={'support':'FBP'}))
     )
 
     # Compute median RF distance
@@ -157,7 +181,7 @@ def main():
 
     # Save
     cats = ['sample', 'filtering', 'bootstrap', 'solver', 'metric']
-    conts = ['support', 'time', 'n_cells', 'median_RF']
+    conts = ['time', 'n_cells', 'median_RF', 'TBE', 'FBP']
     df[cats+conts].to_csv('extended_supports.csv')
 
 

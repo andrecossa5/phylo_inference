@@ -74,8 +74,6 @@ workflow EVALUATE_TREE {
         )
         // Concordance (same sample and input features)
         EVALUATE_II(obs_tree.groupTuple(by: [0,1]))
-        // Evaluate external associations
-        EVALUATE_III(obs_tree.combine(original_input, by: [0,1]))
 
     emit:
         results = obs_tree.combine(original_input, by: [0,1])
