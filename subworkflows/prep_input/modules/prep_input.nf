@@ -19,7 +19,7 @@ process PREP_INPUT {
     
     script:
     """
-    python ${baseDir}/bin/prep_input.py \
+    python ${baseDir}/bin/prep_input/prep_input.py \
     -p ${params.path_data} \
     --sample ${sample} \
     --ncores ${task.cpus} \

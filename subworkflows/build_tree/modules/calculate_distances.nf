@@ -24,7 +24,7 @@ process CALC_DISTANCES {
     
     script:
     """
-    python ${baseDir}/bin/calculate_distances.py \
+    python ${baseDir}/bin/build_tree/calculate_distances.py \
     -p ${bootstrapped_input} \
     --metric ${metric} \
     --ncores ${task.cpus}

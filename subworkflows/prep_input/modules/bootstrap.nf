@@ -23,9 +23,9 @@ process BOOTSTRAP {
     
     script:
     """
-    python ${baseDir}/bin/bootstrap.py \
-        -p ${input_folder} \
-        --method ${boot_option} 
+    python ${baseDir}/bin/prep_input/bootstrap.py \
+    -p ${input_folder} \
+    --method ${boot_option} 
     """
 
     stub:

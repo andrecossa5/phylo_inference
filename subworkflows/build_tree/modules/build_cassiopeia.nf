@@ -28,7 +28,7 @@ process BUILD_CASSIOPEIA {
     
     script:
     """
-    python ${baseDir}/bin/build_cassiopeia.py \
+    python ${baseDir}/bin/build_tree/build_cassiopeia.py \
     -p ${bootstrap_input} \
     -d ${dist} \
     --solver ${solver} \

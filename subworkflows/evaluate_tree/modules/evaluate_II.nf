@@ -22,12 +22,12 @@ process EVALUATE_II {
     
     script:
     """
-    python ${baseDir}/bin/evaluation_II.py \
-        --sample_name ${sample} \
-        --filtering ${filtering} \
-        --solver "${solver}" \
-        --metric "${metric}" \
-        --obs_tree "${obs_tree}"
+    python ${baseDir}/bin/evaluate_tree/evaluation_II.py \
+    --sample_name ${sample} \
+    --filtering ${filtering} \
+    --solver "${solver}" \
+    --metric "${metric}" \
+    --obs_tree "${obs_tree}"
     """
 
     stub:

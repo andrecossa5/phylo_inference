@@ -24,7 +24,7 @@ process BUILD_OBSERVED_CASSIOPEIA {
     
     script:
     """
-    python ${baseDir}/bin/build_cassiopeia.py \
+    python ${baseDir}/bin/build_tree/build_cassiopeia.py \
     -p ${input_folder} \
     -d ${dist} \
     --solver ${solver} \

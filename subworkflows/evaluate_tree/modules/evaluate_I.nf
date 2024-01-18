@@ -28,14 +28,14 @@ process EVALUATE_I {
     
     script:
     """
-    python ${baseDir}/bin/evaluation_I.py \
-        --sample_name ${sample} \
-        --filtering ${filtering} \
-        --solver ${solver} \
-        --metric ${metric} \
-        --boot_method ${boot_option} \
-        --obs_tree ${obs_tree} \
-        --boot_trees "${boot_trees}"
+    python ${baseDir}/bin/evaluate_tree/evaluation_I.py \
+    --sample_name ${sample} \
+    --filtering ${filtering} \
+    --solver ${solver} \
+    --metric ${metric} \
+    --boot_method ${boot_option} \
+    --obs_tree ${obs_tree} \
+    --boot_trees "${boot_trees}"
     """
 
     stub:
