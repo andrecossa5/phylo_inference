@@ -60,6 +60,14 @@ my_parser.add_argument(
     help='Treshold for variant allele calling. Default: .025.'
 )
 
+# GT_reference
+my_parser.add_argument(
+    '--GT_reference', 
+    type=str,
+    default='no_reference',
+    help='Read GT reference genomic barcodes or not. Default: GBC.'
+)
+
 # Parse arguments
 args = my_parser.parse_args()
 
@@ -68,6 +76,7 @@ sample = args.sample
 filtering = args.filtering
 ncores = args.ncores
 t = args.treshold_calling
+GT_reference = args.GT_reference
 
 
 ##
@@ -91,10 +100,14 @@ os.chdir('input_folder')
 def main():
 
     # Read AFM and filter vars
-    afm = read_one_sample(path_data, sample, with_GBC=True)
+    with_GBC = True if GT_reference == 'GBC' else False
+    afm = read_one_sample(path_data, sample, with_GBC=with_GBC)
 
     if filtering == 'GT':
-        _, a = filter_afm_with_gt(afm, min_cells_clone=5)
+        if with_GBC:
+            _, a = filter_afm_with_gt(afm, min_cells_clone=5)
+        else:
+            raise ValueError('GT only for dataset with lentiviral barcoding Ground Truth!')
     else:
         _, a = filter_cells_and_vars(
             afm, filtering=filtering, path_=os.getcwd(), nproc=ncores

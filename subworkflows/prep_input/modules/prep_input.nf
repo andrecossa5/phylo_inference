@@ -23,7 +23,8 @@ process PREP_INPUT {
     -p ${params.path_data} \
     --sample ${sample} \
     --ncores ${task.cpus} \
-    --filtering ${filtering}
+    --filtering ${filtering} \
+    --GT_reference ${params.GT_reference}
     """
 
     stub:
