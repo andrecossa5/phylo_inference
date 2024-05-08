@@ -1,5 +1,6 @@
 // phylo_inference pipeline
 nextflow.enable.dsl = 2
+include { FILTER_VARIANTS } from "./subworkflows/filter_variants/main"
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
 include { BUILD_TREE } from "./subworkflows/build_tree/main"
 include { EVALUATE_TREE } from "./subworkflows/evaluate_tree/main"
@@ -17,6 +18,18 @@ ch_samples = Channel
 
 //
 
+
+workflow muts {
+
+    FILTER_VARIANTS(ch_samples)
+    // FILTER_VARIANTS.out.results | view
+
+}
+
+
+//
+
+
 workflow phylo {
 
     PREPROCESSING(ch_samples)
@@ -28,7 +41,6 @@ workflow phylo {
 
 }
 
-//
 
 // Mock
 workflow  {
