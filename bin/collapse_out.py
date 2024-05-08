@@ -41,7 +41,7 @@ def get_files_l(path, pattern=None, print_all=False, from_tokey=None):
 
 
 # Paths
-path_data = '/Users/IEO5505/Desktop/mito_bench/results/phylo/output_in_vitro'
+path_data = '/Users/IEO5505/Desktop/mito_bench/results/phylo_inference/output'
 
 
 ##
@@ -63,22 +63,22 @@ df = pd.concat([
 df.to_csv(os.path.join(path_data, 'filtering_df.csv'))
 
 # Muts outputs
-df = pd.concat([ 
-    pd.read_csv(v, index_col=0).assign(
-        sample=k[0], filtering=k[1], solver=k[2], metric=k[3]
-    )
-    for k, v in get_files_l(os.path.join(path_data), pattern='mut', from_tokey=4).items()
-])
-df.to_csv(os.path.join(path_data, 'muts_df.csv'))
+# df = pd.concat([ 
+#     pd.read_csv(v, index_col=0).assign(
+#         sample=k[0], filtering=k[1], solver=k[2], metric=k[3]
+#     )
+#     for k, v in get_files_l(os.path.join(path_data), pattern='mut', from_tokey=4).items()
+# ])
+# df.to_csv(os.path.join(path_data, 'muts_df.csv'))
 
 # Clones outputs
-df = pd.concat([ 
-    pd.read_csv(v, index_col=0).assign(
-        sample=k[0], filtering=k[1], solver=k[2], metric=k[3]
-    )
-    for k, v in get_files_l(os.path.join(path_data), pattern='clone', from_tokey=4).items()
-])
-df.to_csv(os.path.join(path_data, 'clones_df.csv'))
+# df = pd.concat([ 
+#     pd.read_csv(v, index_col=0).assign(
+#         sample=k[0], filtering=k[1], solver=k[2], metric=k[3]
+#     )
+#     for k, v in get_files_l(os.path.join(path_data), pattern='clone', from_tokey=4).items()
+# ])
+# df.to_csv(os.path.join(path_data, 'clones_df.csv'))
 
 
 ##

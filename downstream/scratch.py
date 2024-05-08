@@ -27,7 +27,26 @@ path_tmp = os.path.join(path_main, 'results', 'phylo', 'downstream_files')
 
 # Load afm and filter with GT
 afm = read_one_sample(path_data, sample, with_GBC=True)
+
+
+pd.Series((~np.isnan(afm.X)).sum(axis=1)/afm.X.shape[1]).describe()
+
+
+X = filter_baseline(afm).X
+sns.kdeplot((X>0).sum(axis=0))
+plt.show()
+
+
+
+
+sns.histplot(, bins=1000)
+plt.show()
+
+import matplotlib
+matplotlib.use('macOSX')
+
 a_cells, a = filter_cells_and_vars(afm, filtering='MQuad', path_=os.getcwd())
+
 
 a = nans_as_zeros(a)
 AD, DP, ad_vars = get_AD_DP(a)
