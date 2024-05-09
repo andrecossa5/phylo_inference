@@ -58,7 +58,7 @@ workflow FILTER_VARIANTS {
             .combine(params.high_confidence_af)
             .combine(params.min_prevalence_low_confidence_af)
             .combine(params.min_cells_high_confidence_af)
-            .filter { it -> it[6] >= 10 * it[5] }      
+            .filter { it -> it[6] > it[5] }      
             .map { it -> 
                 def result = [counter++, *it] 
                 result 
