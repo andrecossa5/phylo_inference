@@ -1,0 +1,14 @@
+dir_path = /Users/IEO5505/mambaforge/envs/MI_TO/lib/python3.10/site-packages/cassiopeia/tools/fitness_estimator
+Create the full cell x MT-SNV Allele Frequency Matrix (AFM)...
+Valid cells: 3558
+Filtered cells (i.e., mean MT-genome coverage >=25 and <=123.31): 2872
+Compute general dataset metrics...
+Compute vars_df as in Weng et al., 2024
+Filter MT-SNVS from the full AFM...
+Feature selection method: weng2024
+Original AFM n cells: 2872 and 49708 MT-SNVs.
+Filtered AFM contains 2872 cells and 7457 MT-SNVs.
+Chosen solver: UPMGA
+pair_d arguments: metric=jaccard, t=0.01, ncores=4.
+Job finished: 2.91 min
+

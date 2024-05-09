@@ -2,13 +2,42 @@
 
 // Include here
 nextflow.enable.dsl = 2
-include { FILTER } from "./modules/filter_with_metrics.nf"
+include { FILTER_AFM } from "./modules/filter_afm.nf"
 
 // 
  
 //----------------------------------------------------------------------------//
 // FILTER_VARIANTS subworkflow
 //----------------------------------------------------------------------------//
+
+
+// Collapse
+process collapse_output {
+
+    tag "${sample}_${type}"
+    publishDir "${params.outdir}/${sample}", mode: 'copy'
+
+    input:
+        tuple val(sample), val(type), path(files)
+
+    output:
+        tuple val(sample), val(type), path("${sample}_${type}.csv"), emit: csv 
+
+    script:
+    """
+    outfile="${sample}_${type}.csv"
+    files=(${files})
+    cat "\${files[0]}" > \$outfile
+    for f in "\${files[@]:1}"; do
+        tail -n +2 "\$f" >> \$outfile
+    done
+    """
+
+}
+
+
+//
+
 
 // FILTER_VARIANTS subworkflow
 workflow FILTER_VARIANTS {
@@ -18,7 +47,7 @@ workflow FILTER_VARIANTS {
 
     main:
 
-        // Prep each job input
+        // Run each AFM filtering job
         def counter = 1 
         ch_jobs = ch_samples
             .combine(params.min_site_cov)
@@ -29,17 +58,27 @@ workflow FILTER_VARIANTS {
             .combine(params.high_confidence_af)
             .combine(params.min_prevalence_low_confidence_af)
             .combine(params.min_cells_high_confidence_af)
-            .filter { it -> it[6] > 10 * it[5] }      
+            .filter { it -> it[6] >= 10 * it[5] }      
             .map { it -> 
                 def result = [counter++, *it] 
                 result 
             }
-  
-        // Run each job 
-        FILTER(ch_jobs)
+        FILTER_AFM(ch_jobs)
+
+        // Collapse outputs
+        ch_grouped = FILTER_AFM.out.stats
+            .groupTuple(by: 0)
+            .flatMap { sample, jobPaths, datasetPaths, varsPaths ->
+                [
+                    [sample, 'job', jobPaths],
+                    [sample, 'dataset', datasetPaths],
+                    [sample, 'vars', varsPaths]
+                ]
+            }
+        collapse_output(ch_grouped)
             
     emit:
-        // results = FILTER.out.stats
-        results = ch_jobs
+        results = collapse_output.out.csv
+        // results = FILTER_AFM.out.stats
 
 }

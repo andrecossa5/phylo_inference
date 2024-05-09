@@ -22,7 +22,7 @@ ch_samples = Channel
 workflow muts {
 
     FILTER_VARIANTS(ch_samples)
-    // FILTER_VARIANTS.out.results | view
+    FILTER_VARIANTS.out.results | view
 
 }
 

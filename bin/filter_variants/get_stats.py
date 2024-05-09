@@ -226,7 +226,7 @@ def main():
     t = Timer()
     t.start()
 
-    vars_df, dataset_df, _ = filter_cells_and_vars(
+    _, dataset_df, a = filter_cells_and_vars(
         afm, 
         filtering='weng2024', 
         filtering_kwargs=filtering_kwargs,
@@ -236,11 +236,9 @@ def main():
         fit_mixtures=False, 
         path_priors=path_priors
     )
-    vars_df.assign(job_id=f'job_{job_id}').to_csv('vars_df.csv')
-    dataset_df.assign(job_id=f'job_{job_id}').to_csv('dataset_df.csv')
-    job_params = ','.join([f'job_{job_id}'] + list(filtering_kwargs.values()))
-    with open('job_df.csv', 'w') as f:
-        f.write(job_params)
+    a.var.assign(job_id=f'job_{job_id}', sample=sample_name).to_csv(f'{job_id}_vars_df.csv')
+    dataset_df.assign(job_id=f'job_{job_id}', sample=sample_name).to_csv(f'{job_id}_dataset_df.csv')
+    pd.Series(filtering_kwargs).to_frame().T.assign(job_id=f'job_{job_id}', sample=sample_name).to_csv(f'{job_id}_job_df.csv')
 
     print(f'Job finished: {t.stop()}\n')
 

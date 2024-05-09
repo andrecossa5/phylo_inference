@@ -2,7 +2,7 @@
 
 nextflow.enable.dsl = 2
 
-process FILTER {
+process FILTER_AFM {
 
     tag "${sample}:job_${id}"
 
@@ -20,13 +20,15 @@ process FILTER {
     
     output:
     tuple val(sample), 
-        path('dataset_df.csv'),
-        path('vars_df.csv'), emit: stats
+        path("${id}_job_df.csv"),
+        path("${id}_dataset_df.csv"),
+        path("${id}_vars_df.csv"), emit: stats
     
     script:
     """
     python ${baseDir}/bin/filter_variants/get_stats.py \
     --path_data ${params.path_data} \
+    --sample_name ${sample} \
     --min_site_cov ${min_site_cov} \
     --min_var_quality ${min_var_quality} \
     --min_frac_negative ${min_frac_negative} \
@@ -38,7 +40,7 @@ process FILTER {
     --lineage_column ${params.lineage_column} \
     --solver ${params.solver} \
     --metric ${params.metric} \
-    --ncores ${task.ncpus} \
+    --ncores ${task.cpus} \
     --path_priors ${params.path_priors} \
     --path_meta ${params.path_meta} \
     --job_id ${id}
@@ -46,9 +48,9 @@ process FILTER {
 
     stub:
     """
-    touch job_df.csv
-    touch dataset_df.csv
-    touch vars_df.csv
+    touch "${id}_job_df.csv"
+    touch "${id}_dataset_df.csv"
+    touch "${id}_vars_df.csv"
     """
 
 }
