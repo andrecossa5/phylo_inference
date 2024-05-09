@@ -1,6 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	97/934d08	23341	muts:FILTER_VARIANTS:FILTER_AFM (sAML1:job_1)	COMPLETED	0	2024-05-09 12:06:41.742	3m 52s	3m 52s	-	-	-	-	-
-2	a0/4d639b	23347	muts:FILTER_VARIANTS:FILTER_AFM (sAML1:job_2)	COMPLETED	0	2024-05-09 12:06:41.756	3m 53s	3m 53s	-	-	-	-	-
-4	eb/145753	27442	muts:FILTER_VARIANTS:collapse_output (sAML1_dataset)	COMPLETED	0	2024-05-09 12:10:34.326	79ms	13ms	-	-	-	-	-
-3	8d/358886	27444	muts:FILTER_VARIANTS:collapse_output (sAML1_job)	COMPLETED	0	2024-05-09 12:10:34.331	102ms	13ms	-	-	-	-	-
-5	1a/898363	27448	muts:FILTER_VARIANTS:collapse_output (sAML1_vars)	COMPLETED	0	2024-05-09 12:10:34.339	97ms	24ms	-	-	-	-	-

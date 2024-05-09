@@ -1,1 +1,0 @@
-2024-05-09 12:06:39	3m 56s	sharp_moriondo	OK	417402a4662efa6e54fb1637607740b5	2a9c066d-eb77-418f-9d4b-e3ef16b6263c	nextflow run main.nf -entry muts -c config/nextflow.config -params-file params/params_muts_small.json -profile conda_local
