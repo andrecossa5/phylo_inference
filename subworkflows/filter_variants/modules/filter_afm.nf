@@ -38,6 +38,7 @@ process FILTER_AFM {
     --lineage_column ${params.lineage_column} \
     --solver ${params.solver} \
     --metric ${params.metric} \
+    --spatial_metrics ${params.spatial_metrics} \
     --ncores ${task.cpus} \
     --path_priors ${params.path_priors} \
     --path_meta ${params.path_meta} \

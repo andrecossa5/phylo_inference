@@ -78,7 +78,7 @@ my_parser.add_argument(
 # obs_tree
 my_parser.add_argument(
     '--min_n_confidently_detected', 
-    type=float,
+    type=int,
     default=2,
     help='Min min n cells with a confidently detected mutation. Default: 2'
 )
@@ -87,7 +87,7 @@ my_parser.add_argument(
 # min_cells_high_confidence_af
 my_parser.add_argument(
     '--min_median_af', 
-    type=int,
+    type=float,
     default=.025,
     help='Min n median AF in positive cells for the mutation. Default: 0.025'
 )
@@ -142,6 +142,14 @@ my_parser.add_argument(
 
 # path_priors
 my_parser.add_argument(
+    '--spatial_metrics', 
+    type=str,
+    default="False",
+    help='Do or do not compute spatial metrics. Default: False.'
+)
+
+# path_priors
+my_parser.add_argument(
     '--job_id', 
     type=int,
     default=None,
@@ -170,6 +178,7 @@ ncores = args.ncores
 path_meta = args.path_meta
 path_priors = args.path_priors
 job_id = args.job_id
+spatial_metrics = args.spatial_metrics
 
 
 ##
@@ -224,7 +233,7 @@ def main():
         filtering_kwargs=filtering_kwargs,
         tree_kwargs=tree_kwargs,
         lineage_column=lineage_column,
-        spatial_metrics=True, 
+        spatial_metrics=False if spatial_metrics == "False" else True, 
         fit_mixtures=False, 
         path_priors=path_priors
     )

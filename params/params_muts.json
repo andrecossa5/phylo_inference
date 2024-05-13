@@ -10,6 +10,7 @@
     "af_confident_detection" : [0.01, 0.05, 0.1],
     "min_n_confidently_detected": [2, 5, 10], 
     "min_median_af" : [0.01],
+    "spatial_metrics" : "False",
     "lineage_column" : "malignant_class_occupancy",
     "metric" : "jaccard", 
     "solver" : "UPMGA", 
