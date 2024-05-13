@@ -54,11 +54,9 @@ workflow FILTER_VARIANTS {
             .combine(params.min_var_quality)
             .combine(params.min_frac_negative)
             .combine(params.min_n_positive)
-            .combine(params.low_confidence_af)
-            .combine(params.high_confidence_af)
-            .combine(params.min_prevalence_low_confidence_af)
-            .combine(params.min_cells_high_confidence_af)
-            .filter { it -> it[6] > it[5] }      
+            .combine(params.af_confident_detection)
+            .combine(params.min_n_confidently_detected)
+            .combine(params.min_median_af)    
             .map { it -> 
                 def result = [counter++, *it] 
                 result 
@@ -79,6 +77,5 @@ workflow FILTER_VARIANTS {
             
     emit:
         results = collapse_output.out.csv
-        // results = FILTER_AFM.out.stats
 
 }

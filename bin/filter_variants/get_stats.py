@@ -69,34 +69,27 @@ my_parser.add_argument(
 
 # boot_trees
 my_parser.add_argument(
-    '--low_confidence_af', 
+    '--af_confident_detection', 
     type=float,
-    default=.01,
-    help='AF value considered as "low confidence" detection. Default: .01'
-)
-
-# boot_trees
-my_parser.add_argument(
-    '--high_confidence_af', 
-    type=float,
-    default=.1,
-    help='AF value considered as "high confidence" detection. Default: .1'
+    default=.05,
+    help='AF value considered as "high confidence" detection. Default: .05'
 )
 
 # obs_tree
 my_parser.add_argument(
-    '--min_prevalence_low_confidence_af', 
+    '--min_n_confidently_detected', 
     type=float,
-    default=.01,
-    help='Min prevalence of the muts, detected at AF >= low_confidence_af. Default: .01'
+    default=2,
+    help='Min min n cells with a confidently detected mutation. Default: 2'
 )
+
 
 # min_cells_high_confidence_af
 my_parser.add_argument(
-    '--min_cells_high_confidence_af', 
+    '--min_median_af', 
     type=int,
-    default=2,
-    help='Min n cells for which the variant has been detected at AF >= high_confidence_af. Default: 2'
+    default=.025,
+    help='Min n median AF in positive cells for the mutation. Default: 0.025'
 )
 
 # lineage_column
@@ -167,10 +160,9 @@ min_site_cov = args.min_site_cov
 min_var_quality = args.min_var_quality
 min_frac_negative = args.min_frac_negative
 min_n_positive = args.min_n_positive
-low_confidence_af = args.low_confidence_af
-high_confidence_af = args.high_confidence_af
-min_prevalence_low_confidence_af = args.min_prevalence_low_confidence_af
-min_cells_high_confidence_af = args.min_cells_high_confidence_af
+af_confident_detection = args.af_confident_detection
+min_n_confidently_detected = args.min_n_confidently_detected
+min_median_af = args.min_median_af
 lineage_column = args.lineage_column
 solver = args.solver
 metric = args.metric
@@ -211,10 +203,9 @@ def main():
         'min_var_quality' : min_var_quality, 
         'min_frac_negative' : min_frac_negative,
         'min_n_positive' : min_n_positive, 
-        'low_confidence_af' : low_confidence_af,
-        'high_confidence_af' : high_confidence_af, 
-        'min_prevalence_low_confidence_af' : min_prevalence_low_confidence_af,
-        'min_cells_high_confidence_af' : min_cells_high_confidence_af
+        'af_confident_detection' : af_confident_detection,
+        'min_n_confidently_detected' : min_n_confidently_detected,
+        'min_median_af' : min_median_af
     }
     tree_kwargs = {
         'solver' : solver,
@@ -226,9 +217,10 @@ def main():
     t = Timer()
     t.start()
 
-    _, dataset_df, a = filter_cells_and_vars(
+    dataset_df, a = filter_cells_and_vars(
         afm, 
-        filtering='weng2024', 
+        sample_name=sample_name,
+        filtering='MI_TO', 
         filtering_kwargs=filtering_kwargs,
         tree_kwargs=tree_kwargs,
         lineage_column=lineage_column,

@@ -13,10 +13,9 @@ process FILTER_AFM {
         val(min_var_quality),
         val(min_frac_negative),
         val(min_n_positive),
-        val(low_confidence_af),
-        val(high_confidence_af),
-        val(min_prevalence_low_confidence_af),
-        val(min_cells_high_confidence_af)
+        val(af_confident_detection),
+        val(min_n_confidently_detected),
+        val(min_median_af)
     
     output:
     tuple val(sample), 
@@ -33,10 +32,9 @@ process FILTER_AFM {
     --min_var_quality ${min_var_quality} \
     --min_frac_negative ${min_frac_negative} \
     --min_n_positive ${min_n_positive} \
-    --low_confidence_af ${low_confidence_af} \
-    --high_confidence_af ${high_confidence_af} \
-    --min_prevalence_low_confidence_af ${min_prevalence_low_confidence_af} \
-    --min_cells_high_confidence_af ${min_cells_high_confidence_af} \
+    --af_confident_detection ${af_confident_detection} \
+    --min_n_confidently_detected ${min_n_confidently_detected} \
+    --min_median_af ${min_median_af} \
     --lineage_column ${params.lineage_column} \
     --solver ${params.solver} \
     --metric ${params.metric} \
