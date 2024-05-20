@@ -35,61 +35,20 @@ my_parser.add_argument(
     help='Sample name. Default: None.'
 )
 
-# Filtering
+# Path_filtering
 my_parser.add_argument(
-    '--min_site_cov', 
-    type=int,
-    default=5,
-    help='Min mean site coverage. Default: 5.'
+    '--path_filtering', 
+    type=str,
+    default=None,
+    help='Path to variant_filtering .json file. Default: None.'
 )
 
-# Metric
+# Filterin_key
 my_parser.add_argument(
-    '--min_var_quality', 
-    type=int,
-    default=30,
-    help='Min mean base quality of MT-SNV (consensus) UMIs base qualities. Default: 30.'
-)
-
-# Solver
-my_parser.add_argument(
-    '--min_frac_negative', 
-    type=float,
-    default=.9,
-    help='Min fraction of negative cells. Default: .9'
-)
-
-# boot_trees
-my_parser.add_argument(
-    '--min_n_positive', 
-    type=int,
-    default=2,
-    help='Min n of positive cells. Default: 2.'
-)
-
-# boot_trees
-my_parser.add_argument(
-    '--af_confident_detection', 
-    type=float,
-    default=.05,
-    help='AF value considered as "high confidence" detection. Default: .05'
-)
-
-# obs_tree
-my_parser.add_argument(
-    '--min_n_confidently_detected', 
-    type=int,
-    default=2,
-    help='Min min n cells with a confidently detected mutation. Default: 2'
-)
-
-
-# min_cells_high_confidence_af
-my_parser.add_argument(
-    '--min_median_af', 
-    type=float,
-    default=.025,
-    help='Min n median AF in positive cells for the mutation. Default: 0.025'
+    '--filtering_key', 
+    type=str,
+    default=None,
+    help='Key to a variant_filtering combination in the variant_filtering .json file. Default: None.'
 )
 
 # lineage_column
@@ -148,14 +107,6 @@ my_parser.add_argument(
     help='Do or do not compute spatial metrics. Default: False.'
 )
 
-# path_priors
-my_parser.add_argument(
-    '--job_id', 
-    type=int,
-    default=None,
-    help='Job id (numeric): Default: None.'
-)
-
 
 ## 
 
@@ -164,21 +115,15 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 path_data = args.path_data
 sample_name = args.sample_name
-min_site_cov = args.min_site_cov
-min_var_quality = args.min_var_quality
-min_frac_negative = args.min_frac_negative
-min_n_positive = args.min_n_positive
-af_confident_detection = args.af_confident_detection
-min_n_confidently_detected = args.min_n_confidently_detected
-min_median_af = args.min_median_af
+path_filtering = args.path_filtering
+filtering_key = args.filtering_key
 lineage_column = args.lineage_column
 solver = args.solver
 metric = args.metric
+spatial_metrics = args.spatial_metrics
 ncores = args.ncores
 path_meta = args.path_meta
 path_priors = args.path_priors
-job_id = args.job_id
-spatial_metrics = args.spatial_metrics
 
 
 ##
@@ -189,6 +134,7 @@ spatial_metrics = args.spatial_metrics
 # Preparing run: import code
 
 # Code
+import json
 from mito_utils.preprocessing import *
 from mito_utils.utils import *
 import warnings
@@ -205,23 +151,22 @@ def main():
     meta = pd.read_csv(path_meta, index_col=0)
     meta = meta.query('sample_id==@sample_name')
     afm.obs = afm.obs.join(meta)
+    afm = read_one_sample(path_data, sample=sample_name)
 
-    # Prep kwargs
-    filtering_kwargs = {
-        'min_site_cov' : min_site_cov,
-        'min_var_quality' : min_var_quality, 
-        'min_frac_negative' : min_frac_negative,
-        'min_n_positive' : min_n_positive, 
-        'af_confident_detection' : af_confident_detection,
-        'min_n_confidently_detected' : min_n_confidently_detected,
-        'min_median_af' : min_median_af
-    }
-    tree_kwargs = {
-        'solver' : solver,
-        'metric' : metric,
-        'ncores' : ncores,
-        't' : af_confident_detection
-    }
+    # Prep filtering kwargs
+    with open(path_filtering, 'r') as file:
+        FILTERING_OPTIONS = json.load(file)
+
+    if filtering_key in FILTERING_OPTIONS:
+        d = FILTERING_OPTIONS[filtering_key]
+        filtering = d['filtering']
+        filtering_kwargs = d['filtering_kwargs'] if 'filtering_kwargs' in d else {}
+    else:
+        raise KeyError(f'{filtering_key} not in {path_filtering}!')
+
+    # Prep tree_kwargs
+    af_confident_detection = filtering_kwargs['af_confident_detection'] if 'af_confident_detection' in filtering_kwargs else .05
+    tree_kwargs = { 'solver' : solver, 'metric' : metric, 'ncores' : ncores, 't' : af_confident_detection }
 
     # Run
     t = Timer()
@@ -230,17 +175,17 @@ def main():
     dataset_df, a = filter_cells_and_vars(
         afm, 
         sample_name=sample_name,
-        filtering='MI_TO', 
+        filtering=filtering, 
         filtering_kwargs=filtering_kwargs,
         tree_kwargs=tree_kwargs,
         lineage_column=lineage_column,
         spatial_metrics=False if spatial_metrics == "False" else True, 
-        fit_mixtures=False, 
+        fit_mixtures=True, 
         path_priors=path_priors
     )
-    a.var.assign(job_id=f'job_{job_id}', sample=sample_name).to_csv(f'{job_id}_vars_df.csv')
-    dataset_df.assign(job_id=f'job_{job_id}', sample=sample_name).to_csv(f'{job_id}_dataset_df.csv')
-    pd.Series(filtering_kwargs).to_frame().T.assign(job_id=f'job_{job_id}', sample=sample_name).to_csv(f'{job_id}_job_df.csv')
+    a.var.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_vars_df.csv')
+    dataset_df.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_dataset_df.csv')
+    pd.Series(filtering_kwargs).to_frame().T.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_job_df.csv')
 
     print(f'Job finished: {t.stop()}\n')
 

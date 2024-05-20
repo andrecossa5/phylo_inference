@@ -21,7 +21,7 @@ process FILTER_AFM {
     --path_data ${params.path_data} \
     --sample_name ${sample} \
     --path_filtering ${params.path_filtering} \
-    --filtering_key ${filtering_key}
+    --filtering_key ${filtering_key} \
     --lineage_column ${params.lineage_column} \
     --solver ${params.solver} \
     --metric ${params.metric} \
