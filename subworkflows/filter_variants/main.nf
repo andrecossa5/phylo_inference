@@ -3,6 +3,7 @@
 // Include here
 nextflow.enable.dsl = 2
 include { FILTER_AFM } from "./modules/filter_afm.nf"
+include { collapse_output } from "./modules/collapse_output.nf"
 
 // 
  
@@ -10,36 +11,6 @@ include { FILTER_AFM } from "./modules/filter_afm.nf"
 // FILTER_VARIANTS subworkflow
 //----------------------------------------------------------------------------//
 
-
-// Collapse
-process collapse_output {
-
-    tag "${sample}_${type}"
-    publishDir "${params.outdir}/${sample}", mode: 'copy'
-
-    input:
-        tuple val(sample), val(type), path(files)
-
-    output:
-        tuple val(sample), val(type), path("${sample}_${type}.csv"), emit: csv 
-
-    script:
-    """
-    outfile="${sample}_${type}.csv"
-    files=(${files})
-    cat "\${files[0]}" > \$outfile
-    for f in "\${files[@]:1}"; do
-        tail -n +2 "\$f" >> \$outfile
-    done
-    """
-
-}
-
-
-//
-
-
-// FILTER_VARIANTS subworkflow
 workflow FILTER_VARIANTS {
     
     take:
@@ -47,21 +18,11 @@ workflow FILTER_VARIANTS {
 
     main:
 
-        // Run each AFM filtering job
-        def counter = 1 
-        ch_jobs = ch_samples
-            .combine(params.min_site_cov)
-            .combine(params.min_var_quality)
-            .combine(params.min_frac_negative)
-            .combine(params.min_n_positive)
-            .combine(params.af_confident_detection)
-            .combine(params.min_n_confidently_detected)
-            .combine(params.min_median_af)    
-            .map { it -> 
-                def result = [counter++, *it] 
-                result 
-            }
-        FILTER_AFM(ch_jobs)
+        // Variants filtering
+        ch_filtering = Channel.fromPath(params.path_filtering)
+                        .map { file -> new groovy.json.JsonSlurper().parse(file).keySet() }
+                        .flatMap()
+        FILTER_AFM(ch_samples.combine(ch_filtering))
 
         // Collapse outputs
         ch_grouped = FILTER_AFM.out.stats
