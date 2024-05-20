@@ -22,7 +22,7 @@ ch_samples = Channel
 workflow muts {
 
     FILTER_VARIANTS(ch_samples)
-    FILTER_VARIANTS.out.results | view
+    FILTER_VARIANTS.out.results.view()
 
 }
 
@@ -33,11 +33,12 @@ workflow muts {
 workflow phylo {
 
     PREPROCESSING(ch_samples)
-    BUILD_TREE(PREPROCESSING.out.ch_input)
-    EVALUATE_TREE(
-        BUILD_TREE.out.ch_tree, 
-        PREPROCESSING.out.original_input
-    )
+    BUILD_TREE(PREPROCESSING.out.boot_input)
+    BUILD_TREE.out.ch_tree.view()
+    // EVALUATE_TREE(
+    //     BUILD_TREE.out.ch_tree, 
+    //     PREPROCESSING.out.original_input
+    // )
 
 }
 

@@ -1,9 +1,0 @@
-{
-    "path_data" : "/Users/IEO5505/Desktop/mito_bench/data/",
-    "outdir" : "/Users/IEO5505/Desktop/mito_bench/results/phylo/output/",
-    "filtering" : ["miller2022"],
-    "metric" : ["cosine", "correlation", "jaccard", "hamming"],
-    "solver" : ["NJ", "UPMGA", "max_cut", "greedy", "RamXL", "SCITE"],
-    "boot_strategy" : ["counts_resampling", "feature_resampling", "jacknife"],
-    "n_boot" : 10
-}

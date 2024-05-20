@@ -36,12 +36,20 @@ my_parser.add_argument(
     help='Bootstarpping strategy. Default: jacknife.'
 )
 
-# Treshold_calling
+# Path meta
 my_parser.add_argument(
-    '--treshold_calling', 
-    type=float,
-    default=0.025,
-    help='Treshold for variant allele calling. Default: .025.'
+    '--path_filtering', 
+    type=str,
+    default=None,
+    help='Path to filtering_options.csv file. Default: None .'
+)
+
+# Sample
+my_parser.add_argument(
+    '--filtering_key', 
+    type=str,
+    default='weng2024',
+    help='Filtering option in filtering_options.yml. Default: weng2024.'
 )
 
 # Parse arguments
@@ -49,11 +57,8 @@ args = my_parser.parse_args()
 
 path_i = args.path_data
 method = args.method
-t = args.treshold_calling
-
-# path_i = '/Users/IEO5505/Desktop/MI_TO/scratch/input_folder'
-# method ='jacknife'
-# t = .025
+path_filtering = args.path_filtering
+filtering_key = args.filtering_key
 
 
 ##
@@ -64,7 +69,7 @@ t = args.treshold_calling
 # Preparing run: import code, prepare directories
 
 # Code
-import sys
+import json
 from scipy.sparse import load_npz, save_npz, csr_matrix
 from anndata import AnnData
 from mito_utils.phylo import *
@@ -104,6 +109,18 @@ def main():
         var=pd.DataFrame(index=variants), 
         dtype=np.float16
     )
+
+    # Read t, if available
+    with open(path_filtering, 'r') as file:
+        FILTERING_OPTIONS = json.load(file)
+
+    if filtering_key in FILTERING_OPTIONS:
+        d = FILTERING_OPTIONS[filtering_key]
+        t = d['t'] if 't' in d else .05
+    else:
+        raise KeyError(f'{filtering_key} not in {path_filtering}!')
+    
+    # Covert to .fasta and write
     seqs = AFM_to_seqs(afm, t=t)
     with open('sequences.fasta', 'w') as f:
         for k in seqs:

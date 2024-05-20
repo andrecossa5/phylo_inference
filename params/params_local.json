@@ -1,0 +1,12 @@
+{
+    "path_data" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/samples",
+    "path_meta" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/meta/cells_meta.csv",
+    "path_filtering" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/vars_df/filtering_options.json",
+    "path_priors" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/vars_df/priors.csv",
+    "outdir" : "/Users/IEO5505/Desktop/mito_bench/results/phylo/output",
+    "metric" : ["jaccard"],
+    "solver" : ["NJ", "UPMGA", "greedy"],
+    "boot_strategy" : ["feature_resampling", "jacknife"],
+    "n_boot" : 10
+}
+

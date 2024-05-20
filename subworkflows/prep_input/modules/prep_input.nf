@@ -6,25 +6,27 @@ nextflow.enable.dsl = 2
 
 process PREP_INPUT {
 
-    tag "${sample}_${filtering}"
+    tag "${sample}: ${filtering_key}"
 
     // Publish
-    publishDir "${params.outdir}/${sample}/${filtering}/", mode: 'copy'
+    publishDir "${params.outdir}/${sample}/${filtering_key}/", mode: 'copy'
 
     input:
-    tuple val(sample), val(filtering)
+    tuple val(sample), val(filtering_key)
 
     output:
-    tuple val(sample), val(filtering), path(input_folder), emit: input_folder
+    tuple val(sample), val(filtering_key), path(input_folder), emit: input_folder
     
     script:
     """
     python ${baseDir}/bin/prep_input/prep_input.py \
-    -p ${params.path_data} \
+    --path_data ${params.path_data} \
+    --path_meta ${params.path_meta} \
+    --path_priors ${params.path_priors} \
+    --path_filtering ${params.path_filtering} \
+    --filtering_key ${filtering_key}
     --sample ${sample} \
-    --ncores ${task.cpus} \
-    --filtering ${filtering} \
-    --GT_reference ${params.GT_reference}
+    --ncores ${task.cpus}
     """
 
     stub:

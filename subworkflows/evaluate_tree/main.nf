@@ -35,8 +35,7 @@ workflow EVALUATE_TREE {
 
         // Build observed trees
         cassiopeia_solvers = [
-            "NJ", "UPMGA", "max_cut", "greedy", 
-            "spectral", "shared_muts"
+            "NJ", "UPMGA", "max_cut", "greedy", "spectral", "shared_muts"
         ]
 
         // Distances

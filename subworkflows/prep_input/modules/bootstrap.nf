@@ -5,27 +5,29 @@ nextflow.enable.dsl = 2
 
 process BOOTSTRAP {
 
-    tag "${sample}_${filtering}_${boot_option}_${boot_replicate}"
+    tag "${sample}: ${filtering_key}, ${boot_method}, n=${boot_replicate}"
 
     input:
     tuple val(sample), 
-        val(filtering), 
-        val(boot_option),
-        val(boot_replicate), 
-        path(input_folder)
+        val(filtering_key), 
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate)
     
     output:
     tuple val(sample), 
-        val(filtering), 
-        val(boot_option),
-        val(boot_replicate),  
-        path(bootstrapped_input), emit: bootstrapped_input
+        val(filtering_key),
+        path(bootstrapped_input),
+        val(boot_method),
+        val(boot_replicate), emit: bootstrapped_input
     
     script:
     """
     python ${baseDir}/bin/prep_input/bootstrap.py \
     -p ${input_folder} \
-    --method ${boot_option} 
+    --method ${boot_method} 
+    --path_filtering ${params.path_filtering} \
+    --filtering_key ${filtering_key}
     """
 
     stub:

@@ -4,22 +4,23 @@ nextflow.enable.dsl = 2
 // Module
 process CALC_DISTANCES {
 
-    tag "${sample}_${filtering}_${metric}_${boot_option}_${boot_replicate}"
+    tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, n=${boot_replicate}"
 
-    input: 
+    input:
     tuple val(sample), 
-        val(filtering), 
-        val(boot_option),
-        val(boot_replicate), 
-        val(metric),
-        path(bootstrapped_input)
+        val(filtering_key), 
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate),
+        val(solver)
 
     output:
     tuple val(sample), 
-        val(filtering), 
-        val(boot_option),
-        val(boot_replicate), 
-        val(metric),
+        val(filtering_key), 
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate),
+        val(solver),
         path("dist.npz"), emit: dist
     
     script:
@@ -27,6 +28,8 @@ process CALC_DISTANCES {
     python ${baseDir}/bin/build_tree/calculate_distances.py \
     -p ${bootstrapped_input} \
     --metric ${metric} \
+    --path_filtering ${params.path_filtering} \
+    --filtering_key ${filtering_key}
     --ncores ${task.cpus}
     """
 

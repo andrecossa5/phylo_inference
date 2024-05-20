@@ -219,7 +219,8 @@ def main():
     tree_kwargs = {
         'solver' : solver,
         'metric' : metric,
-        'ncores' : ncores 
+        'ncores' : ncores,
+        't' : af_confident_detection
     }
 
     # Run

@@ -109,7 +109,7 @@ def main():
         variants = pd.read_csv(
             os.path.join(path_data, 'variants.csv'), index_col=0, header=None
         )
-    else:
+    else: 
         AD = load_npz(os.path.join(path_data, 'AD.npz')).astype(np.int16).A
         DP = load_npz(os.path.join(path_data, 'DP.npz')).astype(np.int16).A
         cells = pd.read_csv(

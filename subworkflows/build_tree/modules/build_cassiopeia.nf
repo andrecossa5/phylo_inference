@@ -5,35 +5,37 @@ nextflow.enable.dsl = 2
 
 process BUILD_CASSIOPEIA {
 
-    tag "${sample}_${filtering}_${boot_option}_${boot_replicate}_${solver}_${metric}"
+    tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, n=${boot_replicate}"
 
     input: 
     tuple val(sample), 
-        val(filtering), 
-        val(boot_option),
-        val(boot_replicate), 
-        val(metric),
+        val(filtering_key), 
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate),
         val(solver),
-        path(bootstrap_input),
         path(dist)
 
     output:
     tuple val(sample), 
-        val(filtering), 
-        val(boot_option),
-        val(boot_replicate), 
+        val(filtering_key), 
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate),
         val(solver),
-        val(metric),
+        path(dist),
         path("rep${boot_replicate}.newick"), emit: tree
     
     script:
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
-    -p ${bootstrap_input} \
+    -p ${input_folder} \
     -d ${dist} \
     --solver ${solver} \
     --name rep${boot_replicate} \
     --ncores ${task.cpus} 
+    --path_filtering ${params.path_filtering} \
+    --filtering_key ${filtering_key}
     """
 
     stub:
