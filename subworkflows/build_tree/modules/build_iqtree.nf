@@ -1,9 +1,8 @@
-// BUILD_CASSIOPEIA module
+// BUILD_IQTREE module
 
 nextflow.enable.dsl = 2
 
-
-process BUILD_CASSIOPEIA {
+process BUILD_IQTREE {
 
     tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, n=${boot_replicate}"
 
@@ -28,14 +27,8 @@ process BUILD_CASSIOPEIA {
     
     script:
     """
-    python ${baseDir}/bin/build_tree/build_cassiopeia.py \
-    -p ${input_folder} \
-    -d ${dist} \
-    --solver ${solver} \
-    --name rep${boot_replicate} \
-    --ncores ${task.cpus} 
-    --path_filtering ${params.path_filtering} \
-    --filtering_key ${filtering_key}
+    iqtree -s ${input_folder}/sequences.fasta 
+    python ${baseDir}/bin/build_tree/iqtree_to_newick.py ${boot_replicate} 
     """
 
     stub:

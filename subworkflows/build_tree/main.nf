@@ -4,7 +4,8 @@
 nextflow.enable.dsl = 2
 include { CALC_DISTANCES } from "./modules/calculate_distances.nf"
 include { BUILD_CASSIOPEIA } from "./modules/build_cassiopeia.nf"
-include { BUILD_RAXML } from "./modules/build_raxml.nf"
+include { BUILD_MPBOOT } from "./modules/build_mpboot.nf"
+include { BUILD_IQTREE } from "./modules/build_iqtree.nf"
 
 // 
  
@@ -33,17 +34,17 @@ workflow BUILD_TREE {
             ch_tree = BUILD_CASSIOPEIA.out.tree
 
         }
-        // else if ( ch_input.map{ it[5] == "raxml"} ) {
-        //     BUILD_RAXML(ch_input)~
-        //     tree = BUILD_RAXML.out.tree
-        // }
-        // else if ( ch_input.map{ it[5] == "SCITE"} ) {
-        //     BUILD_SCITE(ch_input)
-        //     tree = BUILD_SCITE.out.tree
-        // }
-        // else {
-        //     error "Invalid solver: ${solver}"
-        // }
+        else if ( ch_input.map{ it[5] == "iqtree"} ) {
+            BUILD_IQTREE(ch_input)
+            ch_tree = BUILD_IQTREE.out.tree
+        }
+        else if ( ch_input.map{ it[5] == "MPBoot"} ) {
+            BUILD_MPBOOT(ch_input)
+            ch_tree = BUILD_MPBOOT.out.tree
+        }
+        else {
+            error "Invalid solver: ${solver}"
+        }
 
     emit:
 

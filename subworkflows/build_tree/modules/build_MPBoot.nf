@@ -21,7 +21,7 @@ process BUILD_SCITE {
         val(filtering), 
         val(boot_replicate), 
         val(boot_option),
-        val(solver),
+        val(solver), 
         val(metric),
         path("rep${boot_replicate}.newick"), emit: tree
     
