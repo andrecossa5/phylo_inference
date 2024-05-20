@@ -151,7 +151,6 @@ def main():
     meta = pd.read_csv(path_meta, index_col=0)
     meta = meta.query('sample_id==@sample_name')
     afm.obs = afm.obs.join(meta)
-    afm = read_one_sample(path_data, sample=sample_name)
 
     # Prep filtering kwargs
     with open(path_filtering, 'r') as file:
