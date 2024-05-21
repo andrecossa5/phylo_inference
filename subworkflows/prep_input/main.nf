@@ -31,11 +31,14 @@ workflow PREPROCESSING {
         // Bootstrap filtered character matrices
         ch_bootstrap = PREP_INPUT.out.input_folder
                         .combine(params.boot_strategy)
-                        .combine(Channel.of( 1..params.n_boot ))
+                        .combine(
+                            Channel.of( 1..params.n_boot )
+                            .concat(Channel.of( "observed" ))
+                        )
         BOOTSTRAP(ch_bootstrap)
             
     emit:
-        boot_input = BOOTSTRAP.out.bootstrapped_input.combine(params.solver)
-        original_input = PREP_INPUT.out.input_folder
 
-}
+        input = BOOTSTRAP.out.bootstrapped_input.combine(params.solver)
+
+} 

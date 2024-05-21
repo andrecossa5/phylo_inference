@@ -7,13 +7,12 @@ process BUILD_IQTREE {
     tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, n=${boot_replicate}"
 
     input: 
-    tuple val(sample), 
+    tuple val(sample),  
         val(filtering_key),  
         path(input_folder),
         val(boot_method),
         val(boot_replicate),
-        val(solver),
-        path(dist)
+        val(solver)
 
     output:
     tuple val(sample), 
@@ -22,8 +21,7 @@ process BUILD_IQTREE {
         val(boot_method),
         val(boot_replicate),
         val(solver),
-        path(dist),
-        path("rep${boot_replicate}.newick"), emit: tree
+        path("rep_${boot_replicate}.newick"), emit: tree
     
     script:
     """
@@ -33,7 +31,7 @@ process BUILD_IQTREE {
 
     stub:
     """
-    touch rep${boot_replicate}.newick
+    touch rep_${boot_replicate}.newick
     """
 
 }

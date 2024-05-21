@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # Read 
     newick_format_string = load_newick_from_iqtree()
     # Write
-    with open(f'rep{boot_replicate}.newick', 'w') as file:
+    with open(f'rep_{boot_replicate}.newick', 'w') as file:
         file.write(newick_format_string)
 
 

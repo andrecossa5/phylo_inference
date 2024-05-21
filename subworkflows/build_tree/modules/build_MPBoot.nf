@@ -1,38 +1,37 @@
-// BUILD_SCITE module
+// BUILD_IQTREE module
 
 nextflow.enable.dsl = 2
 
-process BUILD_SCITE {
+process BUILD_MPBOOT {
 
-    tag "${sample}_${filtering}_${boot_option}_${boot_replicate}_${solver}_${metric}"
+    tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, n=${boot_replicate}"
 
-    input:
+    input: 
     tuple val(sample), 
-        val(filtering), 
-        path(input_folder), 
-        val(boot_replicate), 
-        val(boot_option),
-        path(bootstrapped_input),
-        val(solver),
-        val(metric)
-    
+        val(filtering_key),  
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate),
+        val(solver)
+
     output:
     tuple val(sample), 
-        val(filtering), 
-        val(boot_replicate), 
-        val(boot_option),
-        val(solver), 
-        val(metric),
-        path("rep${boot_replicate}.newick"), emit: tree
+        val(filtering_key), 
+        path(input_folder),
+        val(boot_method),
+        val(boot_replicate),
+        val(solver),
+        path("rep_${boot_replicate}.newick"), emit: tree
     
     script:
     """
-    echo ${solver} > rep${boot_replicate}.txt
+    mpboot -s ${input_folder}/sequences.fasta
+    mv sequences.fasta.treefile rep_${boot_replicate}.newick
     """
 
     stub:
     """
-    touch rep${boot_replicate}.txt
+    touch rep_${boot_replicate}.newick
     """
 
 }

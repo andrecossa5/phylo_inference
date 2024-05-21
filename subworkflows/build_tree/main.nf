@@ -21,33 +21,30 @@ workflow BUILD_TREE {
     take:
         ch_input  
 
-    main:
+    main: 
 
         // Cassiopeia solvers
         cassiopeia_solvers = ["NJ", "UPMGA", "max_cut", "greedy", "spectral", "shared_muts"]
+        
+        // Run tree building
+        ch_input_tree = ch_input
+            .branch {
+                cassiopeia: it[5] in cassiopeia_solvers
+                iqtree: it[5] == "iqtree"
+                mpboot: it[5] == "MPBoot"
+            }  
+        CALC_DISTANCES(ch_input_tree.cassiopeia)
+        BUILD_CASSIOPEIA(CALC_DISTANCES.out.dist)
+        BUILD_IQTREE(ch_input_tree.iqtree)
+        BUILD_MPBOOT(ch_input_tree.mpboot)
 
-        // Choose tree building method and construct trees
-        if ( ch_input.map{ it[5] in cassiopeia_solvers } ) {
-
-            CALC_DISTANCES(ch_input)
-            BUILD_CASSIOPEIA(CALC_DISTANCES.out.dist)
-            ch_tree = BUILD_CASSIOPEIA.out.tree
-
-        }
-        else if ( ch_input.map{ it[5] == "iqtree"} ) {
-            BUILD_IQTREE(ch_input)
-            ch_tree = BUILD_IQTREE.out.tree
-        }
-        else if ( ch_input.map{ it[5] == "MPBoot"} ) {
-            BUILD_MPBOOT(ch_input)
-            ch_tree = BUILD_MPBOOT.out.tree
-        }
-        else {
-            error "Invalid solver: ${solver}"
-        }
+        // Concat channels
+        ch_tree = BUILD_CASSIOPEIA.out.tree.concat(BUILD_IQTREE.out.tree, BUILD_MPBOOT.out.tree)
 
     emit:
 
         ch_tree = ch_tree
 
 }
+
+

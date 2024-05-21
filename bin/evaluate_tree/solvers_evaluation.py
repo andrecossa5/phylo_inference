@@ -10,10 +10,10 @@ import argparse
 
 # Create the parser
 my_parser = argparse.ArgumentParser(
-    prog='evaluate_II',
+    prog='solvers_evaluation',
     description=
     """
-    Evaluate trees consistency
+    Evaluate trees consistency across methods.
     """
 )
 
@@ -29,7 +29,7 @@ my_parser.add_argument(
 
 # Filtering
 my_parser.add_argument(
-    '--filtering', 
+    '--filtering_key', 
     type=str,
     default=None,
     help='Filtering method. Default: miller2022.'
@@ -67,8 +67,8 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 
 sample_name = args.sample_name
-filtering = args.filtering
-metric_l = args.metric
+filtering_key = args.filtering_key
+metric = args.metric
 solver_l = args.solver
 obs_tree_l = args.obs_tree
 
@@ -101,12 +101,11 @@ def main():
     # Boot trees
     path_list = [ x.replace('[', '').replace(']', '') for x in obs_tree_l.split(', ') ]
     solvers = [ x.replace('[', '').replace(']', '') for x in solver_l.split(', ') ]
-    metrics = [ x.replace('[', '').replace(']', '') for x in metric_l.split(', ') ]
 
-    for path, solver, metric in zip(path_list, solvers, metrics):
+    for path, solver in zip(path_list, solvers):
         with open(path, 'r') as f:
             tree = f.readlines()[0]
-            TREE_D[f'{solver}_{metric}'] = CassiopeiaTree(tree=tree)
+            TREE_D[f'{solver}'] = CassiopeiaTree(tree=tree)
 
     # Compute median RF distance
     L = []
@@ -115,9 +114,9 @@ def main():
         L.append(d/max_d)
     
     # Save
-    s = ','.join([sample_name, filtering, str(np.median(L))])
+    s = ','.join([sample_name, filtering_key, str(np.median(L))])
     with open('results.csv', 'w') as f:
-        f.write(','.join(['sample_name', 'filtering', 'median_RF']))
+        f.write(','.join(['sample_name', 'filtering_key', 'median_RF']))
         f.write('\n')
         f.write(s)
 

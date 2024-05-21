@@ -29,18 +29,18 @@ my_parser.add_argument(
 
 # Filtering
 my_parser.add_argument(
-    '--filtering', 
+    '--filtering_key', 
     type=str,
     default=None,
-    help='Filtering method. Default: miller2022.'
+    help='Filtering_key in filtering_oprions.json. Default: weng2024.'
 )
 
 # Metric
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='cosine',
-    help='Metric used for cell-cell distance matrix computation. Default: cosine.'
+    default='jaccard',
+    help='Metric used for cell-cell distance matrix computation. Default: jaccard.'
 )
 
 # Solver
@@ -49,7 +49,7 @@ my_parser.add_argument(
     type=str,
     default='UPMGA',
     help='''
-    Bootstrap resampling strategy. Default: UPMGA. Other options: 
+    Solver. Default: UPMGA. Other options: 
     NJ, spectral, max_cut, greedy. See Cassiopeia (MW Jones et al., 2020) 
     for docs.
     '''
@@ -57,26 +57,10 @@ my_parser.add_argument(
 
 # boot_trees
 my_parser.add_argument(
-    '--boot_trees', 
-    type=str,
-    default=None,
-    help='String of paths to bootstrap trees to be collected and parsed.'
-)
-
-# boot_trees
-my_parser.add_argument(
     '--boot_method', 
     type=str,
     default=None,
-    help='Bootstrapping method used.'
-)
-
-# boot_trees
-my_parser.add_argument(
-    '--boot_support', 
-    type=str,
-    default=None,
-    help='Support type.'
+    help='Bootstrapping method used. Default: jacknife.'
 )
 
 # obs_tree
@@ -84,20 +68,18 @@ my_parser.add_argument(
     '--obs_tree', 
     type=str,
     default=None,
-    help='Path to observed tree.'
+    help='Path to observed and bootstrapped trees. Default: None'
 )
 
 # Parse arguments
 args = my_parser.parse_args()
 
 sample_name = args.sample_name
-filtering = args.filtering
+filtering_key = args.filtering_key
 metric = args.metric
 solver = args.solver
-boot_support =  args.boot_support
 boot_method = args.boot_method
-boot_trees_s = args.boot_trees
-obs_tree = args.obs_tree
+trees = args.trees
 
 # sample_name = 'MDA_clones'
 # filtering = 'GT'
@@ -126,18 +108,15 @@ def main():
     # Read trees
     TREE_D = {}
 
-    # Boot trees
-    path_list = [ x.replace('[', '').replace(']', '') for x in boot_trees_s.split(', ') ]
+    # Read trees
+    path_list = [ x.replace('[', '').replace(']', '') for x in trees.split(', ') ]
     for x in path_list:
         k = x.split('/')[-1].split('.')[0]
+        if k == 'rep_observed':
+            k = 'observed'
         with open(x, 'r') as f:
             tree = f.readlines()[0]
             TREE_D[k] = CassiopeiaTree(tree=tree)
-    
-    # Observed tree
-    with open(obs_tree, 'r') as f:
-        tree = f.readlines()[0]
-    TREE_D['observed'] = CassiopeiaTree(tree=tree)
 
     # Save trees
     with open('trees.pickle', 'wb') as f:
@@ -174,13 +153,13 @@ def main():
     # Add specifics of the run
     df['median_RF'] = np.median(L)
     df['sample'] = sample_name
-    df['filtering'] = filtering
+    df['filtering_key'] = filtering_key
     df['solver'] = solver
     df['metric'] = metric
     df['bootstrap'] = boot_method
 
     # Save
-    cats = ['sample', 'filtering', 'bootstrap', 'solver', 'metric']
+    cats = ['sample', 'filtering_key', 'bootstrap', 'solver', 'metric']
     conts = ['time', 'n_cells', 'median_RF', 'TBE', 'FBP']
     df[cats+conts].to_csv('extended_supports.csv')
 

@@ -23,8 +23,7 @@ process BUILD_CASSIOPEIA {
         val(boot_method),
         val(boot_replicate),
         val(solver),
-        path(dist),
-        path("rep${boot_replicate}.newick"), emit: tree
+        path("rep_${boot_replicate}.newick"), emit: tree
     
     script:
     """
@@ -32,15 +31,15 @@ process BUILD_CASSIOPEIA {
     -p ${input_folder} \
     -d ${dist} \
     --solver ${solver} \
-    --name rep${boot_replicate} \
-    --ncores ${task.cpus} 
+    --name rep_${boot_replicate} \
+    --ncores ${task.cpus} \
     --path_filtering ${params.path_filtering} \
     --filtering_key ${filtering_key}
     """
 
     stub:
     """
-    touch rep${boot_replicate}.newick
+    touch rep_${boot_replicate}.newick
     """
 
 }

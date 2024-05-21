@@ -36,6 +36,14 @@ my_parser.add_argument(
     help='Bootstarpping strategy. Default: jacknife.'
 )
 
+# Method
+my_parser.add_argument(
+    '--feature_resampling_perc', 
+    type=float,
+    default=.9,
+    help='Percentage of resampled features if method: feature_resampling. Default: feature_resampling.'
+)
+
 # Path meta
 my_parser.add_argument(
     '--path_filtering', 
@@ -52,13 +60,23 @@ my_parser.add_argument(
     help='Filtering option in filtering_options.yml. Default: weng2024.'
 )
 
+# Sample
+my_parser.add_argument(
+    '--boot_replicate', 
+    type=str,
+    default='observed',
+    help='Name of the bootstrapped input. Default: observed.'
+)
+
 # Parse arguments
 args = my_parser.parse_args()
 
 path_i = args.path_data
 method = args.method
+feature_resampling_perc = args.feature_resampling_perc
 path_filtering = args.path_filtering
 filtering_key = args.filtering_key
+boot_replicate = args.boot_replicate
 
 
 ##
@@ -83,12 +101,18 @@ def main():
     AD_original = load_npz(os.path.join(path_i, 'AD.npz')).astype(np.int16)
     DP_original = load_npz(os.path.join(path_i, 'DP.npz')).astype(np.int16)
 
-    if method == 'jacknife':
-        AD_boot, DP_boot, sel_idx = jackknife_allele_tables(AD_original.A, DP_original.A)
-    elif method == 'counts_resampling':
-        AD_boot, DP_boot, sel_idx = bootstrap_allele_counts(AD_original.A, DP_original.A)
-    elif method == 'feature_resampling':
-        AD_boot, DP_boot, sel_idx = bootstrap_allele_tables(AD_original.A, DP_original.A)
+    # Perturn AD and DP, if necessary
+    if 'boot_replicate' != 'observed':
+        if method == 'jacknife':
+            AD_boot, DP_boot, sel_idx = jackknife_allele_tables(AD_original.A, DP_original.A)
+        elif method == 'counts_resampling':
+            AD_boot, DP_boot, sel_idx = bootstrap_allele_counts(AD_original.A, DP_original.A)
+        elif method == 'feature_resampling':
+            AD_boot, DP_boot, sel_idx = bootstrap_allele_tables(AD_original.A, DP_original.A, frac_resampled=feature_resampling_perc)
+    else:
+        AD_boot = AD_original.A
+        DP_boot = DP_original.A
+        sel_idx = [ x for x in np.arange(AD_boot.shape[1]) ]
 
     # Cells and variants
     cells = pd.read_csv(os.path.join(path_i, 'meta.csv'), index_col=0).index

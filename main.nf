@@ -33,12 +33,9 @@ workflow muts {
 workflow phylo {
 
     PREPROCESSING(ch_samples)
-    BUILD_TREE(PREPROCESSING.out.boot_input)
-    BUILD_TREE.out.ch_tree.view()
-    // EVALUATE_TREE(
-    //     BUILD_TREE.out.ch_tree, 
-    //     PREPROCESSING.out.original_input
-    // )
+    BUILD_TREE(PREPROCESSING.out.input)
+    EVALUATE_TREE(BUILD_TREE.out.ch_tree)
+    EVALUATE_TREE.out.results.view()
 
 }
 
