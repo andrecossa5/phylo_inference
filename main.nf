@@ -35,7 +35,7 @@ workflow phylo {
     PREPROCESSING(ch_samples)
     BUILD_TREE(PREPROCESSING.out.input)
     EVALUATE_TREE(BUILD_TREE.out.ch_tree)
-    EVALUATE_TREE.out.results.view()
+    // EVALUATE_TREE.out.results.view()
 
 }
 

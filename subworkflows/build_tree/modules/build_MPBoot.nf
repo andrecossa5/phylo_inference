@@ -1,4 +1,4 @@
-// BUILD_IQTREE module
+// BUILD_MPBOOT module
 
 nextflow.enable.dsl = 2
 
