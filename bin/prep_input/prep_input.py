@@ -80,8 +80,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--lineage_column', 
     type=str,
-    default='GBC',
-    help='Sample to use. Default: GBC.'
+    default=None,
+    help='Sample to use. Default: None.'
 )
 
 # Parse arguments
@@ -120,11 +120,12 @@ def main():
 
     # Read AFM and add metadata
     meta = pd.read_csv(path_meta, index_col=0)
-    meta = meta.query('sample_id==@sample_name')
+    meta = meta.query('sample_id==@sample')
     with_GBC = False
     if lineage_column == 'GBC' and lineage_column in meta.columns:
         with_GBC = True
     afm = read_one_sample(path_data, sample=sample, with_GBC=with_GBC)
+    afm.obs = afm.obs.join(meta)
 
     # Prep filtering kwargs
     with open(path_filtering, 'r') as file:

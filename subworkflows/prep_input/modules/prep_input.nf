@@ -24,9 +24,10 @@ process PREP_INPUT {
     --path_meta ${params.path_meta} \
     --path_priors ${params.path_priors} \
     --path_filtering ${params.path_filtering} \
-    --filtering_key ${filtering_key}
+    --filtering_key ${filtering_key} \
     --sample ${sample} \
-    --ncores ${task.cpus}
+    --n_cores ${task.cpus} \
+    --lineage_column ${params.lineage_column}
     """
 
     stub:

@@ -5,7 +5,7 @@ nextflow.enable.dsl = 2
 
 process BOOTSTRAP {
 
-    tag "${sample}: ${filtering_key}, ${boot_method}, rep ${boot_replicate}"
+    tag "${sample}: ${filtering_key}, ${boot_method}, rep=${boot_replicate}"
 
     input:
     tuple val(sample), 

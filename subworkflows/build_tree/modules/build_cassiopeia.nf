@@ -5,16 +5,15 @@ nextflow.enable.dsl = 2
 
 process BUILD_CASSIOPEIA {
 
-    tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, n=${boot_replicate}"
+    tag "${sample}: ${filtering_key}, ${boot_method}, ${solver}, rep=${boot_replicate}"
 
     input: 
     tuple val(sample), 
-        val(filtering_key),  
+        val(filtering_key), 
         path(input_folder),
         val(boot_method),
         val(boot_replicate),
-        val(solver),
-        path(dist)
+        val(solver)
 
     output:
     tuple val(sample), 
@@ -29,12 +28,16 @@ process BUILD_CASSIOPEIA {
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
     -p ${input_folder} \
-    -d ${dist} \
+    --sample ${sample} \
     --solver ${solver} \
+    --metric ${params.metric} \
     --name rep_${boot_replicate} \
     --ncores ${task.cpus} \
     --path_filtering ${params.path_filtering} \
-    --filtering_key ${filtering_key}
+    --filtering_key ${filtering_key} \
+    --path_meta ${params.path_meta} \
+    --path_priors ${params.path_priors} \
+    --lineage_column ${params.lineage_column}
     """
 
     stub:

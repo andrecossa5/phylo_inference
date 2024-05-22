@@ -65,7 +65,7 @@ my_parser.add_argument(
 
 # obs_tree
 my_parser.add_argument(
-    '--obs_tree', 
+    '--trees', 
     type=str,
     default=None,
     help='Path to observed and bootstrapped trees. Default: None'

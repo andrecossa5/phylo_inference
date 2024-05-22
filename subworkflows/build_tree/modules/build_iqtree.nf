@@ -4,7 +4,7 @@ nextflow.enable.dsl = 2
 
 process BUILD_IQTREE {
 
-    tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, n=${boot_replicate}"
+    tag "${sample}: ${filtering_key}, ${metric}, ${boot_method}, ${solver}, rep=${boot_replicate}"
 
     input: 
     tuple val(sample),  
