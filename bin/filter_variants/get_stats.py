@@ -179,9 +179,9 @@ def main():
         filtering_kwargs=filtering_kwargs,
         tree_kwargs=tree_kwargs,
         lineage_column=lineage_column,
-        spatial_metrics=False if spatial_metrics == "False" else True, 
+        spatial_metrics=True if spatial_metrics == "True" else False, 
         fit_mixtures=True, 
-        path_priors=path_priors
+        path_priors=path_priors if os.path.exists(path_priors) else None 
     )
     a.var.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_vars_df.csv')
     dataset_df.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_dataset_df.csv')
