@@ -149,7 +149,8 @@ def main():
     # Read AFM and add cells meta
     afm = read_one_sample(path_data, sample_name)
     meta = pd.read_csv(path_meta, index_col=0)
-    meta = meta.query('sample_id==@sample_name')
+    sample_col = meta.columns[meta.columns.str.contains('sample')][0]
+    meta = meta.loc[lambda x: meta[sample_col]==sample_name]
     afm.obs = afm.obs.join(meta)
 
     # Prep filtering kwargs
