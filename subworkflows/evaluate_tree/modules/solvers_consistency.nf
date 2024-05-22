@@ -4,7 +4,7 @@ nextflow.enable.dsl = 2
 
 process SOLVERS_CONSISTENCY {
 
-    tag "${sample}_${filtering}"
+    tag "${sample}_${filtering_key}"
 
     // Publish
     publishDir "${params.outdir}/${sample}/${filtering_key}/", mode: 'copy'

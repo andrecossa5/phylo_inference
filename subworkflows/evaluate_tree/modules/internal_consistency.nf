@@ -3,7 +3,7 @@ nextflow.enable.dsl = 2
 
 process INTERNAL_CONSISTENCY {
 
-    tag "${sample}_${filtering}_${boot_option}_${solver}_${metric}"
+    tag "${sample}_${filtering_key}_${boot_method}_${solver}"
 
     // Publish
     publishDir "${params.outdir}/${sample}/${filtering_key}/${solver}/${params.metric}/${boot_method}/", mode: 'copy'
