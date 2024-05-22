@@ -120,12 +120,13 @@ def main():
 
     # Read AFM and add metadata
     meta = pd.read_csv(path_meta, index_col=0)
-    meta = meta.query('sample_id==@sample')
     with_GBC = False
     if lineage_column == 'GBC' and lineage_column in meta.columns:
         with_GBC = True
     afm = read_one_sample(path_data, sample=sample, with_GBC=with_GBC)
-    afm.obs = afm.obs.join(meta)
+    sample_col = meta.columns[meta.columns.str.contains('sample')][0]
+    meta = meta.loc[lambda x: meta[sample_col]==sample]
+    afm.obs = afm.obs.join(meta[[ x for x in meta.columns if x not in afm.obs.columns ]])
 
     # Prep filtering kwargs
     with open(path_filtering, 'r') as file:
@@ -146,7 +147,7 @@ def main():
         nproc=n_cores,
         filtering_kwargs=filtering_kwargs,
         lineage_column=lineage_column,
-        path_priors=path_priors
+        path_priors=path_priors if os.path.exists(path_priors) else None
     )
 
     # Get AD, DP
