@@ -27,7 +27,8 @@ process PREP_INPUT {
     --filtering_key ${filtering_key} \
     --sample ${sample} \
     --n_cores ${task.cpus} \
-    --lineage_column ${params.lineage_column}
+    --lineage_column ${params.lineage_column} \
+    --cell_file ${params.cell_file}
     """
 
     stub:

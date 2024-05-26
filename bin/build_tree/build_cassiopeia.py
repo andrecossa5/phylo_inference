@@ -120,6 +120,13 @@ my_parser.add_argument(
     help='Sample to use. Default: None.'
 )
 
+# Sample
+my_parser.add_argument(
+    '--collapse_mutationless_edges', 
+    type=str,
+    default="True",
+    help='Sample to use. Default: True.'
+)
 
 # Parse arguments
 args = my_parser.parse_args()
@@ -135,6 +142,7 @@ path_filtering = args.path_filtering
 path_meta = args.path_meta
 filtering_key = args.filtering_key
 lineage_column = args.lineage_column
+collapse_mutationless_edges = True if args.collapse_mutationless_edges == "True" else False
 
 ########################################################################
 
@@ -182,6 +190,8 @@ def main():
 
     # Build tree
     tree = build_tree(a, solver=solver, metric=metric, weights=weights, t=t, ncores=ncores)
+    if collapse_mutationless_edges:
+        tree.collapse_mutationless_edges(True)
 
     # Save tree in .netwick format
     with open(f'{name}.newick', 'w') as f:

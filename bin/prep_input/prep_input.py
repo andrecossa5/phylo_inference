@@ -84,6 +84,14 @@ my_parser.add_argument(
     help='Sample to use. Default: None.'
 )
 
+# Sample
+my_parser.add_argument(
+    '--cell_file', 
+    type=str,
+    default="barcodes.txt",
+    help='Sample to use. Default: barcodes.txt.'
+)
+
 # Parse arguments
 args = my_parser.parse_args()
 
@@ -95,6 +103,7 @@ sample = args.sample
 filtering_key = args.filtering_key
 n_cores = args.n_cores
 lineage_column = args.lineage_column
+cell_file = args.cell_file
 
 
 ##
@@ -105,8 +114,8 @@ lineage_column = args.lineage_column
 # Preparing run: import code, prepare directories
 
 # Code
-import json
 from scipy.sparse import save_npz
+from mito_utils.utils import *
 from mito_utils.preprocessing import *
 
 # Paths and dirs
@@ -123,21 +132,13 @@ def main():
     with_GBC = False
     if lineage_column == 'GBC' and lineage_column in meta.columns:
         with_GBC = True
-    afm = read_one_sample(path_data, sample=sample, with_GBC=with_GBC)
+    afm = read_one_sample(path_data, sample=sample, with_GBC=with_GBC, cell_file=cell_file)
     sample_col = meta.columns[meta.columns.str.contains('sample')][0]
     meta = meta.loc[lambda x: meta[sample_col]==sample]
     afm.obs = afm.obs.join(meta[[ x for x in meta.columns if x not in afm.obs.columns ]])
 
-    # Prep filtering kwargs
-    with open(path_filtering, 'r') as file:
-        FILTERING_OPTIONS = json.load(file)
-
-    if filtering_key in FILTERING_OPTIONS:
-        d = FILTERING_OPTIONS[filtering_key]
-        filtering = d['filtering']
-        filtering_kwargs = d['filtering_kwargs'] if 'filtering_kwargs' in d else {}
-    else:
-        raise KeyError(f'{filtering_key} not in {path_filtering}!')
+    # Prep all filtering kwargs
+    filtering, filtering_kwargs, kwargs = process_json(path_filtering, filtering_key)
 
     # Filter variants
     dataset_df, a = filter_cells_and_vars(
@@ -147,7 +148,8 @@ def main():
         nproc=n_cores,
         filtering_kwargs=filtering_kwargs,
         lineage_column=lineage_column,
-        path_priors=path_priors if os.path.exists(path_priors) else None
+        path_priors=path_priors if os.path.exists(path_priors) else None,
+        **kwargs
     )
 
     # Get AD, DP
@@ -171,3 +173,4 @@ if __name__ == "__main__":
     main()
 
 #######################################################################
+
