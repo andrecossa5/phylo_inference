@@ -28,9 +28,8 @@ workflow FILTER_VARIANTS {
         // Collapse outputs
         ch_grouped = FILTER_AFM.out.stats
             .groupTuple(by: 0)
-            .flatMap { sample, jobPaths, datasetPaths, varsPaths ->
+            .flatMap { sample, datasetPaths, varsPaths ->
                 [
-                    [sample, 'job', jobPaths],
                     [sample, 'dataset', datasetPaths],
                     [sample, 'vars', varsPaths]
                 ]
