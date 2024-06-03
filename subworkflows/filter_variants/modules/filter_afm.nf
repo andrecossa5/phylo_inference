@@ -11,7 +11,6 @@ process FILTER_AFM {
     
     output:
     tuple val(sample), 
-        path("${sample}_${filtering_key}_job_df.csv"),
         path("${sample}_${filtering_key}_dataset_df.csv"),
         path("${sample}_${filtering_key}_vars_df.csv"), emit: stats
     tuple val(sample), 
@@ -39,7 +38,6 @@ process FILTER_AFM {
 
     stub:
     """
-    touch "${sample}_${filtering_key}_job_df.csv"
     touch "${sample}_${filtering_key}_dataset_df.csv"
     touch "${sample}_${filtering_key}_vars_df.csv"
     touch "${sample}_${filtering_key}_distances.png"
