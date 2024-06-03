@@ -3,6 +3,7 @@
 // Include here
 nextflow.enable.dsl = 2
 include { FILTER_AFM } from "./modules/filter_afm.nf"
+include { publish_images } from "./modules/publish_plots.nf"
 include { collapse_output } from "./modules/collapse_output.nf"
 
 // 
@@ -35,6 +36,10 @@ workflow FILTER_VARIANTS {
                 ]
             }
         collapse_output(ch_grouped)
+
+        // Publish plots
+        publish_images(FILTER_AFM.out.plots)
+        
             
     emit:
         results = collapse_output.out.csv

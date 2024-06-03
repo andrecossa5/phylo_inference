@@ -14,6 +14,11 @@ process FILTER_AFM {
         path("${sample}_${filtering_key}_job_df.csv"),
         path("${sample}_${filtering_key}_dataset_df.csv"),
         path("${sample}_${filtering_key}_vars_df.csv"), emit: stats
+    tuple val(sample), 
+        val(filtering_key), 
+        path("${sample}_${filtering_key}_distances.png"),
+        path("${sample}_${filtering_key}_tree_raw.png"),
+        path("${sample}_${filtering_key}_tree_muts.png"), emit: plots
     
     script:
     """
@@ -28,7 +33,8 @@ process FILTER_AFM {
     --spatial_metrics ${params.spatial_metrics} \
     --ncores ${task.cpus} \
     --path_priors ${params.path_priors} \
-    --path_meta ${params.path_meta}
+    --path_meta ${params.path_meta} \
+    --cell_file ${params.cell_file}
     """
 
     stub:
@@ -36,6 +42,9 @@ process FILTER_AFM {
     touch "${sample}_${filtering_key}_job_df.csv"
     touch "${sample}_${filtering_key}_dataset_df.csv"
     touch "${sample}_${filtering_key}_vars_df.csv"
+    touch "${sample}_${filtering_key}_distances.png"
+    touch "${sample}_${filtering_key}_tree_raw.png"
+    touch "${sample}_${filtering_key}_tree_muts.png"
     """
 
 }
