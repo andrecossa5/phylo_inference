@@ -132,7 +132,7 @@ metric = args.metric
 spatial_metrics = args.spatial_metrics
 ncores = args.ncores
 path_meta = args.path_meta
-path_priors = args.path_priors
+path_priors = args.path_priors if os.path.exists(args.path_priors) else None
 cell_file = args.cell_file
 
 
@@ -181,7 +181,7 @@ def main():
         filtering_kwargs=filtering_kwargs,
         spatial_metrics=spatial_metrics,
         lineage_column=lineage_column,
-        path_priors=path_priors if os.path.exists(path_priors) else None,
+        path_priors=path_priors,
         **kwargs
     )
 
