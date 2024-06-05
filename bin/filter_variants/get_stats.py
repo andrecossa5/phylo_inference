@@ -216,6 +216,7 @@ def main():
     priors = 1-a.var['prior'].values if 'prior' in a.var.columns else None
     tree = build_tree(a, solver=solver, metric=metric, t=t, weights=priors)
     tree.cell_meta = pd.DataFrame(a.X, index=a.obs_names, columns=muts)
+    corr = calculate_corr_distances(tree)
 
     fig, ax = plt.subplots(figsize=(7,7))
     muts = get_supporting_muts(tree, a, t=t)
@@ -224,6 +225,7 @@ def main():
         colorstrip_spacing=0.0001, colorstrip_width=1.5,
         internal_node_kwargs={'markersize':0}
     )
+    format_ax(ax, title=f'Correlation jaccard vs shortest path distances {corr:.2f}')
     fig.tight_layout()
     fig.savefig(f'{sample_name}_{filtering_key}_tree_muts.png', dpi=1000)
 
