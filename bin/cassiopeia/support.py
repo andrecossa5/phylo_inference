@@ -10,7 +10,7 @@ import argparse
 
 # Create the parser
 my_parser = argparse.ArgumentParser(
-    prog='evaluate_I',
+    prog='support',
     description=
     """
     Evaluate trees consistency

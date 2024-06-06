@@ -1,7 +1,7 @@
-// INTERNAL_CONSISTENCY module
+// SUPPORT module
 nextflow.enable.dsl = 2
 
-process INTERNAL_CONSISTENCY {
+process SUPPORT {
 
     tag "${sample}_${filtering_key}_${boot_method}_${solver}"
 
@@ -27,7 +27,7 @@ process INTERNAL_CONSISTENCY {
 
     script:
     """
-    python ${baseDir}/bin/evaluate_tree/internal_evaluation.py \
+    python ${baseDir}/bin/cassiopeia/support.py \
     --sample_name ${sample} \
     --filtering ${filtering_key} \
     --solver ${solver} \

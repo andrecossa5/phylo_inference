@@ -23,7 +23,7 @@ process BOOTSTRAP {
     
     script:
     """
-    python ${baseDir}/bin/prep_input/bootstrap.py \
+    python ${baseDir}/bin/cassiopeia/bootstrap.py \
     -p ${input_folder} \
     --method ${boot_method} \
     --feature_resampling_perc ${params.feature_resampling_perc} \
