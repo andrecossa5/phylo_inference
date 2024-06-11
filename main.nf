@@ -36,7 +36,7 @@ workflow cassiopeia {
 
     PREPROCESSING(ch_samples)
     CASSIOPEIA(PREPROCESSING.out.input)
-    CASSIOPEIA.out.results.view()
+    CASSIOPEIA.out.tree.view()
     // EVALUATE_TREE.out.results.view()
 
 }

@@ -26,7 +26,7 @@ process BOOTSTRAP {
     python ${baseDir}/bin/cassiopeia/bootstrap.py \
     -p ${input_folder} \
     --method ${boot_method} \
-    --feature_resampling_perc ${params.feature_resampling_perc} \
+    --feature_resampling_perc ${params.cassiopeia_feature_resampling_perc} \
     --path_filtering ${params.path_filtering} \
     --filtering_key ${filtering_key} \
     --boot_replicate ${boot_replicate} 

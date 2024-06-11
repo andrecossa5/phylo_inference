@@ -37,8 +37,7 @@ process BUILD_CASSIOPEIA {
     --filtering_key ${filtering_key} \
     --path_meta ${params.path_meta} \
     --path_priors ${params.path_priors} \
-    --lineage_column ${params.lineage_column} \
-    --collapse_mutationless_edges ${params.collapse_mutationless_edges}
+    --lineage_column ${params.lineage_column}
     """
 
     stub:

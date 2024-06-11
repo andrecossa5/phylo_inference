@@ -23,19 +23,20 @@ workflow CASSIOPEIA {
     main: 
 
         ch_bootstrap = ch_input
-                        .combine(params.boot_strategy)
+                        .combine(params.cassiopeia_boot_strategy)
                         .combine(
-                            Channel.of( 1..params.n_boot )
+                            Channel.of( 1..params.cassiopeia_n_boot )
                             .concat(Channel.of( "observed" ))
                         )
         BOOTSTRAP(ch_bootstrap)
-        BUILD_CASSIOPEIA(BOOTSTRAP.out.bootstrapped_input.combine(params.solver))
+        BUILD_CASSIOPEIA(BOOTSTRAP.out.bootstrapped_input.combine(params.cassiopeia_solvers))
         SUPPORT(BUILD_CASSIOPEIA.out.tree.groupTuple(by: [0,1,3,5]))
-
+ 
     emit:
 
-        results = SUPPORT.out.results
+        tree = SUPPORT.out.tree
 
 }
 
 
+ 

@@ -3,10 +3,10 @@ nextflow.enable.dsl = 2
 
 process SUPPORT {
 
-    tag "${sample}_${filtering_key}_${boot_method}_${solver}"
+    tag "${sample}: ${filtering_key}, ${boot_method}, ${solver}"
 
     // Publish
-    publishDir "${params.outdir}/${sample}/${filtering_key}/${solver}/${params.metric}/${boot_method}/", mode: 'copy'
+    publishDir "${params.outdir}/${sample}/${filtering_key}/${solver}/", mode: 'copy'
 
     input:
     tuple val(sample), 
@@ -20,26 +20,21 @@ process SUPPORT {
     output:
     tuple val(sample), 
         val(filtering_key), 
-        val(boot_method),
         val(solver),
-        path('trees.pickle'),
-        path('extended_supports.csv'), emit: results
+        path("${filtering_key}_${solver}_tree.newick"), emit: tree
 
     script:
     """
     python ${baseDir}/bin/cassiopeia/support.py \
-    --sample_name ${sample} \
-    --filtering ${filtering_key} \
+    --filtering_key ${filtering_key} \
     --solver ${solver} \
-    --metric ${params.metric} \
-    --boot_method ${boot_method} \
-    --trees "${trees}"
+    --trees "${trees}" \
+    --n_cores ${task.cpus}
     """
 
     stub:
     """
-    touch trees.pickle
-    touch extended_supports.csv
+    touch ${filtering_key}_${solver}_tree.newick
     """
 
 }
