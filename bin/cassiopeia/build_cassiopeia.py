@@ -148,6 +148,10 @@ from mito_utils.preprocessing import *
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
+
+##
+
+
 ########################################################################
 
 # Main
@@ -182,9 +186,9 @@ def main():
     # Build tree
     tree = build_tree(a, solver=solver, metric=metric, weights=weights, t=t, ncores=ncores)
 
-    # Save tree in .netwick format
-    with open(f'{name}.newick', 'w') as f:
-        f.write(f'{tree.get_newick(record_branch_lengths=True)}')
+    # Write tree
+    write_newick(tree, path=f'{name}.newick')
+    
 
     ##
 
@@ -196,7 +200,3 @@ if __name__ == "__main__":
     main()
 
 #######################################################################
-
-
-
-

@@ -12,6 +12,6 @@
     "cassiopeia_n_boot" : 5,
 
     "lineage_column" : "aggregated_ct",
-    "cell_file" : "barcodes.txt"
+    "cell_file" : "lymphoid.txt"
 }
 

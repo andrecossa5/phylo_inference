@@ -5,7 +5,7 @@ include { PREPROCESSING } from "./subworkflows/prep_input/main"
 include { CASSIOPEIA } from "./subworkflows/cassiopeia/main"
 include { IQTREE } from "./subworkflows/iqtree/main"
 include { MPBOOT } from "./subworkflows/mpboot/main"
-// include { EVALUATE_TREE } from "./subworkflows/evaluate_tree/main"
+include { PROCESS_TREE } from "./subworkflows/process_tree/main"
 
 // Samples channel
 ch_samples = Channel
@@ -36,8 +36,9 @@ workflow cassiopeia {
 
     PREPROCESSING(ch_samples)
     CASSIOPEIA(PREPROCESSING.out.input)
-    CASSIOPEIA.out.tree.view()
-    // EVALUATE_TREE.out.results.view()
+    PROCESS_TREE(PREPROCESSING.out.input, CASSIOPEIA.out.tree)
+    PROCESS_TREE.out.tree.view()
+    PROCESS_TREE.out.stats.view()
 
 }
 
@@ -49,8 +50,9 @@ workflow iqtree {
 
     PREPROCESSING(ch_samples)
     IQTREE(PREPROCESSING.out.input)
-    IQTREE.out.tree.view()
-    // EVALUATE_TREE.out.results.view()
+    PROCESS_TREE(PREPROCESSING.out.input, IQTREE.out.tree)
+    PROCESS_TREE.out.tree.view()
+    PROCESS_TREE.out.stats.view()
 
 }
 
@@ -62,8 +64,9 @@ workflow mpboot {
 
     PREPROCESSING(ch_samples)
     MPBOOT(PREPROCESSING.out.input)
-    MPBOOT.out.tree.view()
-    // EVALUATE_TREE.out.results.view()
+    PROCESS_TREE(PREPROCESSING.out.input, MPBOOT.out.tree)
+    PROCESS_TREE.out.tree.view()
+    PROCESS_TREE.out.stats.view()
 
 }
 

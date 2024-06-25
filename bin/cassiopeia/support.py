@@ -92,7 +92,7 @@ def main():
             boot_trees.append(read_newick(path))
 
     # Compute branch supports: Transfer Bootstrap Expectations (TBE)
-    tree = calculate_supports(obs_tree, tree_list=boot_trees, method='FBP', n_jobs=n_cores)
+    tree = calculate_supports(obs_tree, tree_list=boot_trees, method='TBE', n_jobs=n_cores)
 
     # Write final annotated tree
     write_newick(tree, path=f'{filtering_key}_{solver}_tree.newick')
