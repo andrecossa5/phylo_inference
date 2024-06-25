@@ -3,8 +3,8 @@ nextflow.enable.dsl = 2
 include { FILTER_VARIANTS } from "./subworkflows/filter_variants/main"
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
 include { CASSIOPEIA } from "./subworkflows/cassiopeia/main"
-include { IQTREE } from "./subworkflows/iqtree/main"
-include { MPBOOT } from "./subworkflows/mpboot/main"
+// include { IQTREE } from "./subworkflows/iqtree/main"
+// include { MPBOOT } from "./subworkflows/mpboot/main"
 include { PROCESS_TREE } from "./subworkflows/process_tree/main"
 
 // Samples channel
@@ -32,41 +32,17 @@ workflow muts {
 //
 
 
-workflow cassiopeia {
+workflow phylo {
 
     PREPROCESSING(ch_samples)
     CASSIOPEIA(PREPROCESSING.out.input)
     PROCESS_TREE(PREPROCESSING.out.input, CASSIOPEIA.out.tree)
-    PROCESS_TREE.out.tree.view()
-    PROCESS_TREE.out.stats.view()
 
-}
-
-
-//
-
-
-workflow iqtree {
-
-    PREPROCESSING(ch_samples)
-    IQTREE(PREPROCESSING.out.input)
-    PROCESS_TREE(PREPROCESSING.out.input, IQTREE.out.tree)
-    PROCESS_TREE.out.tree.view()
-    PROCESS_TREE.out.stats.view()
-
-}
-
-
-//
-
-
-workflow mpboot {
-
-    PREPROCESSING(ch_samples)
-    MPBOOT(PREPROCESSING.out.input)
-    PROCESS_TREE(PREPROCESSING.out.input, MPBOOT.out.tree)
-    PROCESS_TREE.out.tree.view()
-    PROCESS_TREE.out.stats.view()
+    if (params.) {
+        println 'Go on, condition matched.'
+    } else {
+        println 'Condition NOT matched. Skip execution.'
+    }
 
 }
 

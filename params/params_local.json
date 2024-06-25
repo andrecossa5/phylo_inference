@@ -6,12 +6,14 @@
     "outdir" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/results/phylo_sAML1_all",
 
     "metric" : "jaccard",
-    "cassiopeia_solvers" : ["NJ"],
-    "cassiopeia_boot_strategy" : ["feature_resampling"],
+    "cassiopeia_solver" : "NJ",
+    "cassiopeia_boot_strategy" : "feature_resampling",
     "cassiopeia_feature_resampling_perc" : 0.9,
     "cassiopeia_n_boot" : 5,
 
     "lineage_column" : "aggregated_ct",
-    "cell_file" : "lymphoid.txt"
+    "cell_file" : "lymphoid.txt",
+
+    "test" : false
 }
 
