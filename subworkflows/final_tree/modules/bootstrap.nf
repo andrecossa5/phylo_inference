@@ -1,7 +1,5 @@
 // BOOTSTRAP module
-
 nextflow.enable.dsl = 2
-
 
 process BOOTSTRAP {
 

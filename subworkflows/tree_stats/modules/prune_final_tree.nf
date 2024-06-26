@@ -1,18 +1,19 @@
- // PRUNE_RAW_TREE module
-
+// PRUNE_FINAL_TREE module
 nextflow.enable.dsl = 2 
 
 //
 
-process PRUNE_RAW_TREE {
+process PRUNE_FINAL_TREE {
 
     tag "${sample}: ${filtering_key}"
+
+    // Publish
+    publishDir "${params.outdir}/${sample}/${filtering_key}", mode: 'copy'
 
     input:
     tuple val(sample), 
         val(filtering_key), 
         path(input_folder),
-        val(tree_name),
         path(tree)
  
     output:
@@ -20,12 +21,13 @@ process PRUNE_RAW_TREE {
         val(filtering_key), 
         path(input_folder),
         path("cell_assignment.csv"), 
-        path("var_assignment.csv"), emit: pruned_tree
+        path("var_assignment.csv"),
+        path("final_tree.newick"), emit: final_tree
     
     script:
     """
     python ${baseDir}/bin/process_tree/to_csv.py ${input_folder}
-    Rscript ${baseDir}/bin/process_tree/prune_raw_tree.r \
+    Rscript ${baseDir}/bin/process_tree/prune_final_tree.r \
     --tree ${tree} \
     --AD AD.csv \
     --DP DP.csv \
@@ -39,6 +41,7 @@ process PRUNE_RAW_TREE {
     """
     touch cell_assignment.csv
     touch var_assignment.csv
+    touch final_tree.newick
     """
 
 }

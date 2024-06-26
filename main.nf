@@ -4,7 +4,7 @@ include { FILTER_VARIANTS } from "./subworkflows/filter_variants/main"
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
 include { RAW_TREE } from "./subworkflows/raw_tree/main"
 include { FINAL_TREE } from "./subworkflows/final_tree/main"
-// include { STATS } from "./subworkflows/tree_stats/main"
+include { STATS } from "./subworkflows/tree_stats/main"
 
 // Samples channel
 ch_samples = Channel
@@ -36,9 +36,8 @@ workflow phylo {
     PREPROCESSING(ch_samples)
     RAW_TREE(PREPROCESSING.out.input)
     FINAL_TREE(RAW_TREE.out.pruned_tree)
-    FINAL_TREE.out.final_tree.view()
-    // STATS(FINAL_TREE.out.tree)
-    // STATS.out.stats.view()
+    STATS(FINAL_TREE.out.final_tree)
+    STATS.out.stats.view()
 
 }
 

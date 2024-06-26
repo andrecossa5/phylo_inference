@@ -5,9 +5,6 @@ process SUPPORT {
 
     tag "${sample}: ${filtering_key}"
 
-    // Publish
-    publishDir "${params.outdir}/${sample}/${filtering_key}", mode: 'copy'
-
     input:
     tuple val(sample), 
         val(filtering_key), 

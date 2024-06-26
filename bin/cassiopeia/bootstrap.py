@@ -101,7 +101,7 @@ def main():
     AD_original = load_npz(os.path.join(path_i, 'AD.npz')).astype(np.int16)
     DP_original = load_npz(os.path.join(path_i, 'DP.npz')).astype(np.int16)
 
-    # Perturn AD and DP, if necessary
+    # Perturb AD and DP, if necessary
     if 'boot_replicate' != 'observed':
         if method == 'jacknife':
             AD_boot, DP_boot, sel_idx = jackknife_allele_tables(AD_original.A, DP_original.A)
@@ -109,6 +109,8 @@ def main():
             AD_boot, DP_boot, sel_idx = bootstrap_allele_counts(AD_original.A, DP_original.A)
         elif method == 'feature_resampling':
             AD_boot, DP_boot, sel_idx = bootstrap_allele_tables(AD_original.A, DP_original.A, frac_resampled=feature_resampling_perc)
+        else:
+            raise ValueError(f'{method} is not supported...')
     else:
         AD_boot = AD_original.A
         DP_boot = DP_original.A
@@ -124,8 +126,8 @@ def main():
     os.chdir('bootstrapped_input')  
     cells.to_series().to_csv('cells.csv', index=False, header=None)
     variants.to_series().to_csv('variants.csv', index=False, header=None)
-    save_npz('AD_boot.npz', csr_matrix(AD_boot.astype(np.float16)))
-    save_npz('DP_boot.npz', csr_matrix(DP_boot.astype(np.float16)))
+    save_npz('AD.npz', csr_matrix(AD_boot.astype(np.float16)))
+    save_npz('DP.npz', csr_matrix(DP_boot.astype(np.float16)))
 
     # Prep fasta
     afm = AnnData(
@@ -148,7 +150,7 @@ def main():
     seqs = AFM_to_seqs(afm, t=t)
     with open('sequences.fasta', 'w') as f:
         for k in seqs:
-            f.write(f'>seq_{k}\n')
+            f.write(f'>{k}\n')
             f.write(f'{seqs[k]}\n')
 
     ##

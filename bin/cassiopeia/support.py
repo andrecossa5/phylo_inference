@@ -86,7 +86,7 @@ def main():
     path_list = [ x.replace('[', '').replace(']', '') for x in trees.split(', ') ]
     for path in path_list:
         k = path.split('/')[-1].split('.')[0]
-        if k == 'rep_observed':
+        if k == 'observed':
             obs_tree = read_newick(path)
         else:
             boot_trees.append(read_newick(path))

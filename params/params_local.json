@@ -10,10 +10,12 @@
 
     "distance_metric" : "jaccard",
     "cassiopeia_solver" : "NJ",
-    "cassiopeia_boot_method" : "resampling",
+    "cassiopeia_boot_method" : "feature_resampling",
     "cassiopeia_feature_resampling_perc" : 0.9,
-    "cassiopeia_n_boot": 5,
-    "final_solver": "cassy"
+    "cassiopeia_n_boot" : 5,
+    "final_solver" : "cassy",
+    "min_cell_clone" : 5,
+    "min_assignment_prob" : 0.3
 
 }
 

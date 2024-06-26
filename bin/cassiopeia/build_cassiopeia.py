@@ -162,10 +162,14 @@ def main():
     # Prep input
 
     # Reconstruct AFM
-    AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).astype(np.int16).A
-    DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).astype(np.int16).A
-    cell_df = pd.read_csv(os.path.join(path_data, 'cells.csv'), index_col=0, header=None)
-    var_df = pd.read_csv(os.path.join(path_data, 'variants.csv'), index_col=0, header=None)
+    AD = load_npz(os.path.join(path_data, 'AD.npz')).astype(np.int16).A
+    DP = load_npz(os.path.join(path_data, 'DP.npz')).astype(np.int16).A
+    if 'boot' in os.path.basename(path_data):
+        cell_df = pd.read_csv(os.path.join(path_data, 'cells.csv'), index_col=0, header=None)
+        var_df = pd.read_csv(os.path.join(path_data, 'variants.csv'), index_col=0, header=None)
+    else:
+        cell_df = pd.read_csv(os.path.join(path_data, 'meta.csv'), index_col=0)
+        var_df = pd.read_csv(os.path.join(path_data, 'var_meta.csv'), index_col=0)
     a = AnnData(X=np.divide(AD, DP), obs=cell_df, var=var_df, dtype=np.float16)
     
     # Read t for binarization
