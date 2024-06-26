@@ -58,19 +58,21 @@ my_parser.add_argument(
 
 # Solver
 my_parser.add_argument(
-    '--name', 
-    type=str,
-    default='observed',
-    help='Name for the saved newick object. Default: observed.'
-)
-
-# Solver
-my_parser.add_argument(
     '--treshold_calling', 
     type=float,
     default=0.025,
     help='Treshold for variant allele calling. Default: .025.'
 )
+
+
+# Path meta
+my_parser.add_argument(
+    '--name', 
+    type=str,
+    default='tree',
+    help='Tree name. Default: tree.'
+)
+
 
 # ncores
 my_parser.add_argument(
@@ -127,8 +129,8 @@ sample = args.sample
 path_data = args.path_data
 metric = args.metric
 solver = args.solver
-name = args.name
 ncores = args.ncores
+name = args.name
 path_priors = args.path_priors
 path_filtering = args.path_filtering
 path_meta = args.path_meta

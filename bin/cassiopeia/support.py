@@ -95,7 +95,7 @@ def main():
     tree = calculate_supports(obs_tree, tree_list=boot_trees, method='TBE', n_jobs=n_cores)
 
     # Write final annotated tree
-    write_newick(tree, path=f'{filtering_key}_{solver}_tree.newick')
+    write_newick(tree, path='final_tree.newick')
 
 
     ##

@@ -1,11 +1,10 @@
-// phylo_inference, old 
+// phylo_inference
 nextflow.enable.dsl = 2
 include { FILTER_VARIANTS } from "./subworkflows/filter_variants/main"
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
-include { CASSIOPEIA } from "./subworkflows/cassiopeia/main"
-// include { IQTREE } from "./subworkflows/iqtree/main"
-// include { MPBOOT } from "./subworkflows/mpboot/main"
-include { PROCESS_TREE } from "./subworkflows/process_tree/main"
+include { RAW_TREE } from "./subworkflows/raw_tree/main"
+include { FINAL_TREE } from "./subworkflows/final_tree/main"
+// include { STATS } from "./subworkflows/tree_stats/main"
 
 // Samples channel
 ch_samples = Channel
@@ -35,14 +34,11 @@ workflow muts {
 workflow phylo {
 
     PREPROCESSING(ch_samples)
-    CASSIOPEIA(PREPROCESSING.out.input)
-    PROCESS_TREE(PREPROCESSING.out.input, CASSIOPEIA.out.tree)
-
-    if (params.) {
-        println 'Go on, condition matched.'
-    } else {
-        println 'Condition NOT matched. Skip execution.'
-    }
+    RAW_TREE(PREPROCESSING.out.input)
+    FINAL_TREE(RAW_TREE.out.pruned_tree)
+    FINAL_TREE.out.final_tree.view()
+    // STATS(FINAL_TREE.out.tree)
+    // STATS.out.stats.view()
 
 }
 
