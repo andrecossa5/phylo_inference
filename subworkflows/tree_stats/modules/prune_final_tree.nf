@@ -20,9 +20,8 @@ process PRUNE_FINAL_TREE {
     tuple val(sample), 
         val(filtering_key), 
         path(input_folder),
-        path("cell_assignment.csv"), 
-        path("var_assignment.csv"),
-        path("final_tree.newick"), emit: final_tree
+        path("nodes.csv"), 
+        path("edges.csv"), emit: final_tree
     
     script:
     """
@@ -39,9 +38,8 @@ process PRUNE_FINAL_TREE {
 
     stub:
     """
-    touch cell_assignment.csv
-    touch var_assignment.csv
-    touch final_tree.newick
+    touch edges.csv
+    touch nodes.csv
     """
 
 }

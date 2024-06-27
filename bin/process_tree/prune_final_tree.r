@@ -43,9 +43,15 @@ n.cores <- as.numeric(args$ncores)
 prob.cut <- as.numeric(args$prob_cut)
 MinCell <- as.numeric(args$min_cell_clone)
 
-
+## 
+# path_tree <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/cd/572474264e7f14f4237035f7683c13/final_tree.newick'
+# path_AD <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/c6/4d3a3a6cf6ead8a630adfe127885e1/AD.csv'
+# path_DP <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/c6/4d3a3a6cf6ead8a630adfe127885e1/DP.csv'
+# af.t <- 0.05
+# n.cores <- 8
+# prob.cut <- 0.3
+# MinCell <- 5
 ##
-
 
 # Read and format inputs
 tree <- ape::read.tree(path_tree)
@@ -62,10 +68,33 @@ var_assignment <- assign_variants(tree, mtr, mtr.bi, depth, n.cores=n.cores, ass
 res_cut_tree <- cut_tree(tree, var_assignment, prob.cut=prob.cut, MinCell=MinCell)
 tree <- drop.tip(tree, setdiff(tree$tip.label, res_cut_tree$cell_assignment$Cell))
 
-# Write tree
-write.csv(var_assignment, 'var_assignment.csv')
-write.csv(res_cut_tree$cell_assignment, 'cell_assignment.csv')
-ape::write.tree(tree, 'final_tree.newick')
+# Write tree as its (annotated) nodes and edges
+
+## Edges
+edges <- data.frame(tree$edge)
+colnames(edges) <- c('u', 'v')
+edges$branch_lenghts <- tree$edge.length
+write.csv(edges, 'edges.csv')
+
+## Nodes
+nodes <- data.frame(node=1:(length(tree$tip.label)+tree$Nnode))
+tips = data.frame(node=1:length(tree$tip.label), cell=tree$tip.label)
+internal_nodes = data.frame(node=length(tree$tip.label)+1:tree$Nnode, support=as.numeric(tree$node.label))
+nodes <- merge(nodes, tips, by="node", all.x=TRUE)
+nodes <- merge(nodes, internal_nodes, by="node", all.x=TRUE)
+nodes <- merge(
+  nodes, 
+  res_cut_tree$cell_assignment %>% rename(cell=Cell, clonal_ancestor=Clade_merge, clone=Clone_merge),
+  by="cell", all.x=TRUE
+)
+nodes <- merge(
+  nodes, 
+  var_assignment %>% rownames_to_column(var='assigned_var') %>% rename(node=Child),
+  by="node", all.x=TRUE
+)
+write.csv(nodes, 'nodes.csv')
+
+
 
 
 ##

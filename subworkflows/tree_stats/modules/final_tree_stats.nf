@@ -14,9 +14,8 @@ process FINAL_TREE_STATS {
     tuple val(sample), 
         val(filtering_key), 
         path(input_folder),
-        path(cell_assignment), 
-        path(var_assignment),
-        path(final_tree)
+        path(nodes), 
+        path(edges)
  
     output:
     tuple val(sample), 
@@ -27,10 +26,10 @@ process FINAL_TREE_STATS {
     script:
     """
     python ${baseDir}/bin/process_tree/final_stats.py \
-    --input_folder ${input_folder} \
-    --solver ${params.cassiopeia_solver} \
-    --trees "${trees}" \
-    --n_cores ${task.cpus}
+    --path_input ${input_folder} \
+    --path_nodes ${nodes} \
+    --path_edges ${edges} \
+    --ncores ${task.cpus}
     """
 
     stub:

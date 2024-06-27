@@ -323,7 +323,8 @@ cut_tree <- function(phy, results, N=1, prob.cut=0.3, MinCell=5, Dumpcut=100) {
         Clone_merge=x[3],
         row.names=NULL)
   }) %>% do.call(rbind,.)
-  
+  row.names(cell_assignment) <- NULL
+
   # Prep results
   res <- list(nodes_df=Allnodes,supp_nodes=SumV.df_CloneNode.filtered,cell_assignment=cell_assignment)
   
