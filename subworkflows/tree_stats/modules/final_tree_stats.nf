@@ -21,7 +21,8 @@ process FINAL_TREE_STATS {
     tuple val(sample), 
         val(filtering_key), 
         path(input_folder),
-        path("final_tree_stats.csv"), emit: stats
+        path("final_tree_stats.csv"),
+        path("annotated_tree.pickle"), emit: stats
     
     script:
     """
@@ -29,12 +30,14 @@ process FINAL_TREE_STATS {
     --path_input ${input_folder} \
     --path_nodes ${nodes} \
     --path_edges ${edges} \
+    --metric ${params.distance_metric} \
     --ncores ${task.cpus}
     """
 
     stub:
     """
     touch final_tree_stats.csv
+    touch annotated_tree.pickle
     """
 
 }

@@ -53,6 +53,14 @@ my_parser.add_argument(
     help='Path to edges.csv. Default: None.'
 )
 
+# metric
+my_parser.add_argument(
+    '--metric', 
+    type=str,
+    default='jaccard',
+    help='Path to edges.csv. Default: jaccard.'
+)
+
 # ncores
 my_parser.add_argument(
     '--ncores', 
@@ -68,12 +76,14 @@ args = my_parser.parse_args()
 path_i = args.path_input
 path_nodes = args.path_nodes
 path_edges = args.path_edges
+metric = args.metric
 ncores = args.ncores
 
-# path_i = ''
-# path_nodes = '...'
-# path_edges = '...'
+# path_i = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/b1/0374586a971219073042563a8c7c7b/filtered_input'
+# path_nodes = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/b1/0374586a971219073042563a8c7c7b/nodes.csv'
+# path_edges = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/b1/0374586a971219073042563a8c7c7b/edges.csv'
 # ncores = 8
+
 
 ########################################################################
 
@@ -81,6 +91,7 @@ ncores = args.ncores
 
 # Code
 import json
+import pickle
 from scipy.sparse import load_npz
 from anndata import AnnData
 from mito_utils.phylo import *
@@ -105,18 +116,45 @@ def main():
         .map(lambda x: x.replace('X', '').replace('.', '>') if pd.notna(x) else np.NaN)     # R problems...
     )
 
-    # Build CassiopeiaTree
-    tree = create_from_annot(nodes, edges)
+    # Create CassiopeiaTree
+    tree = create_from_annot(nodes, edges, afm)
     
     # General tree stats
+    stats = {}
+    stats['n_cells'] = tree.n_cell
+    stats['n_vars'] = nodes['assigned_var'].dropna().unique().size
+    stats['n_clones'] = nodes['clone'].dropna().unique().size
+    stats['ratio_supported_unsupported_branches'] = stats['n_clones'] / len(tree.edges) 
+    stats['median_support'] = nodes['support'].dropna().median()
+    stats['std_support'] = nodes['support'].dropna().std()
+    stats['median_time'] = np.mean(list(tree.get_times().values()))
+    stats['mean_depth'] = tree.get_mean_depth_of_tree()
+
+    # Spatial stats
+    X_bin = np.where(tree.character_matrix>=.05, 1, 0)
+    D = pairwise_distances(X_bin, metric=lambda x, y: np.sum(np.logical_and(x, y)))
+    n_shared_muts = np.ma.masked_equal(D, np.diag(D)).mean(axis=1).data
+    cell_conn = (D>0).sum(axis=1)-1
+    stats['median_n_shared_muts'] = np.median(n_shared_muts)
+    stats['median_connectedness'] = np.median(cell_conn)
 
     # Tree vs ch matrix distance correlation 
+    stats['char_tree_dist_corr'] = calculate_corr_distances(tree)
 
     # Ch matrix distance robustness to bootstrapping
- 
-    # Write stats
-    os.system('touch final_tree_stats.csv')
+    n_samples = 100
+    n_vars_sampling = round((tree.character_matrix.shape[1] / 100) * 80)
+    L = []
+    for _ in range(n_samples):
+        vars_ = np.random.choice(tree.character_matrix.columns, size=n_vars_sampling, replace=False)
+        D = pair_d(tree.character_matrix.loc[:,vars_].values, metric=metric, t=.05, ncores=ncores)
+        L.append(D.flatten())
+    stats['char_dist_boot'] = np.mean(np.corrcoef(np.array(L)))
 
+    # Write final annotated tree as pickle, and its stats
+    with open('annotated_tree.pickle', 'wb') as f:
+        pickle.dump(tree, f)
+    pd.Series(stats).to_frame('metric').to_csv('final_tree_stats.csv')
 
 
     ##
