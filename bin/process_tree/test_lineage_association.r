@@ -64,7 +64,7 @@ X <- state2mat.sparse(cov %>% as.numeric)
 ##
 
 
-# Phylogenetic weight matrix
+# Phylogenetic weight matrix and PATH phylo-correlations
 Winv <- inv.tree.dist(tree, node=TRUE, norm=FALSE)
 modxcor <- xcor(X, Winv)
 
