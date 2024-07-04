@@ -29,10 +29,10 @@ path_meta <- args$meta
 lineage_column <- args$lineage_column
 
 ## 
-path_nodes <- '/Users/IEO5505/Desktop/nodes.csv'
-path_edges <- '/Users/IEO5505/Desktop/edges.csv'
-path_meta <- '/Users/IEO5505/Desktop/meta.csv'
-lineage_column <- 'aggregated_ct'
+# path_nodes <- '/Users/IEO5505/Desktop/nodes.csv'
+# path_edges <- '/Users/IEO5505/Desktop/edges.csv'
+# path_meta <- '/Users/IEO5505/Desktop/meta.csv'
+# ineage_column <- 'aggregated_ct'
 ##
 
 
