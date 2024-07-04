@@ -11,7 +11,6 @@ library(ape)
 library(PATH)
 
 
-
 ##
 
 
@@ -30,10 +29,10 @@ path_meta <- args$meta
 lineage_column <- args$lineage_column
 
 ## 
-# path_nodes <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/66/5eb5260afdf9e0ebb04b9b05aee23c/nodes.csv'
-# path_edges <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/66/5eb5260afdf9e0ebb04b9b05aee23c/edges.csv'
-# path_meta <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/dc/8d48dccfd8413c675c618e7cdfbd4f/filtered_input/meta.csv'
-# lineage_column <- 'aggregated_ct'
+path_nodes <- '/Users/IEO5505/Desktop/nodes.csv'
+path_edges <- '/Users/IEO5505/Desktop/edges.csv'
+path_meta <- '/Users/IEO5505/Desktop/meta.csv'
+lineage_column <- 'aggregated_ct'
 ##
 
 
@@ -53,6 +52,13 @@ tree <- list(
 )
 class(tree) <- "phylo"
 
+
+!inherits(tree, "phylo")
+is.null(tree$edge) || ncol(tree$edge) != 2
+is.null(tree$edge.length) || any(tree$edge.length <= 0)
+!is.binary(tree)
+
+
 # Load meta
 meta <- read.csv(path_meta, row.names=1)
 cov <- meta[tree$tip.label,][[lineage_column]]
@@ -64,20 +70,28 @@ X <- state2mat.sparse(cov %>% as.numeric)
 ##
 
 
-# Phylogenetic weight matrix and PATH phylo-correlations
-Winv <- inv.tree.dist(tree, node=TRUE, norm=FALSE)
-modxcor <- xcor(X, Winv)
+# PATH analysis
+results <- tryCatch({ 
+  Winv <- inv.tree.dist(tree, node=TRUE, norm=FALSE) 
+  modxcor <- xcor(X, Winv)
+  Idf <- melt(modxcor$Morans.I, value.name="I")
+  Zdf <- melt(modxcor$Z.score, value.name="Z")
+  pdf <- melt(modxcor$one.sided.pvalue, value.name="p")
+  dfs <- list(Idf, Zdf, pdf)
+  results <- Reduce(function(x, y) full_join(x, y, by=c("Var1", "Var2")), dfs)
+  mapping <- setNames(1:length(cats), cats)
+  results$Var1 <- sapply(results$Var1, function(x){ names(which(mapping==x)) })
+  results$Var2 <- sapply(results$Var2, function(x){ names(which(mapping==x)) })
+  return(results)
+  }, 
+  error = function(e) {
+  results <- data.frame(matrix(ncol = 5, nrow = 0))
+  colnames(results) <- c("Var1", "Var2", "I", "Z", "p")
+  print('Error encountered, returning empty data frame')
+  message(e)
+  return(results)
+})
 
-# Format result
-Idf <- reshape2::melt(modxcor$Morans.I, value.name="I")
-Zdf <- reshape2::melt(modxcor$Z.score, value.name="Z")
-pdf <- reshape2::melt(modxcor$one.sided.pvalue, value.name="p")
-dfs <- list(Idf, Zdf, pdf)
-results <- Reduce(function(x, y) full_join(x, y, by=c("Var1", "Var2")), dfs)
-mapping <- setNames(1:length(cats), cats)
-results$Var1 <- sapply(results$Var1, function(x){ names(which(mapping==x)) })
-results$Var2 <- sapply(results$Var2, function(x){ names(which(mapping==x)) })
-  
 # Save
 write.csv(results, 'lineage_association.csv')
 
