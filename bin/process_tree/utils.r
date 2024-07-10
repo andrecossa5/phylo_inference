@@ -98,13 +98,14 @@ assign_variants <- function(tree, mtr, mtr.bi, depth, n.cores=8, assign.to='Chil
   # Get cell profiles
   df <- reconstruct_genotype_summary(tree)
   df_profile_mtx.t <- df$profile_int %>% do.call(rbind,.) %>% t
-
+  
   ## Set expected global heteroplasmy level 
-  heteroplasmy <- matrix(mtr/(depth+0.000001))
-  Global.heteroplasmy <- heteroplasmy[!is.na(heteroplasmy)] %>% .[.!=0] %>% median  # this is a number ~ 0.03-0.05, an expected p for modeling dropout
+  af.m <- mtr/(depth+0.000001)
+  Global.heteroplasmy <- af.m[!is.na(af.m)] %>% .[.!=0] %>% median  # this is a number ~ 0.03-0.05, an expected p for modeling dropout
+  if (Global.heteroplasmy>=0.1){Global.heteroplasmy <- 0.1}                         # Cut for numeric reasons...
   
   ## Generate a binomial-based probability distribution for each cell to model the dropout
-  Zero.p <- dbinom(0,depth,Global.heteroplasmy) # PROBABILITY OF OBSERVING AF=0, with a global AF ~0.05
+  Zero.p <- dbinom(0,depth,Global.heteroplasmy) # PROBABILITY OF OBSERVING AF=0, with a certain global AF
   Zero.p[Zero.p==1] <- 0.99
   Zero.logV <- log(Zero.p)  # A matrix of log(probability of zero given w/ mutation in the cell)  Variant vs cell
   NonZero.logV <- log(1-Zero.p) # A matrix of log(probability of 1 or >=1 given w/ mutation in the cell)  Variant vs cell
@@ -114,34 +115,34 @@ assign_variants <- function(tree, mtr, mtr.bi, depth, n.cores=8, assign.to='Chil
   # Calculate LogLihelihoods for each variant
   registerDoMC(n.cores)
   Loglik <- foreach (i=1:nrow(mtr.bi), .combine='rbind') %dopar%  # To loop through all variants
-  {
-    ## Make indicator matrices for 1-1 (Inside the clade, and is mutation) and 0-0 (outside of clade, and is not mutation) 
-    x <- df_profile_mtx.t + mtr.bi[i,]
+    {
+      ## Make indicator matrices for 1-1 (Inside the clade, and is mutation) and 0-0 (outside of clade, and is not mutation) 
+      x <- df_profile_mtx.t + mtr.bi[i,]
       
-    x_11 <- matrix(nrow=nrow(x),ncol=ncol(x)) # cell x branch
-    x_00 <- matrix(nrow=nrow(x),ncol=ncol(x)) # cell x branch
-    x_11[which(x!=2)] <- 0                   
-    x_11[which(x==2)] <- 1                   # Cell inside the branch with mutation 
-    x_00[which(x!=0)] <- -1  
-    x_00[which(x==0)] <- 1                   # Cell outside the branch and no mutation 
-    x_00[which(x_00==-1)]<-0
+      x_11 <- matrix(nrow=nrow(x),ncol=ncol(x)) # cell x branch
+      x_00 <- matrix(nrow=nrow(x),ncol=ncol(x)) # cell x branch
+      x_11[which(x!=2)] <- 0                   
+      x_11[which(x==2)] <- 1                   # Cell inside the branch with mutation 
+      x_00[which(x!=0)] <- -1  
+      x_00[which(x==0)] <- 1                   # Cell outside the branch and no mutation 
+      x_00[which(x_00==-1)]<-0
       
-    ## Make indicator matrices for 1-0 and 0-1 scenarios
-    x_10 <- df_profile_mtx.t - mtr.bi[i,] 
-    x_10[which(x_10==-1)] <- 0                # Cell inside the branch and no mutation 
-    x_01 <- mtr.bi[i,]-df_profile_mtx.t
-    x_01[which(x_01==-1)] <- 0                # Cell outside the branch with mutation 
+      ## Make indicator matrices for 1-0 and 0-1 scenarios
+      x_10 <- df_profile_mtx.t - mtr.bi[i,] 
+      x_10[which(x_10==-1)] <- 0                # Cell inside the branch and no mutation 
+      x_01 <- mtr.bi[i,]-df_profile_mtx.t
+      x_01[which(x_01==-1)] <- 0                # Cell outside the branch with mutation 
       
-    ## Compute the Loglikihood of mutation i across branches
-    Loglik_11 <- x_11*NonZero.logV[i,]
-    Loglik_10 <- x_10*Zero.logV[i,]
-    Loglik_01 <- x_01*NonZero.logP
-    Loglik_00 <- x_00*Zero.logP
-    Loglik.i <- colSums(Loglik_11+Loglik_10+Loglik_01+Loglik_00)
+      ## Compute the Loglikihood of mutation i across branches
+      Loglik_11 <- x_11*NonZero.logV[i,]
+      Loglik_10 <- x_10*Zero.logV[i,]
+      Loglik_01 <- x_01*NonZero.logP
+      Loglik_00 <- x_00*Zero.logP
+      Loglik.i <- colSums(Loglik_11+Loglik_10+Loglik_01+Loglik_00)
       
-    return(Loglik.i)
-
-  }
+      return(Loglik.i)
+      
+    }
   
   # Get final probabilities of assignment
   row.names(Loglik) <- row.names(mtr.bi)
@@ -159,7 +160,6 @@ assign_variants <- function(tree, mtr, mtr.bi, depth, n.cores=8, assign.to='Chil
   var_assignment <- setNames(var_assignment, c(assign.to, 'p')) %>% arrange(desc(p))
   
   # Add variants AF and prevalence within and outside the assigned branches tips (terminal nodes, cells)
-  af.m <- mtr/(depth+0.000001)
   var_assignment <- cbind(
     var_assignment,
     apply(
@@ -175,7 +175,7 @@ assign_variants <- function(tree, mtr, mtr.bi, depth, n.cores=8, assign.to='Chil
         return(c(af1=af.1, af0=af.0, p1=p.1, p0=p.0))
       }
     ) %>% 
-    t %>% as.data.frame %>% mutate_all(~ifelse(is.na(.), 0, .))
+      t %>% as.data.frame %>% mutate_all(~ifelse(is.na(.), 0, .))
   )
   
   return(var_assignment)
