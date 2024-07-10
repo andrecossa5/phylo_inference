@@ -172,14 +172,9 @@ def main():
         var_df = pd.read_csv(os.path.join(path_data, 'var_meta.csv'), index_col=0)
     a = AnnData(X=np.divide(AD, DP), obs=cell_df, var=var_df, dtype=np.float16)
     
-    # Read t for binarization
-    with open(path_filtering, 'r') as file:
-        FILTERING_OPTIONS = json.load(file)
-    if filtering_key in FILTERING_OPTIONS:
-        d = FILTERING_OPTIONS[filtering_key]['filtering_kwargs']
-        t = d['af_confident_detection'] if 'af_confident_detection' in d else .05
-    else:
-        raise KeyError(f'{filtering_key} not in {path_filtering}!')
+    # Read af_confident_detection for binarization
+    _, filtering_kwargs, _ = process_json(path_filtering, filtering_key)
+    t = filtering_kwargs['af_confident_detection'] if 'af_confident_detection' in filtering_kwargs else .05
     
     # Compute variants weights, if necessary
     if os.path.exists(path_priors):

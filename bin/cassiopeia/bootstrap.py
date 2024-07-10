@@ -91,6 +91,7 @@ import json
 from scipy.sparse import load_npz, save_npz, csr_matrix
 from anndata import AnnData
 from mito_utils.phylo import *
+from mito_utils.utils import *
 
 ########################################################################
 
@@ -137,14 +138,8 @@ def main():
     )
 
     # Read t, if available
-    with open(path_filtering, 'r') as file:
-        FILTERING_OPTIONS = json.load(file)
-
-    if filtering_key in FILTERING_OPTIONS:
-        d = FILTERING_OPTIONS[filtering_key]
-        t = d['t'] if 't' in d else .05
-    else:
-        raise KeyError(f'{filtering_key} not in {path_filtering}!')
+    _, filtering_kwargs, _ = process_json(path_filtering, filtering_key)
+    t = filtering_kwargs['af_confident_detection'] if 'af_confident_detection' in filtering_kwargs else .05
     
     # Covert to .fasta and write
     seqs = AFM_to_seqs(afm, t=t)
