@@ -1,4 +1,4 @@
-// phylo_inference
+// phylo_inference aa
 nextflow.enable.dsl = 2
 include { FILTER_VARIANTS } from "./subworkflows/filter_variants/main"
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
