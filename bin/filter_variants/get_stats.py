@@ -177,7 +177,12 @@ def main():
     )
 
     # Write down dfs
-    a.var.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_vars_df.csv')
+    (   
+        a.var
+        .loc[:,~a.var.columns.str.contains('lineage_|enriched')]
+        .assign(filtering_key=filtering_key, sample=sample_name)
+        .to_csv(f'{sample_name}_{filtering_key}_vars_df.csv')
+    )
     dataset_df.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_dataset_df.csv')
     
     # Dists
