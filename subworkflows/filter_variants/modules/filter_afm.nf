@@ -27,9 +27,8 @@ process FILTER_AFM {
     --path_filtering ${params.path_filtering} \
     --filtering_key ${filtering_key} \
     --lineage_column ${params.lineage_column} \
-    --solver ${params.solver} \
-    --metric ${params.metric} \
-    --spatial_metrics ${params.spatial_metrics} \
+    --solver ${params.cassiopeia_solver} \
+    --metric ${params.cassiopeia_metric} \
     --ncores ${task.cpus} \
     --path_priors ${params.path_priors} \
     --path_meta ${params.path_meta} \

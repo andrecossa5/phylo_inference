@@ -58,19 +58,21 @@ my_parser.add_argument(
 
 # Solver
 my_parser.add_argument(
-    '--name', 
-    type=str,
-    default='observed',
-    help='Name for the saved newick object. Default: observed.'
-)
-
-# Solver
-my_parser.add_argument(
     '--treshold_calling', 
     type=float,
     default=0.025,
     help='Treshold for variant allele calling. Default: .025.'
 )
+
+
+# Path meta
+my_parser.add_argument(
+    '--name', 
+    type=str,
+    default='tree',
+    help='Tree name. Default: tree.'
+)
+
 
 # ncores
 my_parser.add_argument(
@@ -127,8 +129,8 @@ sample = args.sample
 path_data = args.path_data
 metric = args.metric
 solver = args.solver
-name = args.name
 ncores = args.ncores
+name = args.name
 path_priors = args.path_priors
 path_filtering = args.path_filtering
 path_meta = args.path_meta
@@ -160,20 +162,19 @@ def main():
     # Prep input
 
     # Reconstruct AFM
-    AD = load_npz(os.path.join(path_data, 'AD_boot.npz')).astype(np.int16).A
-    DP = load_npz(os.path.join(path_data, 'DP_boot.npz')).astype(np.int16).A
-    cell_df = pd.read_csv(os.path.join(path_data, 'cells.csv'), index_col=0, header=None)
-    var_df = pd.read_csv(os.path.join(path_data, 'variants.csv'), index_col=0, header=None)
+    AD = load_npz(os.path.join(path_data, 'AD.npz')).astype(np.int16).A
+    DP = load_npz(os.path.join(path_data, 'DP.npz')).astype(np.int16).A
+    if 'boot' in os.path.basename(path_data):
+        cell_df = pd.read_csv(os.path.join(path_data, 'cells.csv'), index_col=0, header=None)
+        var_df = pd.read_csv(os.path.join(path_data, 'variants.csv'), index_col=0, header=None)
+    else:
+        cell_df = pd.read_csv(os.path.join(path_data, 'meta.csv'), index_col=0)
+        var_df = pd.read_csv(os.path.join(path_data, 'var_meta.csv'), index_col=0)
     a = AnnData(X=np.divide(AD, DP), obs=cell_df, var=var_df, dtype=np.float16)
     
-    # Read t for binarization
-    with open(path_filtering, 'r') as file:
-        FILTERING_OPTIONS = json.load(file)
-    if filtering_key in FILTERING_OPTIONS:
-        d = FILTERING_OPTIONS[filtering_key]['filtering_kwargs']
-        t = d['af_confident_detection'] if 'af_confident_detection' in d else .05
-    else:
-        raise KeyError(f'{filtering_key} not in {path_filtering}!')
+    # Read af_confident_detection for binarization
+    _, filtering_kwargs, _ = process_json(path_filtering, filtering_key)
+    t = filtering_kwargs['af_confident_detection'] if 'af_confident_detection' in filtering_kwargs else .05
     
     # Compute variants weights, if necessary
     if os.path.exists(path_priors):

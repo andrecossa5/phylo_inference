@@ -5,13 +5,18 @@
     "path_priors" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/vars_df/priors.csv",
     "outdir" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/results/phylo_sAML1_all",
 
-    "metric" : "jaccard",
-    "cassiopeia_solvers" : ["NJ"],
-    "cassiopeia_boot_strategy" : ["feature_resampling"],
-    "cassiopeia_feature_resampling_perc" : 0.9,
-    "cassiopeia_n_boot" : 5,
-
     "lineage_column" : "aggregated_ct",
-    "cell_file" : "lymphoid.txt"
+    "cell_file" : "lymphoid.txt",
+
+    "distance_metric" : "jaccard",
+    "cassiopeia_solver" : "NJ",
+    "cassiopeia_boot_method" : "feature_resampling",
+    "cassiopeia_feature_resampling_perc" : 0.8,
+    "cassiopeia_n_boot" : 5,
+    "final_solver" : "cassy",
+    "min_cell_clone" : 5,
+    "min_assignment_prob" : 0.3,
+    "test_association_with_lineage" : true 
+
 }
 

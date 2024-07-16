@@ -1,11 +1,10 @@
-// phylo_inference, old 
+// phylo_inference aa
 nextflow.enable.dsl = 2
 include { FILTER_VARIANTS } from "./subworkflows/filter_variants/main"
 include { PREPROCESSING } from "./subworkflows/prep_input/main"
-include { CASSIOPEIA } from "./subworkflows/cassiopeia/main"
-include { IQTREE } from "./subworkflows/iqtree/main"
-include { MPBOOT } from "./subworkflows/mpboot/main"
-include { PROCESS_TREE } from "./subworkflows/process_tree/main"
+include { RAW_TREE } from "./subworkflows/raw_tree/main"
+include { FINAL_TREE } from "./subworkflows/final_tree/main"
+include { STATS } from "./subworkflows/tree_stats/main"
 
 // Samples channel
 ch_samples = Channel
@@ -32,41 +31,13 @@ workflow muts {
 //
 
 
-workflow cassiopeia {
+workflow phylo {
 
     PREPROCESSING(ch_samples)
-    CASSIOPEIA(PREPROCESSING.out.input)
-    PROCESS_TREE(PREPROCESSING.out.input, CASSIOPEIA.out.tree)
-    PROCESS_TREE.out.tree.view()
-    PROCESS_TREE.out.stats.view()
-
-}
-
-
-//
-
-
-workflow iqtree {
-
-    PREPROCESSING(ch_samples)
-    IQTREE(PREPROCESSING.out.input)
-    PROCESS_TREE(PREPROCESSING.out.input, IQTREE.out.tree)
-    PROCESS_TREE.out.tree.view()
-    PROCESS_TREE.out.stats.view()
-
-}
-
-
-//
-
-
-workflow mpboot {
-
-    PREPROCESSING(ch_samples)
-    MPBOOT(PREPROCESSING.out.input)
-    PROCESS_TREE(PREPROCESSING.out.input, MPBOOT.out.tree)
-    PROCESS_TREE.out.tree.view()
-    PROCESS_TREE.out.stats.view()
+    RAW_TREE(PREPROCESSING.out.input)
+    FINAL_TREE(RAW_TREE.out.pruned_tree)
+    STATS(FINAL_TREE.out.final_tree)
+    STATS.out.stats.view()
 
 }
 

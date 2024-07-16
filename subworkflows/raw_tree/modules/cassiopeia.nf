@@ -1,37 +1,33 @@
-// BUILD_CASSIOPEIA module
+// CASSIOPEIA module
 
 nextflow.enable.dsl = 2
 
 
-process BUILD_CASSIOPEIA {
+process CASSIOPEIA {
 
-    tag "${sample}: ${filtering_key}, ${boot_method}, ${solver}, rep=${boot_replicate}"
+    tag "${sample}: ${filtering_key}, rep=${boot_replicate}"
 
-    input: 
-    tuple val(sample), 
+    input:
+    tuple val(sample),
         val(filtering_key), 
         path(input_folder),
-        val(boot_method),
-        val(boot_replicate),
-        val(solver)
+        val(boot_replicate)
 
     output:
     tuple val(sample), 
         val(filtering_key), 
         path(input_folder),
-        val(boot_method),
         val(boot_replicate),
-        val(solver),
-        path("rep_${boot_replicate}.newick"), emit: tree
+        path("${boot_replicate}.newick"), emit: tree
     
     script:
     """
     python ${baseDir}/bin/cassiopeia/build_cassiopeia.py \
     -p ${input_folder} \
     --sample ${sample} \
-    --solver ${solver} \
-    --metric ${params.metric} \
-    --name rep_${boot_replicate} \
+    --solver ${params.cassiopeia_solver} \
+    --metric ${params.distance_metric} \
+    --name ${boot_replicate} \
     --ncores ${task.cpus} \
     --path_filtering ${params.path_filtering} \
     --filtering_key ${filtering_key} \
@@ -42,7 +38,7 @@ process BUILD_CASSIOPEIA {
 
     stub:
     """
-    touch rep_${boot_replicate}.newick
+    touch ${boot_replicate}.newick
     """
 
 }

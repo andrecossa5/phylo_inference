@@ -99,14 +99,6 @@ my_parser.add_argument(
     help='Path to MT-SNVs priors (i.e., median prevalence across datasets): Default: None.'
 )
 
-# path_priors
-my_parser.add_argument(
-    '--spatial_metrics', 
-    type=str,
-    default="False",
-    help='Do or do not compute spatial metrics. Default: False.'
-)
-
 # cell_file
 my_parser.add_argument(
     '--cell_file', 
@@ -129,7 +121,6 @@ filtering_key = args.filtering_key
 lineage_column = args.lineage_column
 solver = args.solver
 metric = args.metric
-spatial_metrics = args.spatial_metrics
 ncores = args.ncores
 path_meta = args.path_meta
 path_priors = args.path_priors if os.path.exists(args.path_priors) else None
@@ -179,14 +170,19 @@ def main():
         sample_name=sample_name,
         filtering=filtering, 
         filtering_kwargs=filtering_kwargs,
-        spatial_metrics=spatial_metrics,
+        spatial_metrics=True,
         lineage_column=lineage_column,
         path_priors=path_priors,
         **kwargs
     )
 
     # Write down dfs
-    a.var.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_vars_df.csv')
+    (   
+        a.var
+        .loc[:,~a.var.columns.str.contains('lineage_|enriched')]
+        .assign(filtering_key=filtering_key, sample=sample_name)
+        .to_csv(f'{sample_name}_{filtering_key}_vars_df.csv')
+    )
     dataset_df.assign(filtering_key=filtering_key, sample=sample_name).to_csv(f'{sample_name}_{filtering_key}_dataset_df.csv')
     
     # Dists

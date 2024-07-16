@@ -1,8 +1,8 @@
-// BUILD_IQTREE module
+// IQTREE module
 
 nextflow.enable.dsl = 2
 
-process BUILD_IQTREE {
+process IQTREE {
 
     tag "${sample}: ${filtering_key}"
 
@@ -10,7 +10,7 @@ process BUILD_IQTREE {
     tuple val(sample), val(filtering_key), path(input_folder)
 
     output:
-    tuple val(sample), val(filtering_key), path(input_folder), path("tree.newick"), emit: tree
+    tuple val(sample), val(filtering_key), path(input_folder), path("final_tree.newick"), emit: tree
     
     script:
     """
@@ -20,7 +20,7 @@ process BUILD_IQTREE {
 
     stub:
     """
-    touch tree.newick
+    touch final_tree.newick
     """
 
 }
