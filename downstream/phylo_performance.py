@@ -3,9 +3,7 @@ Visualiza phylo output.
 """
 
 import os
-import pickle
-from scipy.sparse import load_npz
-from anndata import AnnData
+from mito_utils.utils import *
 from mito_utils.preprocessing import *
 from mito_utils.phylo_plots import *
 from mito_utils.heatmaps_plots import *
@@ -18,14 +16,42 @@ matplotlib.use('macOSX')
 
 # Paths
 path_main = '/Users/IEO5505/Desktop/mito_bench/'
-path_results = os.path.join(path_main, 'results/phylo_inference')
+path_results = os.path.join(path_main, 'results/phylo')
 
 
 ##
 
+base_dir = path_results
+file_name = 'nodes.csv'
 
-# Tree viz
-df = pd.read_csv(os.path.join(path_results, 'output/supports_df.csv'), index_col=0)
+
+
+nodes_d = traverse_and_extract_flat(base_dir, file_name=file_name)
+df = pd.concat([   
+    df.assign(sample=sample, variant_set=variant_set) for \
+    (sample, variant_set), df in nodes_d.items() 
+])
+    
+(
+    df[~df['support'].isna()]
+    .groupby(['sample', 'variant_set']).apply(lambda x: x['support'].sort_values().tail(50).median()) #np.percentile(x['support'], 75))
+    .reset_index()
+)
+
+
+
+sns.kdeplot()
+plt.show()
+
+df['support'].describe()
+df.loc[lambda x: ~x['support'].isna() & ~x['assigned_var'].isna()]['support'].median()
+
+df.
+
+
+
+
+
 
 # 1. How robust are trees to bootstrapping?
 df.describe()
