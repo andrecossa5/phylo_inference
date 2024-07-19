@@ -75,6 +75,14 @@ my_parser.add_argument(
     help='Metric for cell-cell dissimilarity computation: Default: jaccard.'
 )
 
+# nmads MT-coverage
+my_parser.add_argument(
+    '--nmads', 
+    type=int,
+    default=7,
+    help='nmads MT-coverage: Default: 7.'
+)
+
 # solver
 my_parser.add_argument(
     '--ncores', 
@@ -119,6 +127,7 @@ sample_name = args.sample_name
 path_filtering = args.path_filtering
 filtering_key = args.filtering_key
 lineage_column = args.lineage_column
+nmads = int(args.nmads)
 solver = args.solver
 metric = args.metric
 ncores = args.ncores
@@ -156,7 +165,7 @@ def main():
     with_GBC = False
     if lineage_column == 'GBC' and lineage_column in meta.columns:
         with_GBC = True
-    afm = read_one_sample(path_data, sample=sample_name, with_GBC=with_GBC, cell_file=cell_file)
+    afm = read_one_sample(path_data, sample=sample_name, with_GBC=with_GBC, cell_file=cell_file, nmads=nmads)
     sample_col = meta.columns[meta.columns.str.contains('sample')][0]
     meta = meta.loc[lambda x: meta[sample_col]==sample_name]
     afm.obs = afm.obs.join(meta[[ x for x in meta.columns if x not in afm.obs.columns ]])

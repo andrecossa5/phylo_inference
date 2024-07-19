@@ -23,6 +23,7 @@ process FILTER_AFM {
     """
     python ${baseDir}/bin/filter_variants/get_stats.py \
     --path_data ${params.path_data} \
+    --nmads ${params.nmads} \
     --sample_name ${sample} \
     --path_filtering ${params.path_filtering} \
     --filtering_key ${filtering_key} \

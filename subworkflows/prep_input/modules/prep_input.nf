@@ -21,6 +21,7 @@ process PREP_INPUT {
     """
     python ${baseDir}/bin/prep_input/prep_input.py \
     --path_data ${params.path_data} \
+    --nmads ${params.nmads} \
     --path_meta ${params.path_meta} \
     --path_priors ${params.path_priors} \
     --path_filtering ${params.path_filtering} \

@@ -6,10 +6,16 @@ include { RAW_TREE } from "./subworkflows/raw_tree/main"
 include { FINAL_TREE } from "./subworkflows/final_tree/main"
 include { STATS } from "./subworkflows/tree_stats/main"
 
+//
+
 // Samples channel
-ch_samples = Channel
+if (params.samples && params.samples.size() > 0) {
+    ch_samples = Channel.fromList(params.samples)
+} else {
+    ch_samples = Channel
     .fromPath("${params.path_data}/*", type:'dir') 
     .map{ it.getName() }
+}
 
 //
 
