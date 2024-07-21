@@ -8,6 +8,8 @@ from mito_utils.preprocessing import *
 from mito_utils.phylo_plots import *
 from mito_utils.heatmaps_plots import *
 from mito_utils.plotting_base import *
+from mito_utils.metrics import *
+from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
 matplotlib.use('macOSX')
 
 
@@ -21,211 +23,119 @@ path_results = os.path.join(path_main, 'results/phylo')
 
 ##
 
-base_dir = path_results
-file_name = 'nodes.csv'
 
-
-
-nodes_d = traverse_and_extract_flat(base_dir, file_name=file_name)
-df = pd.concat([   
-    df.assign(sample=sample, variant_set=variant_set) for \
-    (sample, variant_set), df in nodes_d.items() 
-])
-    
-(
-    df[~df['support'].isna()]
-    .groupby(['sample', 'variant_set']).apply(lambda x: x['support'].sort_values().tail(50).median()) #np.percentile(x['support'], 75))
-    .reset_index()
-)
-
-
-
-sns.kdeplot()
-plt.show()
-
-df['support'].describe()
-df.loc[lambda x: ~x['support'].isna() & ~x['assigned_var'].isna()]['support'].median()
-
-df.
-
-
-
-
-
-
-# 1. How robust are trees to bootstrapping?
-df.describe()
-df.groupby(['sample', 'filtering', 'solver', 'bootstrap']).median()['TBE'].sort_values(ascending=False)
-df.groupby('sample').median()['TBE'].sort_values(ascending=False)
-
-# Reformat for plotting
-df = df.melt(id_vars=df.columns[~df.columns.isin(['TBE', 'FBP'])], var_name='support')
-df['Support type'] =  df['support'] + ", " + df['bootstrap']
-
-# Individual nodes
-fig, ax = plt.subplots(figsize=(7, 3.5))
-sns.kdeplot(data=df, x="value", fill=True, hue='Support type', ax=ax, legend=True)
-ax.set(title=f'Internal nodes support distribution')
-ax.set(xlabel='support')
-ax.spines[['right', 'top']].set_visible(False)
-fig.tight_layout()
-fig.savefig(os.path.join(path_results, 'support_distribution.pdf'), dpi=500)
-
-
-##
-
-
-# Take only jacknife results
-df_ = df.loc[df['Support type'] == "TBE, jacknife"]
-
-# Nodes, molecular time relationship
-fig, axs = plt.subplots(1,2, figsize=(10, 5))
-sns.regplot(x='time', y='value', data=df_, scatter=False, ax=axs[0])
-axs[0].plot(df_['time'], df_['value'], 'ko', markersize=1)
-format_ax(axs[0], reduced_spines=True, xlabel='Molecular time', ylabel='TBE',
-    title=f'Pearson\'s correlation: {np.corrcoef(df_["value"], df_["value"])[0,1]:.2f}'
-)
-sns.regplot(x='n_cells', y='value', data=df_, scatter=False, ax=axs[1])
-axs[1].plot(df_['n_cells'], df_['value'], 'ko', markersize=1)
-format_ax(axs[1], reduced_spines=True, xlabel='n cells', ylabel='TBE',
-    title=f'Pearson\'s correlation: {np.corrcoef(df_["n_cells"], df["value"])[0,1]:.2f}'
-)
-fig.tight_layout()
-plt.show()
-
-
-# Fig
-fig, axs = plt.subplots(1,2, figsize=(4.5, 4.5))
-
-colors = {
-    'GT': '#1f77b4', 'MQuad': '#ff7f0e'
-}
-
-df_ = df.loc[df['Support type'] == "TBE, jacknife"]
-order = df_.groupby('solver')['value'].median().sort_values(ascending=False).index
-df_['solver'] = pd.Categorical(df_['solver'], categories=order)
-box(df_, x='solver', y='value', by='filtering', c=colors, ax=axs[0], order=order)
-format_ax(ax=axs[0], ylabel='TBE', reduced_spines=True)
-
-order = df_.groupby('solver')['median_RF'].median().sort_values().index
-df_['solver'] = pd.Categorical(df_['solver'], categories=order)
-box(df_, x='solver', y='median_RF', by='filtering', c=colors, ax=axs[1])
-add_legend(
-    label='MT-SNV filtering method', ax=axs[0], colors=colors, 
-    label_size=10, artists_size=9, ticks_size=8,
-    loc='lower left', bbox_to_anchor=(.6,1.05), 
-    ncols=df['filtering'].unique().size
-)
-format_ax(ax=axs[1], reduced_spines=True, ylabel='RF distance')
-fig.subplots_adjust(top=.8, wspace=.55, left=.2, right=.9)
-fig.savefig(os.path.join(path_results, 'RF_and_TBE_solvers_filtering.pdf'), dpi=500)
-
-
-##
-
-
-# 2. How consistent are trees, across solvers?
-df = pd.read_csv(os.path.join(path_results, 'filtering_df.csv'), index_col=0)
-df['median_RF'] = np.round(df['median_RF'], 2)
-df_ = df.loc[lambda x: x.index.str.contains('MDA')]
-
-fig, ax = plt.subplots(figsize=(7,5))
-bar(df_.sort_values('median_RF'),
-    x='filtering', y='median_RF', s=.5, 
-    c='#D2CBCB', edgecolor='k', ax=ax
-)
-ax.set_ylim((0.95, 1.005))
-format_ax(
-    ax=ax, title='RF distance across solvers', xticks=df_.sort_values('median_RF')['filtering'],
-    xlabel='MT-SNVs filtering', ylabel='Median RF distance'
-)
-ax.spines[['left', 'right', 'top']].set_visible(False)
-plt.show()
-
-
-##
-
-
-# 3. Are gt clones associated with tree topologies??
-# df = pd.read_csv(os.path.join(path_results, 'clones_df.csv'), index_col=0)
-# df_ = (
-#     df
-#     .groupby(['sample', 'filtering', 'solver', 'metric'])
-#     .apply(lambda x: (np.sum(x['mpd.obs.p']<=.05) / x['mpd.obs.p'].size))
-#     .reset_index(name='perc_significant')
+# # Collect metrics
+# 
+# # 1. precomputed
+# d = traverse_and_extract_flat(path_results, file_name='final_tree_stats.csv')
+# df_stats = pd.concat([   
+#     df.assign(sample=sample, variant_set=variant_set)
+#     .reset_index()
+#     .rename(columns={'index':'metric', 'metric':"value"}) \
+#     for (sample, variant_set), df in d.items() 
+# ])
+#     
+# ##
+# 
+# # 2. Lineage association, continuos
+# d = traverse_and_extract_flat(path_results, file_name='lineage_association.csv')
+# 
+# L = []
+# for (sample, variant_set), df in d.items():
+#     df['corr_type'] = np.where(df['Var1'] == df['Var2'], 'auto', 'cross')
+#     df = (
+#         df.query('corr_type=="auto"').drop(['Var2', 'corr_type'], axis=1).rename(columns={'Var1':'GBC'}).set_index('GBC')
+#         .join(
+#             pd.read_csv(os.path.join(path_results, sample, variant_set, 'filtered_input', 'meta.csv'), index_col=0)
+#             ['GBC'].value_counts(normalize=True).to_frame('prevalence')
+#         )
+#     )
+#     L.append(df.assign(sample=sample, variant_set=variant_set))
+# 
+# df_perc_significant = (
+#     pd.concat(L)
+#     .groupby(['variant_set', 'sample'])
+#     .apply( lambda x: np.sum((x['Z']>10) & (x['p'] <= 0.05) & (x['prevalence'] >= .01)) / (x['prevalence'] >= .01).sum() )
+#     .to_frame('value').reset_index()
+#     .assign(metric='perc_significant')
 # )
 # 
 # ##
 # 
-# fig, ax = plt.subplots(figsize=(6, 5))
+# # 3. n cells analyzed, nGT clones, NMI, ARI
+# cells_meta = pd.read_csv(os.path.join(path_main, 'data', 'cells_meta.csv'), index_col=0)
+# d = traverse_and_extract_flat(path_results, file_name='nodes.csv')
 # 
-# colors = create_palette(df_, 'filtering', 'tab10')
-# order = df_.groupby('solver')['perc_significant'].median().sort_values(ascending=False).index
-# df_['solver'] = pd.Categorical(df_['solver'], categories=order)
-# box(df_, x='solver', y='perc_significant', by='filtering', c=colors, ax=ax, order=order)
-# format_ax(
-#     ax, title='Phylogenetic clustering of clonal labels', 
-#     ylabel='% of clones with significant phylogenetic clustering',
-#     xlabel='Solver'
-# )
-# add_legend(
-#     label='MT-SNV filtering method', ax=ax, colors=colors, 
-#     label_size=10, artists_size=9, ticks_size=8,
-#     loc='center left', bbox_to_anchor=(1,.5)
+# L = []
+# for (sample, variant_set), df_nodes in d.items():
+#     meta_sample = cells_meta.query('sample == @sample')
+#     cell_sample = df_nodes.loc[lambda x: ~x['cell'].isna()][['cell', 'clonal_ancestor']].drop_duplicates().set_index('cell')
+#     perc_cells_analyzed = cell_sample.shape[0] / meta_sample.shape[0]
+#     nGT_clones = meta_sample['GBC'].nunique()
+#     cells = list(set(meta_sample.index) & set(cell_sample.index))
+#     x = meta_sample.loc[cells, 'GBC'].values
+#     y = cell_sample.loc[cells, 'clonal_ancestor']
+#     assert x.size == y.size
+#     ARI = adjusted_rand_score(x,y)
+#     NMI = adjusted_mutual_info_score(x,y)
+#     L.append([perc_cells_analyzed, nGT_clones, NMI, ARI, sample, variant_set])
+# 
+# df_last_metrics = (
+#     pd.DataFrame(L, columns=['perc_cells_analyzed', 'nGT_clones', 'NMI', 'ARI', 'sample', 'variant_set'])
+#     .melt(id_vars=['sample', 'variant_set'], var_name='metric', value_name='value')
 # )
 # 
-# fig.tight_layout()
-# plt.show()
-
-##
-
-# fig, ax = plt.subplots(figsize=(6, 5))
 # 
-# df_to_plot = (
-#     df_.groupby('filtering')['perc_significant'].median()
-#     .reset_index().sort_values('perc_significant', ascending=False)
-# )
-# df_to_plot['perc_significant'] = np.round(df_to_plot['perc_significant'], 2)
-# bar(df_to_plot, x='filtering', y='perc_significant', s=.5, c='#D2CBCB', edgecolor='k', ax=ax)
-# format_ax(
-#     ax=ax, title='Phylogenetic clustering of clonal labels', xticks=df_to_plot['filtering'],
-#     xlabel='MT-SNVs filtering', ylabel='% clones with significant phylogenetic clustering'
-# )
-# ax.spines[['left', 'right', 'top']].set_visible(False)
-# plt.show()
+# ##
+# 
+# 
+# # Concat
+# phylo_df = pd.concat([ 
+#     df_stats.reset_index(drop=True), 
+#     df_perc_significant.reset_index(drop=True), 
+#     df_last_metrics.reset_index(drop=True) 
+# ])
+# phylo_df.to_csv(os.path.join(path_results, 'phylo_df.csv'))
 
 
 ##
 
 
-# 4. Are input mutations significantly associated with tree topologies??
-# df = pd.read_csv(os.path.join(path_results, 'muts_df.csv'), index_col=0)
-# 
-# df_ = (
-#     df
-#     .groupby(['sample', 'filtering', 'solver', 'metric'])
-#     .apply(lambda x: (np.sum(x['k_p']<=.05) / x['k_p'].size))
-#     .reset_index(name='perc_significant')
-# )
-# 
-# fig, ax = plt.subplots(figsize=(6, 5))
-# 
-# colors = create_palette(df_, 'filtering', 'tab10')
-# order = df_.groupby('solver')['perc_significant'].median().sort_values(ascending=False).index
-# df_['solver'] = pd.Categorical(df_['solver'], categories=order)
-# box(df_, x='solver', y='perc_significant', by='filtering', c=colors, ax=ax, order=order)
-# format_ax(
-#     ax, title='Phylogenetic signal of input MT-SNVs', 
-#     ylabel='% of MT-SNVS with significant phylogenetic signal',
-#     xlabel='Solver'
-# )
-# add_legend(
-#     label='MT-SNV filtering method', ax=ax, colors=colors, 
-#     label_size=10, artists_size=9, ticks_size=8,
-#     loc='center left', bbox_to_anchor=(1,.5)
-# )
-# 
-# fig.tight_layout()
-# plt.show()
+# Read df metrics
+df = pd.read_csv(os.path.join(path_results, 'phylo_df.csv'), index_col=0)
+interesting_metrics = [ 'char_tree_dist_corr', 'char_dist_boot', 'median_support', 'perc_cells_analyzed', 'perc_significant', 'NMI' ]
+d_rename = {
+    'char_tree_dist_corr' : 'Character- vs tree-based \n distance correlation',
+    'char_dist_boot' : 'Character distance correlation \n upon bootstrapping',
+    'median_support' : 'Median internal nodes support \n upon bootstrapping',
+    'perc_cells_analyzed' : 'Fraction of cells in the final tree',
+    'perc_significant' : 'Fraction of clones (>1% prevalence) \n with significant and positive phylocorr',
+    'NMI' : 'Normalized mutual information'
+}
+
+
+df = df.query('metric in @interesting_metrics')
+
+# Colors 
+df['sample'] = pd.Categorical(df['sample'], categories=['AML_clones', 'MDA_clones', 'MDA_PT', 'MDA_lung'])
+sample_colors = create_palette(df, 'sample', 'tab10')
+
+# Here we go
+fig, axs = plt.subplots(2,3,figsize=(10,8))
+
+for ax, metric in zip(axs.ravel(), interesting_metrics):
+    df_ = df.query('metric==@metric')
+    print(df_.shape)
+    order_ = df_.groupby('variant_set')['value'].median().sort_values(ascending=False).index
+    df_['variant_set'] = pd.Categorical(df_['variant_set'], categories=order_)
+    box(df_, x='variant_set', y='value', c='white', ax=ax)
+    strip(df_, x='variant_set', y='value', by='sample', c=sample_colors, ax=ax)
+    format_ax(ax, ylabel='value', xlabel='', rotx=90, title=d_rename[metric], reduced_spines=True, title_size=11)
+
+add_legend(label='Sample', ax=axs[0,2], colors=sample_colors, loc='upper right', bbox_to_anchor=(1,1),
+           artists_size=9, label_size=9, ticks_size=7)
+fig.tight_layout()
+fig.savefig(os.path.join(path_results, f'phylo_performance.png'), dpi=1000)
+
 
 ##
