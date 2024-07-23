@@ -136,3 +136,4 @@ dmypy.json
 # Folders 
 ./data
 ./results
+./scratch
