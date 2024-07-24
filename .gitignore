@@ -129,10 +129,10 @@ dmypy.json
 .pyre/
 
 # Nextflow
-./work
-./trace*
-./.nextflow*
+work/
+trace*
+.nextflow*
 
 # Folders 
-./data
-./results
+data/
+results/
