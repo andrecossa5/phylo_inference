@@ -1,0 +1,13 @@
+,metric
+n_cells,716.0
+n_vars,38.0
+n_clones,18.0
+ratio_supported_unsupported_branches,0.012587412587412588
+median_support,34.0
+std_support,13.677644585484053
+median_time,13.290006988120195
+mean_depth,14.279329608938548
+median_n_shared_muts,5.543111725120665
+median_connectedness,715.0
+char_tree_dist_corr,-0.006680696123356212
+char_dist_boot,0.7914302760675525
