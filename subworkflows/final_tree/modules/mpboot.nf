@@ -14,8 +14,8 @@ process MPBOOT {
     
     script:
     """
-    mpboot -s ${input_folder}/sequences.fasta
-    mv sequences.fasta.treefile final_tree.newick
+    mpboot -s ${input_folder}/sequences.fasta -bb 1000
+    mv ${input_folder}/sequences.fasta.treefile final_tree.newick
     """
 
     stub:
