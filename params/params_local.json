@@ -1,24 +1,25 @@
 {
-    "path_data" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/samples",
-    "samples" : ["sAML1"],
-    "path_meta" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/meta/cells_meta.csv",
-    "path_filtering" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/vars_df/filtering_options_test.json",
-    "path_priors" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/data/vars_df/priors.csv",
-    "outdir" : "/Users/IEO5505/Desktop/AML_clonal_reconstruction/results/phylo_sAML1_all",
+    
+    "tracing_system" : "MAESTER",
+    "outdir" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference",
 
-    "nmads" : 100,
-    "lineage_column" : "aggregated_ct",
-    "cell_file" : "lymphoid.txt",
+    "path_input" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/input_file.csv",
+    "path_meta" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/cells_meta.csv",
+    "path_char_filtering" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/char_filtering_ops.json",
+    "path_cell_filtering" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/cell_filtering_ops.json",
+    "path_bin" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/bin_ops.json",
+    "path_distance_tree" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/distance_tree_ops.json",
+    "path_dbSNP" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/miscellanea/dbSNP_MT.txt",
+    "path_REDIdb" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/miscellanea/REDIdb_MT.txt",
 
-    "distance_metric" : "jaccard",
-    "cassiopeia_solver" : "NJ",
-    "cassiopeia_boot_method" : "feature_resampling",
-    "cassiopeia_feature_resampling_perc" : 0.8,
-    "cassiopeia_n_boot" : 5,
-    "final_solver" : "cassy",
-    "min_cell_clone" : 5,
-    "min_assignment_prob" : 0.3,
-    "test_association_with_lineage" : true 
+    "n_boot_distances" : 5,
+    "boot_strategy" : "feature_resampling",
+    "frac_char_resampling" : 0.8,
+    "K" : 10,
+    "lineage_column" : "GBC",
+
+    "tree_algorithm" : "cassiopeia",
+    "support_method" : "TBE"
+
 
 }
-
