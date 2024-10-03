@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 // phylo_inference FINAL VERSION
-=======
-// phylo_inference FINAL
->>>>>>> 4b788f14619560e488bf148af95953fc3461fd41
 
 nextflow.enable.dsl = 2
 include { preprocess } from "./subworkflows/preprocessing/main"
