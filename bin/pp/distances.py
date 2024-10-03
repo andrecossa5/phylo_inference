@@ -146,7 +146,7 @@ def main():
         DP = DP_original
     
     # Calculate distances
-    D = compute_distances(AD=AD, DP=DP, metric=tree_kwargs['metric'], bin_method=bin_method, binarization_kwargs=bin_kwargs)
+    D = compute_distances(AD=AD, DP=DP, metric=tree_kwargs['metric'], bin_method=bin_method, binarization_kwargs=bin_kwargs, ncores=n_cores)
 
     # Save dist matrix 
     save_npz('dist.npz', coo_matrix(D))

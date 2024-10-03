@@ -42,12 +42,6 @@ my_parser.add_argument(
 
 # Parse arguments
 args = my_parser.parse_args()
-
-# os.chdir('/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/94/961e3f1d8b7a7fdcef424ef50c6a12')
-# path_tree = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/c0/dea9b7d53a9c82c66dea344b3f590a/annotated_tree.pickle'
-# lineage_column = 'GBC'
-# job_id = 'aa'
-
 path_tree = args.tree
 lineage_column = args.lineage_column
 job_id = args.job_id
@@ -102,6 +96,7 @@ def main():
     metrics['median_time'] = df_support['time'].median()
     metrics['median_support_upmost_nodes'] = df_support.query('time<=10')['support'].median()
 
+    # Others
     corr_dists, p_corr_dists = calculate_corr_distances(tree)
     metrics['corr_distances'] = corr_dists
     metrics['corr_distances_pvalue'] = p_corr_dists
@@ -114,6 +109,7 @@ def main():
     metrics['median_CI'] = np.median(CI(tree))
     metrics['median_RI'] = np.median(RI(tree))
 
+    # Benchmark specifics
     if lineage_column is not None:
         test = ~tree.cell_meta['MT_clone'].isna()
         metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
@@ -124,6 +120,7 @@ def main():
     else:
         pd.DataFrame().to_csv('evo_coupling.csv')
 
+    # Collapse tree
     n = len(tree.internal_nodes)
     tree.collapse_mutationless_edges(True)
     n_ = len(tree.internal_nodes)
