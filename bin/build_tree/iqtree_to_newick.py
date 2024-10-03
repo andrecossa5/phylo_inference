@@ -11,13 +11,13 @@ Convert a .iqtree object to a newick string.
 def main():
 
     newick_format = ""
-    with open('sequences.fasta.iqtree', 'r') as file:
+    with open('genotypes.fa.iqtree', 'r') as file:
         for line in file:
             if line.strip().startswith("("):  # Newick trees start with '('
                 newick_format = line.strip()
                 break
 
-    with open(f'tree.newick', 'w') as file:
+    with open(f'final_tree.newick', 'w') as file:
         file.write(newick_format)
 
 
