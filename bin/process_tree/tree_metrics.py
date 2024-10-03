@@ -114,11 +114,6 @@ def main():
     metrics['median_CI'] = np.median(CI(tree))
     metrics['median_RI'] = np.median(RI(tree))
 
-    n = len(tree.internal_nodes)
-    tree.collapse_mutationless_edges(True)
-    n_ = len(tree.internal_nodes)
-    metrics['ratio_char_supported_nodes_from_ASR'] = n_/n
-
     if lineage_column is not None:
         test = ~tree.cell_meta['MT_clone'].isna()
         metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
@@ -128,6 +123,11 @@ def main():
         C.to_csv('evo_coupling.csv')
     else:
         pd.DataFrame().to_csv('evo_coupling.csv')
+
+    n = len(tree.internal_nodes)
+    tree.collapse_mutationless_edges(True)
+    n_ = len(tree.internal_nodes)
+    metrics['ratio_char_supported_nodes_from_ASR'] = n_/n
 
     # Save
     to_frame = lambda x: pd.Series(x).to_frame('value').reset_index(names='metric').assign(job_id=job_id)
