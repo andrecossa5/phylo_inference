@@ -6,6 +6,14 @@ include { ONESAMPLE } from "./modules/one_sample.nf"
 
 // 
 
+import java.util.UUI
+
+def generateRandomCode() {
+    UUID.randomUUID().toString().replaceAll('-', '').take(10) // Generates a 10-character code
+}
+        
+
+
 //----------------------------------------------------------------------------//
 // hyper_tuning subworkflow
 //----------------------------------------------------------------------------//
@@ -17,7 +25,6 @@ workflow hyper_tuning {
 
     main: 
 
-        def index = 0
         ch_input = ch_input.map{ it -> tuple(it[1], it[2]) }
                 .combine(Channel.fromList(params.min_n_positive))
                 .combine(Channel.fromList(params.af_confident_detection))
@@ -29,7 +36,7 @@ workflow hyper_tuning {
                 .combine(Channel.fromList(params.min_cell_prevalence))
                 .map{
                     def (a, b, c, d, e, f, g, h, i, l) = it
-                    tuple(a, b, c, d, e, f, g, h, i, l, index++)
+                    tuple(a, b, c, d, e, f, g, h, i, l, generateRandomCode())
                 }
 
         ONESAMPLE(ch_input)
