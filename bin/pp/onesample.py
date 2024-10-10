@@ -317,7 +317,7 @@ if __name__ == "__main__":
         main()
     except:
          logging.info("Something wrong with this parameters combo...")
-         with open(f'{job_id}_stats.pickle', 'wb') as f:
+         with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
              pickle.dump({}, f)
 
 #######################################################################
