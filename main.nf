@@ -4,6 +4,7 @@ nextflow.enable.dsl = 2
 include { preprocess } from "./subworkflows/preprocessing/main"
 include { build_tree } from "./subworkflows/tree_building/main"
 include { process_tree } from "./subworkflows/tree_processing/main"
+include { hyper_tuning } from "./subworkflows/hyper_tuning/main"
 
 //
 
@@ -18,6 +19,13 @@ ch_jobs = Channel.fromPath(params.path_input)
 //----------------------------------------------------------------------------//
 // phylo_inference workflow main entry point
 //----------------------------------------------------------------------------//
+
+workflow filter_tuning {
+
+    hyper_tuning(ch_jobs)
+    hyper_tuning.out.stats.view()
+
+}
 
 workflow phylo {
 
@@ -36,7 +44,7 @@ workflow {
     
     println "\n"
     println "Hi there! This is the new version of the phylo_inference toolkit. The phylo entry point is currently supported."
-    println "Usage: nextflow run main.nf -c <config> -params-file <params> -profile <profile> -entry phylo"
+    println "Usage: nextflow run main.nf -c <config> -params-file <params> -profile <profile> -entry <entry>"
     println "See https://github.com/.../main.nf ./config and ./params for configurations and options available."
     println "N.B. BETA version under active development."
     println "\n"

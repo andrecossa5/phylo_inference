@@ -29,7 +29,6 @@ process MAESTER {
     """
     python ${baseDir}/bin/pp/MAESTER.py \
     --path_afm ${ch_matrix} \
-    --path_meta ${params.path_meta} \
     --path_char_filtering ${params.path_char_filtering} \
     --path_cell_filtering ${params.path_cell_filtering} \
     --path_bin ${params.path_bin} \
@@ -38,7 +37,6 @@ process MAESTER {
     --cell_filtering_key ${cell_filtering_key} \
     --bin_key ${bin_key} \
     --tree_key ${tree_key} \
-    --sample ${sample} \
     --job_id ${job_id} \
     --lineage_column ${params.lineage_column} \
     --n_cores ${task.cpus} \

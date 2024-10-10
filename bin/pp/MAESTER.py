@@ -27,13 +27,6 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--path_meta', 
-    type=str,
-    default=None,
-    help='Path to meta_cells.csv file. Default: None .'
-)
-
-my_parser.add_argument(
     '--path_char_filtering', 
     type=str,
     default=None,
@@ -90,13 +83,6 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--sample', 
-    type=str,
-    default='MDA_clones',
-    help='Sample to use. Default: MDA_clones.'
-)
-
-my_parser.add_argument(
     '--job_id', 
     type=str,
     default='job_id',
@@ -146,7 +132,6 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 
 path_afm = args.path_afm
-path_meta = args.path_meta
 path_char_filtering = args.path_char_filtering
 path_cell_filtering = args.path_cell_filtering
 path_bin = args.path_bin
@@ -155,8 +140,8 @@ char_filtering_key = args.char_filtering_key
 cell_filtering_key = args.cell_filtering_key
 bin_key = args.bin_key
 tree_key = args.tree_key
-sample = args.sample
 job_id = args.job_id
+cell_file = args.cell_file
 lineage_column = args.lineage_column
 n_cores = args.n_cores
 cell_file = args.cell_file if args.cell_file != "None" else None
@@ -191,34 +176,36 @@ def main():
     tree_kwargs = process_kwargs(path_tree, tree_key)
 
     # Read AFM and add metadata
-    afm = make_AFM(path_afm, cell_file=cell_file, path_meta=path_meta, sample=sample, **cell_filtering_kwargs)
+    afm = sc.read(path_afm)
     
     # Filter MT-SNVs and calculate metrics
-    a, dataset_df, X_bin = filter_AFM(
-        afm, 
-        filtering=filtering, 
-        filtering_kwargs=char_filtering_kwargs,
-        bin_method=bin_method,
-        binarization_kwargs=bin_kwargs,
-        tree_kwargs=tree_kwargs,
-        path_dbSNP=path_dbSNP,
-        path_REDIdb=path_REDIdb,
+    afm = sc.read(path_afm, )
+    afm = filter_cells(afm, 
+                       cell_subset=pd.read_csv(cell_file)[0].to_list(),
+                       **cell_filtering_kwargs)
+    afm = filter_afm(
+        afm,
+        min_cell_number=10,
+        filtering=filtering,
         lineage_column=lineage_column,
-        return_X_bin=True,
+        filtering_kwargs=char_filtering_kwargs,
+        binarization_kwargs=bin_kwargs,
+        bin_method=bin_method,
+        tree_kwargs=tree_kwargs,
+        path_dbSNP=path_dbSNP, 
+        path_REDIdb=path_REDIdb,
         **kwargs
     )
 
-    # Get AD, DP
-    AD, DP, _ = get_AD_DP(a)
-
     # Write AD and DP, cell and var meta, and dataset metric 
-    save_npz('AD.npz', AD)
-    save_npz('DP.npz', DP)
-    save_npz('X_bin.npz', X_bin)
-    a.obs.to_csv('cell_meta.csv')
-    a.var.to_csv('char_meta.csv')
-    dataset_df.to_csv('dataset_df.csv')
-    seqs = AFM_to_seqs(a, X_bin=X_bin.A.T)
+    to_frame_kwargs = lambda x, y: pd.Series(x).to_frame('value').reset_index(names=y).assign(job_id=job_id)
+    save_npz('AD.npz', afm.layers['AD'].T)
+    save_npz('DP.npz', afm.layers['DP'].T)
+    save_npz('X_bin.npz', afm.layers['bin'].T)
+    afm.obs.to_csv('cell_meta.csv')
+    afm.var.to_csv('char_meta.csv')
+    to_frame_kwargs(afm.uns['dataset_metrics'], 'metric').to_csv('dataset_metrics.csv')
+    seqs = AFM_to_seqs(afm, bin_method=bin_method, binarization_kwargs=bin_kwargs)
     with open('genotypes.fa', 'w') as f:
         for cell in seqs:
             f.write(f'>{cell}\n')
@@ -226,11 +213,10 @@ def main():
     
     # Write pp options
     kwargs['filtering'] = filtering
-    to_frame_kwargs = lambda x: pd.Series(x).to_frame('value').reset_index(names='option').assign(job_id=job_id)
-    to_frame_kwargs({**char_filtering_kwargs,**kwargs}).to_csv('char_filtering_ops.csv')
-    to_frame_kwargs(cell_filtering_kwargs).to_csv('cell_filtering_ops.csv')
-    to_frame_kwargs(bin_kwargs).to_csv('bin_ops.csv')
-    to_frame_kwargs(tree_kwargs).to_csv('tree_ops.csv')
+    to_frame_kwargs({**char_filtering_kwargs,**kwargs}, 'option').to_csv('char_filtering_ops.csv')
+    to_frame_kwargs(cell_filtering_kwargs, 'option').to_csv('cell_filtering_ops.csv')
+    to_frame_kwargs(bin_kwargs, 'option').to_csv('bin_ops.csv')
+    to_frame_kwargs(tree_kwargs, 'option').to_csv('tree_ops.csv')
 
 
     ##

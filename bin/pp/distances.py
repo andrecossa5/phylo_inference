@@ -116,6 +116,7 @@ frac_char_resampling = args.frac_char_resampling
 
 # Code
 from scipy.sparse import save_npz, load_npz, csr_matrix
+from anndata import AnnData
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
@@ -146,10 +147,12 @@ def main():
         DP = DP_original
     
     # Calculate distances
-    D = compute_distances(AD=AD, DP=DP, metric=tree_kwargs['metric'], bin_method=bin_method, binarization_kwargs=bin_kwargs, ncores=n_cores)
+    afm = AnnData(X=np.divide(AD, (DP+.0000001)), uns={'genotyping':{}}, layers={'AD':AD, 'DP':DP})
+    compute_distances(afm, metric=tree_kwargs['metric'], 
+                      bin_method=bin_method, binarization_kwargs=bin_kwargs, ncores=n_cores)
 
     # Save dist matrix 
-    save_npz('dist.npz', coo_matrix(D))
+    save_npz('dist.npz', afm.obsp['distances'])
 
 
     ##

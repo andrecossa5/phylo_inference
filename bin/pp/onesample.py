@@ -1,0 +1,323 @@
+#!/usr/bin/python
+
+# onesample script
+
+########################################################################
+
+# Libraries 
+import os
+import argparse
+
+# Create the parser
+my_parser = argparse.ArgumentParser(
+    prog='onesample',
+    description=
+    """
+    Prepare input for tree building: character/distance matrices and sequences (.fasta) file.
+    """
+)
+
+# Add arguments
+
+my_parser.add_argument(
+    '--path_afm', 
+    type=str,
+    default='..',
+    help='Path to <name>.h5ad file from mito_preprocessing pipelin. Default: .. .'
+)
+
+my_parser.add_argument(
+    '--job_id', 
+    type=str,
+    default='job_0',
+    help='job id. Default: job_0.'
+)
+
+my_parser.add_argument(
+    '--cell_filter', 
+    type=str,
+    default='filter2',
+    help='Cell filtering method. Default: filter2.'
+)
+
+my_parser.add_argument(
+    '--min_cell_number', 
+    type=int,
+    default=0,
+    help='Min number of cell in <lineage_column> categories to retain them. Default: 10.'
+)
+
+my_parser.add_argument(
+    '--min_var_quality', 
+    type=int,
+    default=30,
+    help='Min Q30 phred score of a MT-SNV ADs. Default: 30.'
+)
+
+my_parser.add_argument(
+    '--min_frac_negative', 
+    type=float,
+    default=.2,
+    help='Minimum fraction of -cells to consider a MT-SNV. Default: .2.'
+)
+
+my_parser.add_argument(
+    '--min_n_positive', 
+    type=int,
+    default=5,
+    help='Minimum number of +cells to consider a MT-SNV. Default: 2.'
+)
+
+my_parser.add_argument(
+    '--af_confident_detection', 
+    type=float,
+    default=.01,
+    help='Allelic Frequency of confident detection. Default: .01.'
+)
+
+my_parser.add_argument(
+    '--min_n_confidently_detected', 
+    type=int,
+    default=2,
+    help='Minimum number of confidently detected +cells to consider a MT-SNV. Default: 2.'
+)
+
+my_parser.add_argument(
+    '--min_mean_AD_in_positives', 
+    type=float,
+    default=1.5,
+    help='Minimum number of mean AD in +cells to consider a MT-SNV. Default: 1.5.'
+)
+
+my_parser.add_argument(
+    '--min_mean_DP_in_positives', 
+    type=float,
+    default=20,
+    help='Minimum number of mean DP in +cells to consider a MT-SNV. Default: 20.'
+)
+
+my_parser.add_argument(
+    '--t_prob', 
+    type=float,
+    default=.7,
+    help='Probability threshold for assigning cells to 0/1 mixture binomial components if bin_method=MI_TO. Default: .7.'
+)
+
+my_parser.add_argument(
+    '--t_vanilla', 
+    type=float,
+    default=0,
+    help='AF threshold to assigning cells to 0/1 genotypes if bin_method=MI_TO or vanilla. Default: 0.'
+)
+
+my_parser.add_argument(
+    '--min_AD', 
+    type=int,
+    default=1,
+    help='Min number of AD to assign a 0/1 genotype. Default: 1.'
+)
+
+my_parser.add_argument(
+    '--min_cell_prevalence', 
+    type=float,
+    default=.1,
+    help='Min fraction of +cells to assign 0/1 genotypes with MI_TO binomial mixture. Default: 1.'
+)
+
+my_parser.add_argument(
+    '--bin_method', 
+    type=str,
+    default='MI_TO',
+    help='Binarization method. Default: MI_TO.'
+)
+
+my_parser.add_argument(
+    '--metric', 
+    type=str,
+    default='jaccard',
+    help='Distance metric for cell-cell distance computation. Default: jaccard.'
+)
+
+my_parser.add_argument(
+    '--solver', 
+    type=str,
+    default='NJ',
+    help='Tree-building algorithm for fast lineage inference. Default: NJ.'
+)
+
+my_parser.add_argument(
+    '--min_cell_prevalence', 
+    type=int,
+    default=1,
+    help='Min number of AD to assign a 0/1 genotype. Default: 1.'
+)
+
+my_parser.add_argument(
+    '--lineage_column', 
+    type=str,
+    default=None,
+    help='Lineage column (i.e., GBC for benchmarks). Default: None.'
+)
+
+my_parser.add_argument(
+    '--ncores', 
+    type=int,
+    default=8,
+    help='n cores for computing distances. Default: 8.'
+)
+
+my_parser.add_argument(
+    '--cell_file', 
+    type=str,
+    default=None,
+    help='Path selected subset of cell barcodes to analyze (N.B. in <CB>_<sample_name> format). Default: None.'
+)
+
+my_parser.add_argument(
+    '--path_dbSNP', 
+    type=str,
+    default=None,
+    help='Path to dbSNP database. Default: None.'
+)
+
+my_parser.add_argument(
+    '--path_REDIdb', 
+    type=str,
+    default=None,
+    help='Path to REDIdb database. Default: None.'
+)
+
+
+##
+
+
+# Parse arguments
+args = my_parser.parse_args()
+
+path_afm = args.path_afm
+job_id = args.job_id
+cell_filter = args.cell_filter
+min_cell_number = args.min_cell_number
+min_cov = args.min_cov
+min_var_quality = args.min_var_quality
+min_frac_negative = args.min_frac_negative
+min_n_positive = args.min_n_positive
+af_confident_detection = args.af_confident_detection
+min_n_confidently_detected = args.min_n_confidently_detected
+min_mean_AD_in_positives = args.min_mean_AD_in_positives
+min_mean_DP_in_positives = args.min_mean_DP_in_positives
+t_prob = args.t_prob
+t_vanilla = args.t_vanilla
+min_AD = args.min_AD
+min_cell_prevalence = args.min_cell_prevalence
+bin_method = args.bin_method
+metric = args.metric
+metric = 'custom_MI_TO_jaccard' if bin_method == 'MI_TO' else metric
+solver = args.solver
+lineage_column = args.lineage_column
+ncores = args.ncores
+cell_file = args.cell_file if args.cell_file != "None" else None
+path_dbSNP = args.path_dbSNP
+path_REDIdb = args.path_REDIdb
+
+##
+
+# Parameter space
+# grid = list(
+#     product(
+#         ['mito_preprocessing', 'maegatk'],  # pp_method
+#         np.linspace(.005, .05, 5),          # af_confident_detection
+#         np.arange(1, 3+1, 1),               # min_n_confidently_detected
+#         np.linspace(1, 3, 5),               # min_mean_AD_in_positives
+#         [1,2],                              # min_AD 
+#         ['vanilla', 'MI_TO']                # bin_method 
+#     )
+# )
+# ntot = len(grid)
+
+
+##
+
+
+########################################################################
+
+# Preparing run: import code, prepare directories
+
+# Code
+import os
+import pickle
+from mito_utils.utils import *
+from mito_utils.preprocessing import *
+from mito_utils.phylo import *
+from mito_utils.clustering import custom_ARI
+from sklearn.metrics import normalized_mutual_info_score
+
+########################################################################
+
+
+def main():
+
+    afm = sc.read(path_afm)
+    afm = filter_cells(afm, cell_filter='filter2')
+
+    afm, tree = filter_afm(
+        afm,
+        min_cell_number=min_cell_number,
+        lineage_column=lineage_column,
+        filtering_kwargs={
+            'min_cov' : min_cov,
+            'min_var_quality' : min_var_quality,
+            'min_frac_negative' : min_frac_negative,
+            'min_n_positive' : min_n_positive,
+            'af_confident_detection' : af_confident_detection,
+            'min_n_confidently_detected' : min_n_confidently_detected,
+            'min_mean_AD_in_positives' : min_mean_AD_in_positives,       # 1.25,
+            'min_mean_DP_in_positives' : min_mean_DP_in_positives
+        },
+        binarization_kwargs={
+            't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
+        },
+        bin_method=bin_method,
+        tree_kwargs={'metric':metric, 'solver':solver, 'ncores':ncores},
+        path_dbSNP=path_dbSNP, 
+        path_REDIdb=path_REDIdb,
+        spatial_metrics=True,
+        compute_enrichment=True,
+        max_AD_counts=2,
+        return_tree=True
+    )
+
+    tree, _, _ = cut_and_annotate_tree(tree)
+    stats = { k:v for k,v in afm.uns.items() }
+    stats['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
+    stats['corr_dist'] = calculate_corr_distances(tree)
+
+    if lineage_column is not None:
+        lineage_metrics = {}
+        lineage_metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
+        lineage_metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
+        lineage_metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
+        lineage_metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.dropna()[lineage_column], tree.cell_meta.dropna()['MT_clone'])
+        stats['lineage_metrics'] = lineage_metrics
+
+    # Save
+    with open(f'{job_id}_stats.pickle', 'wb') as f:
+        pickle.dump(stats, f)
+
+
+##
+
+
+#######################################################################
+
+# Run program
+if __name__ == "__main__":
+
+    try:
+        main()
+    except:
+        logging.info("Something wrong with this parameters combo...")
+        with open(f'{job_id}_stats.pickle', 'wb') as f:
+            pickle.dump({}, f)
+
+#######################################################################

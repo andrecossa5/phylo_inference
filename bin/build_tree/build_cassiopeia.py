@@ -146,8 +146,20 @@ def main():
     tree_kwargs = process_kwargs(path_tree, tree_key)
 
     # Build tree
-    tree = build_tree(AD=AD, DP=DP, D=D, meta=cell_meta, var_names=char_meta.index, 
-                      bin_method=bin_method, binarization_kwargs=bin_kwargs, **tree_kwargs)
+    afm = AnnData(
+        X=np.divide(AD,(DP+.0000001)), 
+        obs=cell_meta,
+        var=char_meta,
+        obsp={'distances' : D},
+        uns={
+            'genotyping' : {bin_method : bin_kwargs},
+            'distance_calculations' : {'distances' : tree_kwargs['metric']}
+        }, 
+        layers={'AD':AD, 'DP':DP}
+    )
+    call_genotypes(afm, bin_method=bin_method, **bin_kwargs)
+    tree = build_tree(afm, precomputed=True, bin_method=bin_method,
+                      binarization_kwargs=bin_kwargs, **tree_kwargs)
 
     # Write tree
     write_newick(tree, path=f'{boot_replicate}.newick')
