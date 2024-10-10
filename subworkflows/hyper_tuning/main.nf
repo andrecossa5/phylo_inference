@@ -6,7 +6,7 @@ include { ONESAMPLE } from "./modules/one_sample.nf"
 
 // 
 
-import java.util.UUI
+import java.util.UUID
 
 def generateRandomCode() {
     UUID.randomUUID().toString().replaceAll('-', '').take(10) // Generates a 10-character code
