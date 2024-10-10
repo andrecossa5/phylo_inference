@@ -18,7 +18,10 @@ process ONESAMPLE {
         val(min_mean_AD_in_positives),
         val(min_AD),
         val(bin_method),
+        val(t_prob),
+        val(min_cell_prevalence),
         val(job_id)
+
  
     output:
     tuple val(job_id), 
@@ -40,10 +43,10 @@ process ONESAMPLE {
     --min_n_confidently_detected ${min_n_confidently_detected} \
     --min_mean_AD_in_positives ${min_mean_AD_in_positives} \
     --min_mean_DP_in_positives ${params.min_mean_DP_in_positives} \
-    --t_prob ${params.t_prob} \
+    --t_prob ${t_prob} \
     --t_vanilla ${params.t_vanilla} \
     --min_AD ${min_AD} \
-    --min_cell_prevalence ${params.min_cell_prevalence} \
+    --min_cell_prevalence ${min_cell_prevalence} \
     --bin_method ${bin_method} \
     --solver ${params.solver} \
     --lineage_column ${params.lineage_column} \

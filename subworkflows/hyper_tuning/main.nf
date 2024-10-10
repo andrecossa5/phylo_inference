@@ -25,9 +25,11 @@ workflow hyper_tuning {
                 .combine(Channel.fromList(params.min_mean_AD_in_positives))
                 .combine(Channel.fromList(params.min_AD))
                 .combine(Channel.fromList(params.bin_method))
+                .combine(Channel.fromList(params.t_prob))
+                .combine(Channel.fromList(params.min_cell_prevalence))
                 .map{
-                    def (a, b, c, d, e, f, g, h) = it
-                    tuple(a, b, c, d, e, f, g, h, index++)
+                    def (a, b, c, d, e, f, g, h, i, l) = it
+                    tuple(a, b, c, d, e, f, g, h, i, l, index++)
                 }
 
         ONESAMPLE(ch_input)
