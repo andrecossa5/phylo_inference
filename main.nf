@@ -20,7 +20,7 @@ ch_jobs = Channel.fromPath(params.path_input)
 // phylo_inference workflow main entry point
 //----------------------------------------------------------------------------//
 
-workflow filter_tuning {
+workflow tuning {
 
     hyper_tuning(ch_jobs)
     hyper_tuning.out.stats.view()

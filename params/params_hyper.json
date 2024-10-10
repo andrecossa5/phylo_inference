@@ -7,7 +7,7 @@
     "cell_filter": "filter2",
     "min_cell_number": 10,
     "min_cov": 10,
-    "min_var_quality": 30,
+    "min_var_quality": 30, 
     "min_frac_negative": 0.2,
     "min_n_positive": [2,5],
     "af_confident_detection": [0.01,0.025,0.05],

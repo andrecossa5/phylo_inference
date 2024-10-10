@@ -55,6 +55,13 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
+    '--min_cov', 
+    type=int,
+    default=10,
+    help='Minimum site coverage. Default: 10.'
+)
+
+my_parser.add_argument(
     '--min_frac_negative', 
     type=float,
     default=.2,
@@ -118,13 +125,6 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--min_cell_prevalence', 
-    type=float,
-    default=.1,
-    help='Min fraction of +cells to assign 0/1 genotypes with MI_TO binomial mixture. Default: 1.'
-)
-
-my_parser.add_argument(
     '--bin_method', 
     type=str,
     default='MI_TO',
@@ -147,7 +147,7 @@ my_parser.add_argument(
 
 my_parser.add_argument(
     '--min_cell_prevalence', 
-    type=int,
+    type=float,
     default=1,
     help='Min number of AD to assign a 0/1 genotype. Default: 1.'
 )
@@ -278,7 +278,7 @@ def main():
             't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
         },
         bin_method=bin_method,
-        tree_kwargs={'metric':metric, 'solver':solver, 'ncores':ncores},
+        tree_kwargs={'metric':metric, 'solver':solver, 'ncores' : ncores},
         path_dbSNP=path_dbSNP, 
         path_REDIdb=path_REDIdb,
         spatial_metrics=True,
@@ -301,7 +301,7 @@ def main():
         stats['lineage_metrics'] = lineage_metrics
 
     # Save
-    with open(f'{job_id}_stats.pickle', 'wb') as f:
+    with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
         pickle.dump(stats, f)
 
 
@@ -313,11 +313,11 @@ def main():
 # Run program
 if __name__ == "__main__":
 
-    try:
-        main()
-    except:
-        logging.info("Something wrong with this parameters combo...")
-        with open(f'{job_id}_stats.pickle', 'wb') as f:
-            pickle.dump({}, f)
+    # try:
+    main()
+    # except:
+    #     logging.info("Something wrong with this parameters combo...")
+    #     with open(f'{job_id}_stats.pickle', 'wb') as f:
+    #         pickle.dump({}, f)
 
 #######################################################################

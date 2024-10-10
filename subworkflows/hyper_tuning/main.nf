@@ -4,8 +4,8 @@
 nextflow.enable.dsl = 2
 include { ONESAMPLE } from "./modules/one_sample.nf"
 
-//
- 
+// 
+
 //----------------------------------------------------------------------------//
 // hyper_tuning subworkflow
 //----------------------------------------------------------------------------//
@@ -16,12 +16,23 @@ workflow hyper_tuning {
         ch_input
 
     main: 
-      
-        // ch_input = ch_afm
-        // ONESAMPLE(ch_input)
+
+        def index = 0
+        ch_input = ch_input.map{ it -> tuple(it[1], it[2]) }
+                .combine(Channel.fromList(params.min_n_positive))
+                .combine(Channel.fromList(params.af_confident_detection))
+                .combine(Channel.fromList(params.min_n_confidently_detected))
+                .combine(Channel.fromList(params.min_mean_AD_in_positives))
+                .combine(Channel.fromList(params.min_AD))
+                .combine(Channel.fromList(params.bin_method))
+                .map{
+                    def (a, b, c, d, e, f, g, h) = it
+                    tuple(a, b, c, d, e, f, g, h, index++)
+                }
+
+        ONESAMPLE(ch_input)
 
     emit:
-        stats = ch_input
-        // stats = ONESAMPLE.out.stats
+        stats = ONESAMPLE.out.stats
         
 } 
