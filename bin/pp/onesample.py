@@ -313,11 +313,11 @@ def main():
 # Run program
 if __name__ == "__main__":
 
-    # try:
-    main()
-    # except:
-    #     logging.info("Something wrong with this parameters combo...")
-    #     with open(f'{job_id}_stats.pickle', 'wb') as f:
-    #         pickle.dump({}, f)
+    try:
+        main()
+    except:
+         logging.info("Something wrong with this parameters combo...")
+         with open(f'{job_id}_stats.pickle', 'wb') as f:
+             pickle.dump({}, f)
 
 #######################################################################
