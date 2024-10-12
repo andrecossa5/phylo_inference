@@ -5,6 +5,7 @@
 
     "path_input" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/input_file.csv",
     "cell_filter": "filter2",
+    "filtering": "MI_TO",
     "min_cell_number": 10,
     "min_cov": 10,
     "min_var_quality": 30, 

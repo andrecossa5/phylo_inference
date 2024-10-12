@@ -41,6 +41,13 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
+    '--filtering', 
+    type=str,
+    default='MI_TO',
+    help='Variant filtering method. Default: MI_TO.'
+)
+
+my_parser.add_argument(
     '--min_cell_number', 
     type=int,
     default=0,
@@ -197,6 +204,7 @@ args = my_parser.parse_args()
 path_afm = args.path_afm
 job_id = args.job_id
 cell_filter = args.cell_filter
+filtering = args.filtering if args.filtering != "None" else None
 min_cell_number = args.min_cell_number
 min_cov = args.min_cov
 min_var_quality = args.min_var_quality
@@ -264,6 +272,7 @@ def main():
         afm,
         min_cell_number=min_cell_number,
         lineage_column=lineage_column,
+        filtering=filtering,
         filtering_kwargs={
             'min_cov' : min_cov,
             'min_var_quality' : min_var_quality,

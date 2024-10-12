@@ -34,6 +34,7 @@ process ONESAMPLE {
     --path_afm ${path_afm} \
     --job_id ${job_id} \
     --cell_filter ${params.cell_filter} \
+    --filtering ${params.filtering} \
     --min_cell_number ${params.min_cell_number} \
     --min_cov ${params.min_cov} \
     --min_var_quality ${params.min_var_quality} \
