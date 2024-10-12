@@ -19,24 +19,17 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--path_dists', 
+    '--afm', 
     type=str,
     default=None,
-    help='List of paths to all distances .npz files. Default: None'
+    help='List of paths to all bootstrapped afm.h5ad files. Default: None'
 )
 
 my_parser.add_argument(
     '--replicates', 
     type=str,
     default=None,
-    help='List of replicates identifiers mapping to all distances .npz files. Default: None'
-)
-
-my_parser.add_argument(
-    '--path_meta', 
-    type=str,
-    default=None,
-    help='Path to cells_meta.csv file. Default: None .'
+    help='List of replicates identifiers mapping to all afm.h5ad files. Default: None'
 )
 
 my_parser.add_argument(
@@ -74,9 +67,8 @@ my_parser.add_argument(
 
 # Parse arguments
 args = my_parser.parse_args()
-path_dists = args.path_dists.strip('[|]').split(', ')
+path_afm = args.afm.strip('[|]').split(', ')
 replicates = args.replicates.strip('[|]').split(', ')
-path_meta = args.path_meta
 K = args.K
 job_id = args.job_id
 lineage_column = args.lineage_column
@@ -105,11 +97,13 @@ def main():
 
     # Load distance matrices
     D = {}
-    for k,v in zip(replicates, path_dists):
-        D[k] = load_npz(v).A
+    for k,v in zip(replicates, path_afm):
+        D[k] = sc.read(v).obsp['distances'].A
 
     # Load cell meta
-    meta = pd.read_csv(path_meta, index_col=0)
+    idx_observed = [ i for i,x in enumerate(replicates) if x == 'observed' ][0]
+    afm = sc.read(path_afm[idx_observed])
+    meta = afm.obs
 
     if lineage_column is not None:
         
@@ -135,8 +129,8 @@ def main():
     metrics['corr'] = np.mean(np.corrcoef(np.array(L)))
 
     # Save
-    to_frame = lambda x: pd.Series(x).to_frame('value').reset_index(names='metric').assign(job_id=job_id)
-    to_frame(metrics).to_csv('distance_metrics.csv')
+    afm.uns['distance_metrics'] = metrics
+    afm.write('afm.h5ad')
 
 
 #######################################################################

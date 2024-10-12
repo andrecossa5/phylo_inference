@@ -36,7 +36,6 @@ my_parser.add_argument(
 )
 
 
-
 ##
 
 
@@ -114,11 +113,6 @@ def main():
         test = ~tree.cell_meta['MT_clone'].isna()
         metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
         metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
-        C = cs.tl.compute_evolutionary_coupling(tree, meta_variable=lineage_column)
-        C = np.exp(-(C/np.max(np.abs(C))))
-        C.to_csv('evo_coupling.csv')
-    else:
-        pd.DataFrame().to_csv('evo_coupling.csv')
 
     # Collapse tree
     n = len(tree.internal_nodes)

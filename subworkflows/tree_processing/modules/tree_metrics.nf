@@ -16,8 +16,7 @@ process TREE_METRICS {
     output:
     tuple val(job_id),
         val(sample), 
-        path("tree_metrics.csv"),
-        path("evo_coupling.csv"), emit: metrics
+        path("tree_metrics.csv"), emit: metrics
     
     script:
     """
@@ -30,7 +29,6 @@ process TREE_METRICS {
     stub:
     """
     touch tree_metrics.csv
-    touch evo_coupling.csv
     """
 
 }

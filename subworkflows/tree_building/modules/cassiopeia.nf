@@ -10,29 +10,20 @@ process CASSIOPEIA {
     input:
     tuple val(job_id),
         val(sample), 
-        val(bin_key), 
+        val(bin_key),
         val(tree_key),
-        val(input_folder), 
-        val(rep), 
-        path(dists)
+        val(rep),
+        val(afm)
 
     output:
     tuple val(job_id),
         val(sample), 
-        val(bin_key), 
-        val(tree_key),
-        val(input_folder), 
-        val(rep), 
         path("${rep}.newick"), emit: tree
-    
+     
     script:
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
-    --AD ${input_folder}/AD.npz \
-    --DP ${input_folder}/DP.npz \
-    --cell_meta ${input_folder}/cell_meta.csv \
-    --char_meta ${input_folder}/char_meta.csv \
-    --dists ${dists} \
+    --afm ${afm} \
     --path_bin ${params.path_bin} \
     --path_tree ${params.path_distance_tree} \
     --bin_key ${bin_key} \

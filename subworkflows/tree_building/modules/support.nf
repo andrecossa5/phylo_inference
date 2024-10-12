@@ -8,10 +8,6 @@ process SUPPORT {
     input:
     tuple val(job_id),
         val(sample), 
-        val(bin_key), 
-        val(tree_key),
-        path(input_folder), 
-        val(replicates), 
         val(trees)
 
     output:

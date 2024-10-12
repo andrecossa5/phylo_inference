@@ -16,39 +16,10 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--AD', 
+    '--afm', 
     type=str,
     default='..',
-    help='Path to AD.npz file, a table of AD counts. Default: .. .'
-)
-
-my_parser.add_argument(
-    '--DP', 
-    type=str,
-    default=None,
-    help='Path to DP.npz file, a table of DP counts. Default: .. .'
-)
-
-# Add arguments
-my_parser.add_argument(
-    '--cell_meta', 
-    type=str,
-    default='..',
-    help='Path to cell_meta.csv file. Default: .. .'
-)
-
-my_parser.add_argument(
-    '--char_meta', 
-    type=str,
-    default=None,
-    help='Path to char_meta.csv file. Default: .. .'
-)
-
-my_parser.add_argument(
-    '--dists', 
-    type=str,
-    default=None,
-    help='Path to dist.npz file, storing pairwise cell-cell distances. Default: .. .'
+    help='Path to afm.h5ad file. Default: .. .'
 )
 
 my_parser.add_argument(
@@ -100,11 +71,7 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 
-path_AD = args.AD
-path_DP = args.DP
-path_cell_meta = args.cell_meta
-path_char_meta = args.char_meta
-path_dists = args.dists
+path_afm = args.afm
 path_bin = args.path_bin
 path_tree = args.path_tree
 bin_key = args.bin_key
@@ -121,7 +88,6 @@ boot_replicate = args.boot_replicate
 # Preparing run: import code, prepare directories, set logger
 
 # Code
-from scipy.sparse import load_npz
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
@@ -134,34 +100,16 @@ from mito_utils.phylo import *
 # Main
 def main():
 
-    # Prep input
-    AD = load_npz(path_AD).A.T.astype(np.int16)
-    DP = load_npz(path_DP).A.T.astype(np.int16)
-    D = load_npz(path_dists).A
-    cell_meta = pd.read_csv(path_cell_meta, index_col=0)
-    char_meta = pd.read_csv(path_char_meta, index_col=0)
+    # Read afm
+    afm = sc.read(path_afm)
 
-    # Params
-    bin_method, bin_kwargs = process_bin_kwargs(path_bin, bin_key)
+    # Tree
     tree_kwargs = process_kwargs(path_tree, tree_key)
+    bin_method, bin_kwargs = process_bin_kwargs(path_bin, bin_key)
 
-    # Build tree
-    afm = AnnData(
-        X=np.divide(AD,(DP+.0000001)), 
-        obs=cell_meta,
-        var=char_meta,
-        obsp={'distances' : D},
-        uns={
-            'genotyping' : {bin_method : bin_kwargs},
-            'distance_calculations' : {'distances' : tree_kwargs['metric']}
-        }, 
-        layers={'AD':AD, 'DP':DP}
-    )
-    call_genotypes(afm, bin_method=bin_method, **bin_kwargs)
-    tree = build_tree(afm, precomputed=True, bin_method=bin_method,
-                      binarization_kwargs=bin_kwargs, **tree_kwargs)
-
-    # Write tree
+    tree = build_tree(afm, precomputed=True, ncores=n_cores, 
+                      bin_method=bin_method, binarization_kwargs=bin_kwargs, **tree_kwargs)
+    
     write_newick(tree, path=f'{boot_replicate}.newick')
     
 

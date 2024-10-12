@@ -4,6 +4,7 @@
 nextflow.enable.dsl = 2
 include { PROCESS_TREE } from "./modules/process_tree.nf"
 include { TREE_METRICS } from "./modules/tree_metrics.nf"
+include { PATH } from "./modules/PATH.nf"
 
 // 
  
@@ -22,16 +23,17 @@ workflow process_tree {
     main: 
 
         ch_annot = ch_input.flatMap { 
-                job_id, sample, key1, key2, input_folder, replicates, distances ->
+                job_id, sample, replicates, afms ->
                 replicates.indices.collect { i ->
-                    tuple(job_id, sample, input_folder, replicates[i], distances[i])
+                    tuple(job_id, sample, replicates[i], afms[i])
                 }
             }
-            .filter(it -> it[3]=="observed")
+            .filter(it -> it[2]=="observed")
             .combine(ch_tree, by:[0,1])
-
-        PROCESS_TREE(ch_annot)
+ 
+        PROCESS_TREE(ch_annot) 
         TREE_METRICS(PROCESS_TREE.out.annotated_tree)
+        PATH(ch_annot.map{it->tuple(it[0],it[1],[it[4]])})
 
     emit:
 

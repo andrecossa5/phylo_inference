@@ -3,7 +3,7 @@
     "tracing_system" : "MAESTER",
     "outdir" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference",
 
-    "path_input" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/input_file.csv",
+    "path_input" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/input_files/input_mito_maegatk.csv",
     "path_meta" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/cells_meta.csv",
     "path_char_filtering" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/char_filtering_ops.json",
     "path_cell_filtering" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/cell_filtering_ops.json",

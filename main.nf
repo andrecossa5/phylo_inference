@@ -30,7 +30,7 @@ workflow tuning {
 workflow phylo {
 
     preprocess(ch_jobs)
-    build_tree(preprocess.out.input)
+    build_tree(ch_jobs.map{it->tuple(it[0],it[1],it[5],it[6])}.combine(preprocess.out.input, by:[0,1]))
     process_tree(preprocess.out.input, build_tree.out.final_tree)
     process_tree.out.metrics.view()
 

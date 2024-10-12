@@ -141,7 +141,6 @@ cell_filtering_key = args.cell_filtering_key
 bin_key = args.bin_key
 tree_key = args.tree_key
 job_id = args.job_id
-cell_file = args.cell_file
 lineage_column = args.lineage_column
 n_cores = args.n_cores
 cell_file = args.cell_file if args.cell_file != "None" else None
@@ -166,9 +165,6 @@ from mito_utils.preprocessing import *
 # Main
 def main():
 
-    os.mkdir(f'{job_id}_pp')
-    os.chdir(f'{job_id}_pp')
-
     # Parse kwargs options
     filtering, char_filtering_kwargs, kwargs = process_char_filtering_kwargs(path_char_filtering, char_filtering_key)
     cell_filtering_kwargs = process_kwargs(path_cell_filtering, cell_filtering_key)
@@ -179,13 +175,11 @@ def main():
     afm = sc.read(path_afm)
     
     # Filter MT-SNVs and calculate metrics
-    afm = sc.read(path_afm, )
-    afm = filter_cells(afm, 
-                       cell_subset=pd.read_csv(cell_file)[0].to_list(),
-                       **cell_filtering_kwargs)
+    cell_subset = pd.read_csv(cell_file)[0].to_list() if cell_file is not None else None
+    afm = sc.read(path_afm)
+    afm = filter_cells(afm, cell_subset=cell_subset, **cell_filtering_kwargs)
     afm = filter_afm(
         afm,
-        min_cell_number=10,
         filtering=filtering,
         lineage_column=lineage_column,
         filtering_kwargs=char_filtering_kwargs,
@@ -197,27 +191,14 @@ def main():
         **kwargs
     )
 
-    # Write AD and DP, cell and var meta, and dataset metric 
-    to_frame_kwargs = lambda x, y: pd.Series(x).to_frame('value').reset_index(names=y).assign(job_id=job_id)
-    save_npz('AD.npz', afm.layers['AD'].T)
-    save_npz('DP.npz', afm.layers['DP'].T)
-    save_npz('X_bin.npz', afm.layers['bin'].T)
-    afm.obs.to_csv('cell_meta.csv')
-    afm.var.to_csv('char_meta.csv')
-    to_frame_kwargs(afm.uns['dataset_metrics'], 'metric').to_csv('dataset_metrics.csv')
+    # Preprocessed datasetm and cell genotype sequences as .fa file
+    afm.write('afm.h5ad')
     seqs = AFM_to_seqs(afm, bin_method=bin_method, binarization_kwargs=bin_kwargs)
     with open('genotypes.fa', 'w') as f:
         for cell in seqs:
             f.write(f'>{cell}\n')
             f.write(f'{seqs[cell]}\n')
-    
-    # Write pp options
-    kwargs['filtering'] = filtering
-    to_frame_kwargs({**char_filtering_kwargs,**kwargs}, 'option').to_csv('char_filtering_ops.csv')
-    to_frame_kwargs(cell_filtering_kwargs, 'option').to_csv('cell_filtering_ops.csv')
-    to_frame_kwargs(bin_kwargs, 'option').to_csv('bin_ops.csv')
-    to_frame_kwargs(tree_kwargs, 'option').to_csv('tree_ops.csv')
-
+            
 
     ##
 

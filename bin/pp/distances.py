@@ -19,45 +19,10 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--AD', 
+    '--afm', 
     type=str,
     default='..',
-    help='Path to AD.npz file, a table of AD counts. Default: .. .'
-)
-
-my_parser.add_argument(
-    '--DP', 
-    type=str,
-    default=None,
-    help='Path to DP.npz file, a table of DP counts. Default: .. .'
-)
-
-my_parser.add_argument(
-    '--path_bin', 
-    type=str,
-    default=None,
-    help='Path to bin_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--path_tree', 
-    type=str,
-    default=None,
-    help='Path to tree_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--bin_key', 
-    type=str,
-    default='default',
-    help='Filtering option in bin_ops.json. Default: default.'
-)
-
-my_parser.add_argument(
-    '--tree_key', 
-    type=str,
-    default='default',
-    help='Filtering option in tree_ops.json. Default: default.'
+    help='Path to preprocessed afm.h5ad file. Default: .. .'
 )
 
 my_parser.add_argument(
@@ -95,12 +60,7 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 
-path_AD = args.AD
-path_DP = args.DP
-path_bin = args.path_bin
-path_tree = args.path_tree
-bin_key = args.bin_key
-tree_key = args.tree_key
+path_afm = args.afm
 n_cores = args.n_cores
 boot_strategy = args.boot_strategy
 boot_replicate = args.boot_replicate
@@ -115,7 +75,7 @@ frac_char_resampling = args.frac_char_resampling
 # Preparing run: import code, prepare directories
 
 # Code
-from scipy.sparse import save_npz, load_npz, csr_matrix
+from scipy.sparse import save_npz, csr_matrix
 from anndata import AnnData
 from mito_utils.utils import *
 from mito_utils.phylo import *
@@ -125,21 +85,23 @@ from mito_utils.phylo import *
 # Main
 def main():
 
-    # Parse kwargs options
-    bin_method, bin_kwargs = process_bin_kwargs(path_bin, bin_key)
-    tree_kwargs = process_kwargs(path_tree, tree_key)
+    # Load afm and extract AD and DP and options
+    afm = sc.read(path_afm)
+    metric = afm.uns['distance_calculations']['distances']['metric']
+    bin_method = afm.uns['genotyping']['bin_method']
+    bin_kwargs = { k:v for k,v in afm.uns['genotyping'].items() if k!='bin_method' }
 
     # Bootstrap
-    AD_original = load_npz(path_AD).A.T.astype(np.int16)
-    DP_original = load_npz(path_DP).A.T.astype(np.int16)
+    AD_original = afm.layers['AD'].A
+    DP_original = afm.layers['DP'].A
 
     if boot_replicate != 'observed':
         if boot_strategy == 'jacknife':
-            AD, DP, _ = jackknife_allele_tables(AD_original, DP_original)
+            AD, DP, idx = jackknife_allele_tables(AD_original, DP_original)
         elif boot_strategy == 'counts_resampling':
-            AD, DP, _ = bootstrap_allele_counts(AD_original, DP_original)
+            AD, DP, idx = bootstrap_allele_counts(AD_original, DP_original)
         elif boot_strategy == 'feature_resampling':
-            AD, DP, _ = bootstrap_allele_tables(AD_original, DP_original, frac_resampled=frac_char_resampling)
+            AD, DP, idx = bootstrap_allele_tables(AD_original, DP_original, frac_resampled=frac_char_resampling)
         else:
             raise ValueError(f'{boot_strategy} boot_strategy is not supported...')
     else:
@@ -147,12 +109,20 @@ def main():
         DP = DP_original
     
     # Calculate distances
-    afm = AnnData(X=np.divide(AD, (DP+.0000001)), uns={'genotyping':{}}, layers={'AD':AD, 'DP':DP})
-    compute_distances(afm, metric=tree_kwargs['metric'], 
-                      bin_method=bin_method, binarization_kwargs=bin_kwargs, ncores=n_cores)
+    AF = csr_matrix(np.divide(AD, (DP+.0000001)))
+    AD = csr_matrix(AD)
+    DP = csr_matrix(DP)
+    afm_new = AnnData(X=AF, obs=afm.obs, var=afm.var.iloc[idx,:], uns=afm.uns, layers={'AD':AD, 'DP':DP})
+    compute_distances(
+        afm_new, 
+        metric=metric, 
+        bin_method=bin_method, 
+        binarization_kwargs=bin_kwargs, 
+        ncores=n_cores
+    )
 
     # Save dist matrix 
-    save_npz('dist.npz', afm.obsp['distances'])
+    afm_new.write('afm_new.h5ad')
 
 
     ##

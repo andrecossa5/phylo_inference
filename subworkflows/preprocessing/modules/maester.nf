@@ -21,9 +21,7 @@ process MAESTER {
     output:
     tuple val(job_id), 
         val(sample), 
-        val(bin_key), 
-        val(tree_key), 
-        path("${job_id}_pp"), emit: input_folder
+        path("afm.h5ad"), emit: afm
     
     script:
     """
@@ -47,18 +45,7 @@ process MAESTER {
 
     stub:
     """
-    mkdir ${job_id}_pp
-    cd ${job_id}_pp
-    touch AD.npz
-    touch DP.npz
-    touch bin_ops.csv
-    touch cell_filtering_ops.csv
-    touch cell_meta.csv
-    touch char_filtering_ops.csv
-    touch char_meta.csv
-    touch dataset_df.csv
-    touch tree_ops.csv
-    touch genotypes.fa
+    touch afm.h5ad
     """
 
 }
