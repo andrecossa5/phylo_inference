@@ -203,7 +203,7 @@ args = my_parser.parse_args()
 
 path_afm = args.path_afm
 job_id = args.job_id
-cell_filter = args.cell_filter
+cell_filter = args.cell_filter if args.cell_filter != "None" else None
 filtering = args.filtering if args.filtering != "None" else None
 min_cell_number = args.min_cell_number
 min_cov = args.min_cov
@@ -266,14 +266,10 @@ from sklearn.metrics import normalized_mutual_info_score
 def main():
 
     afm = sc.read(path_afm)
-    afm = filter_cells(afm, cell_filter='filter2')
+    afm = filter_cells(afm, cell_filter=cell_filter)
 
-    afm, tree = filter_afm(
-        afm,
-        min_cell_number=min_cell_number,
-        lineage_column=lineage_column,
-        filtering=filtering,
-        filtering_kwargs={
+    if filtering == "MI_TO":
+        filtering_kwargs = {
             'min_cov' : min_cov,
             'min_var_quality' : min_var_quality,
             'min_frac_negative' : min_frac_negative,
@@ -282,7 +278,16 @@ def main():
             'min_n_confidently_detected' : min_n_confidently_detected,
             'min_mean_AD_in_positives' : min_mean_AD_in_positives,       # 1.25,
             'min_mean_DP_in_positives' : min_mean_DP_in_positives
-        },
+        }
+    else:
+        filtering_kwargs = {}
+
+    afm, tree = filter_afm(
+        afm,
+        min_cell_number=min_cell_number,
+        lineage_column=lineage_column,
+        filtering=filtering,
+        filtering_kwargs=filtering_kwargs,
         binarization_kwargs={
             't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
         },
@@ -325,8 +330,8 @@ if __name__ == "__main__":
     try:
         main()
     except:
-         logging.info("Something wrong with this parameters combo...")
-         with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
-             pickle.dump({}, f)
+        logging.info("Something wrong with this parameters combo...")
+        with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
+            pickle.dump({}, f)
 
 #######################################################################
