@@ -26,6 +26,8 @@ parser$add_argument("lineage_column", type = "character", help = "Lineage column
 args <- parser$parse_args()
 
 
+print(.libPaths())
+
 ##
 
 
@@ -33,10 +35,10 @@ args <- parser$parse_args()
 tree <- ape::read.tree(args$path_tree)
 cov_df <- read.csv(args$path_meta, row.names = 1)[tree$tip.label,]
 x_factor <- as.factor(cov_df[[args$lineage_column]])
-X <- PATH::state2mat.sparse(x_factor)
+X <- state2mat.sparse(x_factor)
 
-Winv <- PATH::inv.tree.dist(tree, node=TRUE, norm=FALSE)
-modxcor <- PATH::xcor(X, Winv)
+Winv <- inv.tree.dist(tree, node=TRUE, norm=FALSE)
+modxcor <- xcor(X, Winv)
 Idf <- reshape2::melt(modxcor$Morans.I, value.name = "I")
 Zdf <- reshape2::melt(modxcor$Z.score, value.name = "Z")
 pdf <- reshape2::melt(modxcor$one.sided.pvalue, value.name = "p")
