@@ -2,7 +2,8 @@
 #!/usr/bin/env Rscript
 
 library(argparse)
-library(tidyverse)
+library(dplyr)
+library(reshape2)
 library(parallel)
 library(Matrix)
 library(ape)
