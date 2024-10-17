@@ -305,6 +305,8 @@ def main():
     stats = { k:v for k,v in afm.uns.items() }
     stats['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
     stats['corr_dist'] = calculate_corr_distances(tree)
+    stats['cells'] = afm.obs_names
+    stats['vars'] = afm.var_names
 
     if lineage_column is not None:
         lineage_metrics = {}
