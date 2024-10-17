@@ -22,21 +22,20 @@ workflow build_tree {
 
     main: 
 
-        if (params.tree_algorithm == "cassiopeia") {
-
-            ch_flattened = ch_input.flatMap { 
-                job_id, sample, bin_key, tree_key, replicates, afms ->
+        ch_flattened = ch_input.flatMap { 
+            job_id, sample, bin_key, tree_key, replicates, afms ->
                 replicates.indices.collect { i ->
-                    tuple(job_id, sample, bin_key, tree_key, replicates[i], afms[i])
-                }
-            }
+                tuple(job_id, sample, bin_key, tree_key, replicates[i], afms[i])
+           }
+        }
+
+        if (params.tree_algorithm == "cassiopeia") {
             CASSIOPEIA(ch_flattened)
             final_tree = SUPPORT(CASSIOPEIA.out.tree.groupTuple(by: [0,1]))
-
         } else if (params.tree_algorithm == "mpboot") {
-            final_tree = MPBOOT(ch_input.map{ it -> it[0], it[1], it[4] })
+            final_tree = MPBOOT(ch_flattened.filter(it -> it[4]=="observed"))
         } else if (params.tree_algorithm == "iqtree") {
-            final_tree = IQTREE(ch_input.map{ it -> it[0], it[1], it[4] })
+            final_tree = IQTREE(ch_flattened.filter(it -> it[4]=="observed"))
         } else {
             println('Provide valid tracing system option! (e.g., cassiopeia, mpboot, iqtree)')
         }

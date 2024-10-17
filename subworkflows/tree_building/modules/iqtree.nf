@@ -6,15 +6,23 @@ process IQTREE {
 
     tag "${sample}: ${job_id}"
 
-    input: 
-    tuple val(job_id), val(sample), path(input_folder)
+    input:
+    tuple val(job_id),
+        val(sample), 
+        val(bin_key),
+        val(tree_key),
+        val(rep),
+        path(afm)
 
     output:
-    tuple val(job_id), val(sample), path(input_folder), path("final_tree.newick"), emit: tree
+    tuple val(job_id),
+        val(sample), 
+        path("final_tree.newick"), emit: tree
     
     script:
     """
-    iqtree -s ${input_folder}/genotypes.fa
+    python ${baseDir}/bin/build_tree/create_fasta.py  ${afm}
+    iqtree -s genotypes.fa
     python ${baseDir}/build_tree/iqtree_to_newick.py
     """
 
