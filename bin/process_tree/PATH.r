@@ -12,10 +12,10 @@ library(PATH)
 ##
 
 
-cov <- 'GBC'
-sample <- 'MDA_PT'
-path_tree <- '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference_to_beat/MDA_PT/job21/final_tree.newick'
-path_meta <- '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/cells_meta.csv'
+# cov <- 'GBC'
+# sample <- 'MDA_clones'
+# path_tree <- '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/final_trees/MDA_clones/job1/annotated_tree.newick'
+# path_meta <- '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/cells_meta.csv'
 
 parser <- ArgumentParser(description = 'PATH wrapper')
 
@@ -36,6 +36,7 @@ X <- state2mat.sparse(x_factor)
 
 Winv <- inv.tree.dist(tree, node=TRUE, norm=FALSE)
 modxcor <- xcor(X, Winv)
+
 Idf <- reshape2::melt(modxcor$Morans.I, value.name = "I")
 Zdf <- reshape2::melt(modxcor$Z.score, value.name = "Z")
 pdf <- reshape2::melt(modxcor$one.sided.pvalue, value.name = "p")
@@ -43,8 +44,8 @@ dfs <- list(Idf, Zdf, pdf)
 
 # Save
 results <- Reduce(function(x, y) full_join(x, y, by = c("Var1", "Var2")), dfs)
-results$Var1 <- x_factor[results$Var1]
-results$Var2 <- x_factor[results$Var2]
+results$Var1 <- factor(results$Var1, levels = 1:length(levels(x_factor)), labels = levels(x_factor)) 
+results$Var2 <- factor(results$Var2, levels = 1:length(levels(x_factor)), labels = levels(x_factor)) 
 
 write.csv(results, 'phylocorr.csv')
 
