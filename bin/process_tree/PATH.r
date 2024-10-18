@@ -4,7 +4,6 @@
 library(argparse)
 library(dplyr)
 library(reshape2)
-library(parallel)
 library(Matrix)
 library(ape)
 library(PATH)
@@ -13,10 +12,10 @@ library(PATH)
 ##
 
 
-# cov <- 'GBC'
-# sample <- 'MDA_PT'
-# path_tree <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/final_tree.newick'
-# path_meta <- '/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/cells_meta.csv'
+cov <- 'GBC'
+sample <- 'MDA_PT'
+path_tree <- '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference_to_beat/MDA_PT/job21/final_tree.newick'
+path_meta <- '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/cells_meta.csv'
 
 parser <- ArgumentParser(description = 'PATH wrapper')
 
@@ -25,8 +24,6 @@ parser$add_argument("path_meta", type = "character", help = "Path to cells meta 
 parser$add_argument("lineage_column", type = "character", help = "Lineage column to evaluate phylocorr")
 args <- parser$parse_args()
 
-
-print(.libPaths())
 
 ##
 
