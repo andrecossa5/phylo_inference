@@ -23,7 +23,7 @@ process IQTREE {
     """
     python ${baseDir}/bin/build_tree/create_fasta.py  ${afm}
     iqtree -s genotypes.fa -B 1000
-    python ${baseDir}/build_tree/iqtree_to_newick.py
+    python ${baseDir}/bin/build_tree/iqtree_to_newick.py
     """
 
     stub:
