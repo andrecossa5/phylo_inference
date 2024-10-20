@@ -17,8 +17,8 @@ from mito_utils.phylo import build_tree, cut_and_annotate_tree
 
 
 # Paths
-# path_afm = '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/distance/MDA_PT/job2/afm.h5ad'
-# maxK = 10
+path_afm = '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/distance/MDA_PT/job2/afm.h5ad'
+maxK = 10
 
 
 ##
@@ -54,13 +54,13 @@ def main():
     # Vireo
     D['vireoSNP'] = {}
     _ELBO_mat = []
-    for k in range(2,maxK):
+    for k in range(2,maxK+1):
         print(f'Clone n: {k}')
         _model = BinomMixtureVB(n_var=afm.shape[1], n_cell=afm.shape[0], n_donor=k)
         _model.fit(afm.layers['AD'].T, afm.layers['DP'].T, min_iter=30, max_iter=500, max_iter_pre=250, n_init=50, random_seed=1234)
         _ELBO_mat.append(_model.ELBO_inits)
 
-    x = range(2,maxK)
+    x = range(2,maxK+1)
     y = np.median(_ELBO_mat, axis=1)
     knee = KneeLocator(x, y).find_knee()[0]
     n_clones = knee
@@ -108,18 +108,19 @@ def main():
     afm.layers['REF'] = afm.layers['DP'].A - afm.layers['AD'].A
     afm.X = afm.X.A
 
+    D['CClone'] = {}
+
     scores = []
-    for k in range(2,maxK):
+    for k in range(2,maxK+1):
 
         print(f'k={k}')
         afm = get_wNMF_matrices(afm, mode='10X')
-        C, V = NMF_weighted(afm, k=k, max_cycles=100, parallel=True, n_jobs=-1)
+        C, _ = NMF_weighted(afm, k=k, max_cycles=100, parallel=True, n_jobs=-1)
         labels = np.argmax(C, axis=1)
-        print('Scoring silhouette...')
         silhouette_avg = silhouette_score(afm.obsp['distances'].A, labels, metric='precomputed')
         scores.append(silhouette_avg)
 
-    k = list(range(2,maxK))[np.argmax(scores)]
+    k = list(range(2,maxK+1))[np.argmax(scores)]
     C, _ = NMF_weighted(afm, k=k, max_cycles=100, parallel=True, n_jobs=-1)
     labels = np.argmax(C, axis=1)
 
