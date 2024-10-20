@@ -333,7 +333,9 @@ def main():
         metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
         metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.dropna()[lineage_column], tree.cell_meta.dropna()['MT_clone'])
 
-    metrics.update(afm.uns['raw_basecalls_metrics'])
+    if 'raw_basecalls_metrics' in afm.uns:
+        metrics.update(afm.uns['raw_basecalls_metrics'])
+        
     metrics.update(afm.uns['dataset_metrics'])
     metrics['n_dbSNP'] = afm.uns['char_filter']['n_dbSNP'] 
     metrics['n_REDIdb'] = afm.uns['char_filter']['n_REDIdb'] 
