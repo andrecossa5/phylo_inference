@@ -54,7 +54,6 @@ def main():
     # Vireo
     D['vireoSNP'] = {}
     _ELBO_mat = []
-    maxK = 50
     for k in range(2,maxK):
         print(f'Clone n: {k}')
         _model = BinomMixtureVB(n_var=afm.shape[1], n_cell=afm.shape[0], n_donor=k)
