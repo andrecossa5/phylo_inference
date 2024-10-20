@@ -10,8 +10,6 @@ process CASSIOPEIA {
     input:
     tuple val(job_id),
         val(sample), 
-        val(bin_key),
-        val(tree_key),
         val(rep),
         val(afm)
 
@@ -24,10 +22,9 @@ process CASSIOPEIA {
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
     --afm ${afm} \
-    --path_bin ${params.path_bin} \
-    --path_tree ${params.path_distance_tree} \
-    --bin_key ${bin_key} \
-    --tree_key ${tree_key} \
+    --path_pickles ${params.path_pickles} \
+    --sample ${sample} \
+    --job_id ${job_id} \
     --boot_replicate ${rep} \
     --n_cores ${task.cpus}
     """

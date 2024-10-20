@@ -282,28 +282,45 @@ def main():
     else:
         filtering_kwargs = {}
 
+    binarization_kwargs = {
+        't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
+    }
+    tree_kwargs = {'metric':metric, 'solver':solver}
+
     afm, tree = filter_afm(
         afm,
         min_cell_number=min_cell_number,
         lineage_column=lineage_column,
         filtering=filtering,
         filtering_kwargs=filtering_kwargs,
-        binarization_kwargs={
-            't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
-        },
+        binarization_kwargs=binarization_kwargs,
         bin_method=bin_method,
-        tree_kwargs={'metric':metric, 'solver':solver, 'ncores' : ncores},
+        tree_kwargs=tree_kwargs,
         path_dbSNP=path_dbSNP, 
         path_REDIdb=path_REDIdb,
         spatial_metrics=True,
         compute_enrichment=True,
         max_AD_counts=2,
+        ncores=ncores,
         return_tree=True
     )
 
     tree, _, _ = cut_and_annotate_tree(tree)
-    stats = { k:v for k,v in afm.uns.items() }
+    
+    options = {}
+    options['min_cell_number'] = min_cell_number
+    options['lineage_column'] = lineage_column
+    options['cell_filter'] = afm.uns['cell_filter']
+    options['filtering'] = filtering
+    options['filtering_kwargs'] = filtering_kwargs
+    options['bin_method'] = bin_method
+    options['binarization_kwargs'] = binarization_kwargs
+    options['tree_kwargs'] = tree_kwargs
+
+    stats = {}
+    stats['options'] = options
     stats['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
+    stats['unassigned'] = tree.cell_meta['MT_clone'].isna().sum()
     stats['corr_dist'] = calculate_corr_distances(tree)
     stats['cells'] = afm.obs_names
     stats['vars'] = afm.var_names

@@ -21,7 +21,6 @@ process ONESAMPLE {
         val(t_prob),
         val(min_cell_prevalence),
         val(job_id)
-
  
     output:
     tuple val(job_id), 

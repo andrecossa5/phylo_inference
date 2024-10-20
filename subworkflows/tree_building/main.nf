@@ -23,11 +23,11 @@ workflow build_tree {
     main: 
 
         ch_flattened = ch_input.flatMap { 
-            job_id, sample, bin_key, tree_key, replicates, afms ->
+            job_id, sample, replicates, afms ->
                 replicates.indices.collect { i ->
-                tuple(job_id, sample, bin_key, tree_key, replicates[i], afms[i])
+                tuple(job_id, sample, replicates[i], afms[i])
            }
-        }
+        } 
 
         if (params.tree_algorithm == "cassiopeia") {
             CASSIOPEIA(ch_flattened)

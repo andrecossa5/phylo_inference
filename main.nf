@@ -11,8 +11,7 @@ include { hyper_tuning } from "./subworkflows/hyper_tuning/main"
 // Input channel
 ch_jobs = Channel.fromPath(params.path_input)
             .splitCsv(header: true)
-            .map { row -> [ row.job_id, row.sample, row.ch_matrix, row.char_filtering_key,
-                            row.cell_filtering_key, row.bin_key, row.tree_key, row.cell_file ]}
+            .map { row -> [ row.sample, row.ch_matrix, row.job_id, row.cell_file ]}
 
 //
 
@@ -30,7 +29,7 @@ workflow tuning {
 workflow phylo {
 
     preprocess(ch_jobs)
-    build_tree(ch_jobs.map{it->tuple(it[0],it[1],it[5],it[6])}.combine(preprocess.out.input, by:[0,1]))
+    build_tree(preprocess.out.input)
     process_tree(preprocess.out.input, build_tree.out.final_tree)
     process_tree.out.metrics.view()
 

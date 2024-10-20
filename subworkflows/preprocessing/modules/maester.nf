@@ -9,13 +9,9 @@ process MAESTER {
     tag "${sample}: ${job_id}"
 
     input:
-    tuple val(job_id), 
-        val(sample), 
+    tuple val(sample), 
         val(ch_matrix), 
-        val(char_filtering_key),
-        val(cell_filtering_key),
-        val(bin_key),
-        val(tree_key),
+        val(job_id), 
         val(cell_file)
  
     output:
@@ -27,14 +23,8 @@ process MAESTER {
     """
     python ${baseDir}/bin/pp/MAESTER.py \
     --path_afm ${ch_matrix} \
-    --path_char_filtering ${params.path_char_filtering} \
-    --path_cell_filtering ${params.path_cell_filtering} \
-    --path_bin ${params.path_bin} \
-    --path_tree ${params.path_distance_tree} \
-    --char_filtering_key ${char_filtering_key} \
-    --cell_filtering_key ${cell_filtering_key} \
-    --bin_key ${bin_key} \
-    --tree_key ${tree_key} \
+    --path_pickles ${params.path_pickles} \
+    --sample ${sample} \
     --job_id ${job_id} \
     --lineage_column ${params.lineage_column} \
     --n_cores ${task.cpus} \

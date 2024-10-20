@@ -5,10 +5,7 @@
 
     "path_input" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/input_files/input_test.csv",
     "path_meta" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/cells_meta.csv",
-    "path_char_filtering" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/char_filtering_ops.json",
-    "path_cell_filtering" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/cell_filtering_ops.json",
-    "path_bin" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/bin_ops.json",
-    "path_distance_tree" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/options/distance_tree_ops.json",
+    "path_pickles" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/benchmark/test_new_pickle",
     "path_dbSNP" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/miscellanea/dbSNP_MT.txt",
     "path_REDIdb" : "/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/data/MI_TO_bench/miscellanea/REDIdb_MT.txt",
 
@@ -18,7 +15,7 @@
     "K" : 10,
     "lineage_column" : "GBC",
 
-    "tree_algorithm" : "mpboot",
+    "tree_algorithm" : "cassiopeia",
     "support_method" : "TBE"
 
 

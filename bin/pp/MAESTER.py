@@ -27,65 +27,23 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--path_char_filtering', 
+    '--path_pickles', 
     type=str,
     default=None,
-    help='Path to char_filtering_ops.json file. Default: None .'
+    help='Path to pickles main folder. Default: None.'
 )
 
 my_parser.add_argument(
-    '--path_cell_filtering', 
+    '--sample', 
     type=str,
     default=None,
-    help='Path to cell_filtering_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--path_bin', 
-    type=str,
-    default=None,
-    help='Path to bin_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--path_tree', 
-    type=str,
-    default=None,
-    help='Path to tree_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--char_filtering_key', 
-    type=str,
-    default='default',
-    help='Filtering option in char_filtering_ops.json. Default: default.'
-)
-
-my_parser.add_argument(
-    '--cell_filtering_key', 
-    type=str,
-    default='filter1',
-    help='Filtering option in cell_filtering_ops.json. Default: default.'
-)
-
-my_parser.add_argument(
-    '--bin_key', 
-    type=str,
-    default='default',
-    help='Filtering option in bin_ops.json. Default: default.'
-)
-
-my_parser.add_argument(
-    '--tree_key', 
-    type=str,
-    default='default',
-    help='Filtering option in tree_ops.json. Default: default.'
+    help='Sample name. Default: None.'
 )
 
 my_parser.add_argument(
     '--job_id', 
     type=str,
-    default='job_id',
+    default=None,
     help='Job id. Default: None.'
 )
 
@@ -99,7 +57,7 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--n_cores', 
     type=int,
-    default='8',
+    default=1,
     help='n cores to use. Default: 8.'
 )
 
@@ -132,14 +90,8 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 
 path_afm = args.path_afm
-path_char_filtering = args.path_char_filtering
-path_cell_filtering = args.path_cell_filtering
-path_bin = args.path_bin
-path_tree = args.path_tree
-char_filtering_key = args.char_filtering_key
-cell_filtering_key = args.cell_filtering_key
-bin_key = args.bin_key
-tree_key = args.tree_key
+path_pickles = args.path_pickles
+sample = args.sample
 job_id = args.job_id
 lineage_column = args.lineage_column
 n_cores = args.n_cores
@@ -156,7 +108,7 @@ path_REDIdb = args.path_REDIdb
 # Preparing run: import code, prepare directories
 
 # Code
-from scipy.sparse import save_npz, load_npz
+import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 
@@ -165,35 +117,43 @@ from mito_utils.preprocessing import *
 # Main
 def main():
 
-    # Parse kwargs options
-    filtering, char_filtering_kwargs, kwargs = process_char_filtering_kwargs(path_char_filtering, char_filtering_key)
-    cell_filtering_kwargs = process_kwargs(path_cell_filtering, cell_filtering_key)
-    bin_method, bin_kwargs = process_bin_kwargs(path_bin, bin_key)
-    tree_kwargs = process_kwargs(path_tree, tree_key)
+    # Load job_id_stats
+    with open(os.path.join(path_pickles, sample, f'{job_id}_stats.pickle'), 'rb') as f:
+        d = pickle.load(f)
 
     # Read AFM and add metadata
     afm = sc.read(path_afm)
     
     # Filter MT-SNVs and calculate metrics
-    cell_subset = pd.read_csv(cell_file)[0].to_list() if cell_file is not None else None
+    
+    # TO DO: cell_subset = pd.read_csv(cell_file)[0].to_list() if cell_file is not None else None
+    
     afm = sc.read(path_afm)
-    afm = filter_cells(afm, cell_subset=cell_subset, **cell_filtering_kwargs)
+    afm = filter_cells(afm, **d['options']['cell_filter'])
     afm = filter_afm(
         afm,
-        filtering=filtering,
-        lineage_column=lineage_column,
-        filtering_kwargs=char_filtering_kwargs,
-        binarization_kwargs=bin_kwargs,
-        bin_method=bin_method,
-        tree_kwargs=tree_kwargs,
+        min_cell_number=d['options']['min_cell_number'],
+        lineage_column=d['options']['lineage_column'],
+        filtering=d['options']['filtering'],
+        filtering_kwargs=d['options']['filtering_kwargs'],
+        binarization_kwargs=d['options']['binarization_kwargs'],
+        bin_method=d['options']['bin_method'],
+        tree_kwargs=d['options']['tree_kwargs'],
         path_dbSNP=path_dbSNP, 
         path_REDIdb=path_REDIdb,
-        **kwargs
+        spatial_metrics=True,
+        compute_enrichment=True,
+        max_AD_counts=2,
+        ncores=n_cores,
+        return_tree=False
     )
 
     # Preprocessed datasetm and cell genotype sequences as .fa file
     afm.write('afm.h5ad')
-    seqs = AFM_to_seqs(afm, bin_method=bin_method, binarization_kwargs=bin_kwargs)
+    seqs = AFM_to_seqs(afm, 
+        bin_method=d['options']['bin_method'], 
+        binarization_kwargs=d['options']['binarization_kwargs']
+    )
     with open('genotypes.fa', 'w') as f:
         for cell in seqs:
             f.write(f'>{cell}\n')
