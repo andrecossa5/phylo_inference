@@ -5,7 +5,7 @@ import pickle
 from sklearn.metrics import silhouette_score, normalized_mutual_info_score
 from kneed import KneeLocator
 from vireoSNP import BinomMixtureVB
-from CCLONE.cluster.NMF import bootstrap_wNMF
+from CCLONE.cluster.NMF import get_wNMF_matrices, NMF_weighted
 from mito_utils.utils import *
 from mito_utils.kNN import kNN_graph
 from mito_utils.clustering import leiden_clustering
@@ -110,15 +110,18 @@ def main():
 
     scores = []
     for k in range(2,maxK):
+
         print(f'k={k}')
-        afm = bootstrap_wNMF(afm, k, n_bootstrap=1, max_cycles=100, parallel=True, n_jobs=-1, mode='10X')
-        labels = np.argmax(afm.obsm['C'], axis=1)
+        afm = get_wNMF_matrices(afm, mode='10X')
+        C, V = NMF_weighted(afm, k=k, max_cycles=100, parallel=True, n_jobs=-1)
+        labels = np.argmax(C, axis=1)
+        print('Scoring silhouette...')
         silhouette_avg = silhouette_score(afm.obsp['distances'].A, labels, metric='precomputed')
         scores.append(silhouette_avg)
 
     k = list(range(2,maxK))[np.argmax(scores)]
-    afm = bootstrap_wNMF(afm, k, n_bootstrap=1, max_cycles=100, parallel=True, n_jobs=-1, mode='10X')
-    labels = np.argmax(afm.obsm['C'], axis=1).tolist()
+    C, _ = NMF_weighted(afm, k=k, max_cycles=100, parallel=True, n_jobs=-1)
+    labels = np.argmax(C, axis=1)
 
     D['CClone']['labels'] = labels
     D['CClone']['ARI'] = custom_ARI(afm.obs['GBC'], labels)
