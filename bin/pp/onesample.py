@@ -304,9 +304,12 @@ def main():
         ncores=ncores,
         return_tree=True
     )
-
     tree, _, _ = cut_and_annotate_tree(tree)
     
+    # Prep stats dictionary
+    stats = {}
+    
+    # Options
     options = {}
     options['min_cell_number'] = min_cell_number
     options['lineage_column'] = lineage_column
@@ -316,22 +319,29 @@ def main():
     options['bin_method'] = bin_method
     options['binarization_kwargs'] = binarization_kwargs
     options['tree_kwargs'] = tree_kwargs
-
-    stats = {}
     stats['options'] = options
-    stats['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
-    stats['unassigned'] = tree.cell_meta['MT_clone'].isna().sum()
-    stats['corr_dist'] = calculate_corr_distances(tree)
-    stats['cells'] = afm.obs_names
-    stats['vars'] = afm.var_names
+
+    # Metrics
+    metrics = {}
+    metrics['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
+    metrics['unassigned'] = tree.cell_meta['MT_clone'].isna().sum()
+    metrics['corr'] = calculate_corr_distances(tree)[0]
 
     if lineage_column is not None:
-        lineage_metrics = {}
-        lineage_metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
-        lineage_metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
-        lineage_metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
-        lineage_metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.dropna()[lineage_column], tree.cell_meta.dropna()['MT_clone'])
-        stats['lineage_metrics'] = lineage_metrics
+        metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
+        metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
+        metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
+        metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.dropna()[lineage_column], tree.cell_meta.dropna()['MT_clone'])
+
+    metrics.update(afm.uns['raw_basecalls_metrics'])
+    metrics.update(afm.uns['dataset_metrics'])
+    metrics['n_dbSNP'] = afm.uns['char_filter']['n_dbSNP'] 
+    metrics['n_REDIdb'] = afm.uns['char_filter']['n_REDIdb'] 
+    stats['metrics'] = metrics
+
+    # Cells and vars
+    stats['cells'] = afm.obs_names
+    stats['vars'] = afm.var_names
 
     # Save
     with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
@@ -345,12 +355,6 @@ def main():
 
 # Run program
 if __name__ == "__main__":
-
-    # try:
     main()
-    # except:
-    #     logging.info("Something wrong with this parameters combo...")
-    #     with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
-    #         pickle.dump({}, f)
 
 #######################################################################

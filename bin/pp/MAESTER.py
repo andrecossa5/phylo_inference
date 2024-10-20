@@ -130,7 +130,7 @@ def main():
     
     afm = sc.read(path_afm)
     afm = filter_cells(afm, **d['options']['cell_filter'])
-    afm = filter_afm(
+    afm, _ = filter_afm(
         afm,
         min_cell_number=d['options']['min_cell_number'],
         lineage_column=d['options']['lineage_column'],
@@ -141,7 +141,7 @@ def main():
         tree_kwargs=d['options']['tree_kwargs'],
         path_dbSNP=path_dbSNP, 
         path_REDIdb=path_REDIdb,
-        spatial_metrics=False,
+        spatial_metrics=True,
         compute_enrichment=True,
         max_AD_counts=2,
         ncores=n_cores,
@@ -152,7 +152,6 @@ def main():
     afm.uns['distance_calculations'] = {}
     afm.uns['distance_calculations']['distances'] = {}
     afm.uns['distance_calculations']['distances']['metric'] = d['options']['tree_kwargs']['metric']
-    print(afm.uns)
     afm.write('afm.h5ad')
 
     # Preprocessed datasetm and cell genotype sequences as .fa file
