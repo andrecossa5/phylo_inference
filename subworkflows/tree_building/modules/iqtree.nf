@@ -9,8 +9,6 @@ process IQTREE {
     input:
     tuple val(job_id),
         val(sample), 
-        val(bin_key),
-        val(tree_key),
         val(rep),
         path(afm)
 

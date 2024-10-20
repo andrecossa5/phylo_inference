@@ -89,7 +89,7 @@ def main():
     afm = sc.read(path_afm)
     metric = afm.uns['distance_calculations']['distances']['metric']
     bin_method = afm.uns['genotyping']['bin_method']
-    bin_kwargs = { k:v for k,v in afm.uns['genotyping'].items() if k!='bin_method' }
+    binarization_kwargs = afm.uns['genotyping']['binarization_kwargs']
 
     # Bootstrap
     AD_original = afm.layers['AD'].A
@@ -117,7 +117,7 @@ def main():
         afm_new, 
         metric=metric, 
         bin_method=bin_method, 
-        binarization_kwargs=bin_kwargs, 
+        binarization_kwargs=binarization_kwargs, 
         ncores=n_cores
     )
 

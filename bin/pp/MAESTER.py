@@ -141,15 +141,21 @@ def main():
         tree_kwargs=d['options']['tree_kwargs'],
         path_dbSNP=path_dbSNP, 
         path_REDIdb=path_REDIdb,
-        spatial_metrics=True,
+        spatial_metrics=False,
         compute_enrichment=True,
         max_AD_counts=2,
         ncores=n_cores,
         return_tree=False
     )
 
-    # Preprocessed datasetm and cell genotype sequences as .fa file
+    # Add .uns for distance calculations
+    afm.uns['distance_calculations'] = {}
+    afm.uns['distance_calculations']['distances'] = {}
+    afm.uns['distance_calculations']['distances']['metric'] = d['options']['tree_kwargs']['metric']
+    print(afm.uns)
     afm.write('afm.h5ad')
+
+    # Preprocessed datasetm and cell genotype sequences as .fa file
     seqs = AFM_to_seqs(afm, 
         bin_method=d['options']['bin_method'], 
         binarization_kwargs=d['options']['binarization_kwargs']
