@@ -92,6 +92,7 @@ def main():
 
 
     # MI_TO
+    D['MI_TO'] = {}
     tree = build_tree(afm, bin_method='vanilla', metric='jaccard', precomputed=True, solver='UPMGA')
     tree, _,_ = cut_and_annotate_tree(tree)
     D['MI_TO']['labels'] = tree.cell_meta['MT_clone'].to_list()
