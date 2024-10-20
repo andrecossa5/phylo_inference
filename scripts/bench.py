@@ -28,7 +28,7 @@ def main():
 
     # Read afm
     afm = sc.read(sys.argv[1])
-    maxK = sys.argv[2]
+    maxK = int(sys.argv[2])
 
     # Get 
     D = {}
