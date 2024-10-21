@@ -130,7 +130,7 @@ def main():
     
     afm = sc.read(path_afm)
     afm = filter_cells(afm, **d['options']['cell_filter'])
-    afm, _ = filter_afm(
+    afm = filter_afm(
         afm,
         min_cell_number=d['options']['min_cell_number'],
         lineage_column=d['options']['lineage_column'],
