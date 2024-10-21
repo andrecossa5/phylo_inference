@@ -311,6 +311,7 @@ def main():
     
     # Options
     options = {}
+    options['pp_method'] = afm.uns['pp_method']
     options['min_cell_number'] = min_cell_number
     options['lineage_column'] = lineage_column
     options['cell_filter'] = afm.uns['cell_filter']
