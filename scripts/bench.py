@@ -17,8 +17,8 @@ from mito_utils.phylo import build_tree, cut_and_annotate_tree
 
 
 # Paths
-path_afm = '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/distance/MDA_PT/job2/afm.h5ad'
-maxK = 50
+# path_afm = '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/distance/MDA_PT/job2/afm.h5ad'
+# maxK = 50
 
 
 ##

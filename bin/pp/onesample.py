@@ -327,6 +327,8 @@ def main():
     metrics['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
     metrics['unassigned'] = tree.cell_meta['MT_clone'].isna().sum()
     metrics['corr'] = calculate_corr_distances(tree)[0]
+    metrics['mean_CI'] = np.median(CI(tree))
+    metrics['mean_RI'] = np.median(RI(tree))
 
     if lineage_column is not None:
         metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
