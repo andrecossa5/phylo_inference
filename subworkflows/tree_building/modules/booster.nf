@@ -19,7 +19,7 @@ process BOOSTER {
      
     script:
     """
-    booster -i observed.newick -b rep* -o final_tree.newick -@ ${task.cpus}
+    booster -i observed.newick -b rep* -o final_tree.newick -@ ${task.cpus} -a ${params.support_method}
     """
 
     stub:
