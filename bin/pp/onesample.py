@@ -286,6 +286,8 @@ def main():
     }
     tree_kwargs = {'metric':metric, 'solver':solver}
 
+    print(tree_kwargs)
+
     afm, tree = filter_afm(
         afm,
         min_cell_number=min_cell_number,
