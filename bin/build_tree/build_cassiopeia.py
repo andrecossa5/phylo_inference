@@ -44,6 +44,13 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
+    '--solver', 
+    type=str,
+    default='NJ',
+    help='Cassiopeia solver. Default: NJ.'
+)
+
+my_parser.add_argument(
     '--n_cores', 
     type=int,
     default='8',
@@ -68,6 +75,7 @@ path_afm = args.afm
 path_pickles = args.path_pickles
 sample = args.sample
 job_id = args.job_id
+solver = args.solver
 n_cores = args.n_cores
 boot_replicate = args.boot_replicate
 
@@ -97,6 +105,10 @@ def main():
     with open(os.path.join(path_pickles, sample, f'{job_id}_stats.pickle'), 'rb') as f:
         d = pickle.load(f)
 
+    # Re-adjust solver, if needed
+    tree_kwargs = d['options']['tree_kwargs']
+    tree_kwargs['solver'] = solver
+
     # Read afm
     afm = sc.read(path_afm)
 
@@ -107,7 +119,7 @@ def main():
         ncores=n_cores, 
         bin_method=d['options']['bin_method'], 
         binarization_kwargs=d['options']['binarization_kwargs'], 
-        **d['options']['tree_kwargs']
+        **tree_kwargs
     )
     
     # Write out

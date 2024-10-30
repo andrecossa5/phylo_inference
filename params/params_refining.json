@@ -16,6 +16,7 @@
     "lineage_column" : "GBC",
 
     "tree_algorithm" : "cassiopeia",
+    "cassiopeia_solver" : "NJ",
     "support_method" : "tbe"
 
 

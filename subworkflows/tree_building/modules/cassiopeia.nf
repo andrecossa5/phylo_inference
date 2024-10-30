@@ -25,6 +25,7 @@ process CASSIOPEIA {
     --path_pickles ${params.path_pickles} \
     --sample ${sample} \
     --job_id ${job_id} \
+    --solver ${params.cassiopeia_solver} \
     --boot_replicate ${rep} \
     --n_cores ${task.cpus}
     """
