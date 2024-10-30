@@ -220,7 +220,6 @@ min_AD = args.min_AD
 min_cell_prevalence = args.min_cell_prevalence
 bin_method = args.bin_method
 metric = args.metric
-metric = 'custom_MI_TO_jaccard' if bin_method == 'MI_TO' else metric
 solver = args.solver
 lineage_column = args.lineage_column
 ncores = args.ncores

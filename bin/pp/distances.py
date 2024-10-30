@@ -75,7 +75,7 @@ frac_char_resampling = args.frac_char_resampling
 # Preparing run: import code, prepare directories
 
 # Code
-from scipy.sparse import save_npz, csr_matrix
+from scipy.sparse import csr_matrix
 from anndata import AnnData
 from mito_utils.utils import *
 from mito_utils.phylo import *
