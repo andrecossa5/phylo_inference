@@ -16,7 +16,7 @@ process CASSIOPEIA {
     output:
     tuple val(job_id),
         val(sample), 
-        path("${rep}.newick"), emit: tree
+        path("*.newick"), emit: tree
      
     script:
     """
@@ -31,7 +31,7 @@ process CASSIOPEIA {
 
     stub:
     """
-    touch ${rep}.newick
+    touch rep${rep}.newick
     """
 
 }

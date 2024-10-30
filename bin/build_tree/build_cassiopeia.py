@@ -110,7 +110,9 @@ def main():
         **d['options']['tree_kwargs']
     )
     
-    write_newick(tree, path=f'{boot_replicate}.newick')
+    # Write out
+    name = boot_replicate if boot_replicate == 'observed' else f'rep{boot_replicate}'
+    write_newick(tree, path=f'{name}.newick')
     
 
     ##

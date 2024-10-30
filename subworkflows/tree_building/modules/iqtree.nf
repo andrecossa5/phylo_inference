@@ -26,7 +26,9 @@ process IQTREE {
 
     stub:
     """
-    touch final_tree.newick
+    touch rep1.newick
+    touch rep2.newick
+    touch rep3.newick
     """
 
 }
