@@ -33,9 +33,11 @@ workflow build_tree {
             CASSIOPEIA(ch_flattened)
             trees = CASSIOPEIA.out.tree.groupTuple(by: [0,1])
         } else if (params.tree_algorithm == "mpboot") {
-            trees = MPBOOT(ch_flattened.filter(it -> it[2]=="observed"))
+            MPBOOT(ch_flattened)
+            trees = MPBOOT.out.tree.groupTuple(by: [0,1])
         } else if (params.tree_algorithm == "iqtree") {
-            trees = IQTREE(ch_flattened.filter(it -> it[2]=="observed"))
+            IQTREE(ch_flattened)
+            trees = IQTREE.out.tree.groupTuple(by: [0,1])
         } else {
             println('Provide valid tracing system option! (e.g., cassiopeia, mpboot, iqtree)')
         }
