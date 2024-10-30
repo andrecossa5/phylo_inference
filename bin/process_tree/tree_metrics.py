@@ -78,22 +78,22 @@ def main():
     with open(path_tree, 'rb') as f:
         tree = pickle.load(f)
     
-    # Bootstrap support
-    supports = []
-    times = []
-    nodes = []
-    for node in tree.internal_nodes:
-        try:
-            supports.append(tree.get_attribute(node, 'support'))
-            times.append(tree.get_time(node))
-            nodes.append(node)
-        except:
-            pass
+    # General 
+    n_cells, n_vars = tree.layers['raw'].shape
+    metrics['n_cells'] = n_cells
+    metrics['n_vars'] = n_vars
+    metrics['median_var_per_cell'] = np.median(np.sum(tree.layers['transformed']==1, axis=1))
+    metrics['density'] = np.sum(tree.layers['transformed'].values==1) / np.product(tree.layers['transformed'].shape)
 
-    df_support = pd.DataFrame({'support':supports, 'node':nodes, 'time':times})
+    # Bootstrap support
+    df_support = get_internal_node_stats(tree)
     metrics['median_support'] = df_support['support'].median()
+    metrics['median_support_mut_clades'] = df_support.loc[df_support['mut'],'support'].median()
+    max_clade = np.percentile(df_support['clade_size'], 90)
+    metrics['median_support_biggest_clades'] = df_support.query(f'clade_size>={max_clade}')['support'].median()
+
+    # Time
     metrics['median_time'] = df_support['time'].median()
-    metrics['median_support_upmost_nodes'] = df_support.query('time<=10')['support'].median()
 
     # Others
     corr_dists, p_corr_dists = calculate_corr_distances(tree)
@@ -118,7 +118,7 @@ def main():
     n = len(tree.internal_nodes)
     tree.collapse_mutationless_edges(True)
     n_ = len(tree.internal_nodes)
-    metrics['ratio_char_supported_nodes_from_ASR'] = n_/n
+    metrics['frac_remaining_nodes_after_mutationless_edges_collapse'] = n_/n
 
     # Save
     to_frame = lambda x: pd.Series(x).to_frame('value').reset_index(names='metric').assign(job_id=job_id)
