@@ -264,9 +264,11 @@ from sklearn.metrics import normalized_mutual_info_score
 
 def main():
 
+    # Read AFM and filter cells
     afm = sc.read(path_afm)
     afm = filter_cells(afm, cell_filter=cell_filter)
 
+    # Prep kwargs
     if filtering == "MI_TO":
         filtering_kwargs = {
             'min_cov' : min_cov,
@@ -286,8 +288,7 @@ def main():
     }
     tree_kwargs = {'metric':metric, 'solver':solver}
 
-    print(tree_kwargs)
-
+    # Filter MT-SNVs and cells, make fast NJ tree 
     afm, tree = filter_afm(
         afm,
         min_cell_number=min_cell_number,
@@ -305,6 +306,7 @@ def main():
         ncores=ncores,
         return_tree=True
     )
+    # MT-clones
     tree, _, _ = cut_and_annotate_tree(tree)
     
     # Prep stats dictionary
