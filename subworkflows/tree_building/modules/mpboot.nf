@@ -21,12 +21,12 @@ process MPBOOT {
     """
     python ${baseDir}/bin/build_tree/create_fasta.py ${afm}
     mpboot -s genotypes.fa
-    mv genotypes.fa.treefile rep${rep}.newick
+    mv genotypes.fa.treefile rep_${rep}.newick
     """
 
     stub:
     """
-    touch rep${rep}.newick
+    touch rep_${rep}.newick
     """
 
 }

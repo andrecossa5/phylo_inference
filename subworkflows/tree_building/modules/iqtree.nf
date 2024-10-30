@@ -21,12 +21,12 @@ process IQTREE {
     """
     python ${baseDir}/bin/build_tree/create_fasta.py ${afm}
     iqtree -s genotypes.fa -m GTR
-    mv genotypes.fa.treefile rep${rep}.newick
+    mv genotypes.fa.treefile rep_${rep}.newick
     """
 
     stub:
     """
-    touch rep${rep}.newick
+    touch rep_${rep}.newick
     """
 
 }

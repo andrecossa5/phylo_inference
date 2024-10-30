@@ -111,8 +111,7 @@ def main():
     )
     
     # Write out
-    name = boot_replicate if boot_replicate == 'observed' else f'rep{boot_replicate}'
-    write_newick(tree, path=f'{name}.newick')
+    write_newick(tree, path=f'rep_{boot_replicate}.newick')
     
 
     ##

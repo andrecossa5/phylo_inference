@@ -31,7 +31,7 @@ process CASSIOPEIA {
 
     stub:
     """
-    touch rep${rep}.newick
+    touch rep_${rep}.newick
     """
 
 }
