@@ -256,8 +256,7 @@ import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 from mito_utils.phylo import *
-from mito_utils.clustering import custom_ARI
-from sklearn.metrics import normalized_mutual_info_score
+from mito_utils.metrics import *
 
 ########################################################################
 
@@ -269,7 +268,7 @@ def main():
     afm = filter_cells(afm, cell_filter=cell_filter)
 
     # Prep kwargs
-    if filtering == "MI_TO":
+    if filtering == "MiTo":
         filtering_kwargs = {
             'min_cov' : min_cov,
             'min_var_quality' : min_var_quality,
@@ -307,7 +306,7 @@ def main():
         return_tree=True
     )
     # MT-clones
-    tree, _, _ = cut_and_annotate_tree(tree)
+    tree, _, _ = MiToTreeAnnotator(tree)
     
     # Prep stats dictionary
     stats = {}

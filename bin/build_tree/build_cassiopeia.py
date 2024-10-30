@@ -113,14 +113,7 @@ def main():
     afm = sc.read(path_afm)
 
     # Tree
-    tree = build_tree(
-        afm, 
-        precomputed=True, 
-        ncores=n_cores, 
-        bin_method=d['options']['bin_method'], 
-        binarization_kwargs=d['options']['binarization_kwargs'], 
-        **tree_kwargs
-    )
+    tree = build_tree(afm, precomputed=True, ncores=n_cores, **tree_kwargs)
     
     # Write out
     write_newick(tree, path=f'rep_{boot_replicate}.newick')

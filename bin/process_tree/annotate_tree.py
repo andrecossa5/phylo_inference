@@ -71,7 +71,7 @@ def main():
     tree = read_newick(path_tree, X_raw=X_raw, X_bin=X_bin, D=D, meta=cell_meta)
 
     # Cut and annotate tree
-    tree, _, _ = cut_and_annotate_tree(tree)
+    tree, _, _ = MiToTreeAnnotator(tree)
 
     # Write as pickle
     with open('annotated_tree.pickle', 'wb') as f:

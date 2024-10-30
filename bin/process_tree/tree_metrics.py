@@ -56,11 +56,9 @@ job_id = args.job_id
 # Code
 import pickle
 from itertools import chain
-from sklearn.metrics import normalized_mutual_info_score
 from mito_utils.utils import *
 from mito_utils.metrics import *
 from mito_utils.phylo import *
-from mito_utils.clustering import *
 
 
 ##

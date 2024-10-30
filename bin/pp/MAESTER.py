@@ -153,16 +153,6 @@ def main():
     afm.uns['distance_calculations']['distances'] = {}
     afm.uns['distance_calculations']['distances']['metric'] = d['options']['tree_kwargs']['metric']
     afm.write('afm.h5ad')
-
-    # Preprocessed datasetm and cell genotype sequences as .fa file
-    seqs = AFM_to_seqs(afm, 
-        bin_method=d['options']['bin_method'], 
-        binarization_kwargs=d['options']['binarization_kwargs']
-    )
-    with open('genotypes.fa', 'w') as f:
-        for cell in seqs:
-            f.write(f'>{cell}\n')
-            f.write(f'{seqs[cell]}\n')
             
 
     ##
