@@ -9,8 +9,8 @@ from CCLONE.cluster.NMF import get_wNMF_matrices, NMF_weighted, orth_score
 from mito_utils.utils import *
 from mito_utils.kNN import kNN_graph
 from mito_utils.clustering import leiden_clustering
-from mito_utils.clustering import custom_ARI
-from mito_utils.phylo import build_tree, cut_and_annotate_tree
+from mito_utils.metrics import custom_ARI
+from mito_utils.phylo import build_tree, MiToTreeAnnotator
 
 
 ##
@@ -91,8 +91,8 @@ def main():
 
     # MI_TO
     D['MI_TO'] = {}
-    tree = build_tree(afm, bin_method='vanilla', metric='jaccard', precomputed=True, solver='UPMGA')
-    tree, _,_ = cut_and_annotate_tree(tree)
+    tree = build_tree(afm, precomputed=True, solver='UPMGA')
+    tree, _,_ = MiToTreeAnnotator(tree)
     labels = tree.cell_meta['MT_clone'].values
     test = tree.cell_meta['MT_clone'].isna().values
     D['MI_TO']['labels'] = labels
