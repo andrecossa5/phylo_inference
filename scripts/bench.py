@@ -91,7 +91,7 @@ def main():
 
     # MI_TO
     D['MI_TO'] = {}
-    tree = build_tree(afm, precomputed=True, solver='UPMGA')
+    tree = build_tree(afm, precomputed=True)
     tree, _,_ = MiToTreeAnnotator(tree)
     labels = tree.cell_meta['MT_clone'].values
     test = tree.cell_meta['MT_clone'].isna().values
