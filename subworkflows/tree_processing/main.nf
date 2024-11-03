@@ -22,15 +22,7 @@ workflow process_tree {
 
     main: 
 
-        ch_annot = ch_input.flatMap { 
-                job_id, sample, replicates, afms ->
-                replicates.indices.collect { i ->
-                    tuple(job_id, sample, replicates[i], afms[i])
-                }
-            }
-            .filter(it -> it[2]=="observed")
-            .combine(ch_tree, by:[0,1])
- 
+        ch_annot = ch_input.filter(it -> it[2]=="observed").combine(ch_tree, by:[0,1])
         PROCESS_TREE(ch_annot) 
         TREE_METRICS(PROCESS_TREE.out.annotated_tree)
         PATH(ch_annot.map{it->tuple(it[0],it[1],[it[4]])})

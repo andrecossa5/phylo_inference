@@ -62,10 +62,16 @@ def main():
     # Prep annot
     afm = sc.read(path_afm)
     cell_meta = afm.obs
-    char_meta = afm.var
-    X_raw = pd.DataFrame(afm.X.A, index=cell_meta.index, columns=char_meta.index)
-    X_bin = pd.DataFrame(afm.layers['bin'].A, index=cell_meta.index, columns=char_meta.index)
-    D = pd.DataFrame(afm.obsp['distances'].A, index=cell_meta.index, columns=cell_meta.index)
+    X_raw = pd.DataFrame(afm.X.A, index=afm.obs_names, columns=afm.var_names)
+    X_bin = pd.DataFrame(afm.layers['bin'].A, index=afm.obs_names, columns=afm.var_names)
+    D = pd.DataFrame(afm.obsp['distances'].A, index=afm.obs_names, columns=afm.obs_names)
+
+    # Filter MT-SNVs, as in build_tree
+    test_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95
+    test_too_rare = (X_bin==1).sum(axis=0) >= 2
+    test = (test_germline) & (test_too_rare)
+    X_raw = X_raw.loc[:,test].copy()
+    X_bin = X_bin.loc[:,test].copy()
 
     # Load tree
     tree = read_newick(path_tree, X_raw=X_raw, X_bin=X_bin, D=D, meta=cell_meta)

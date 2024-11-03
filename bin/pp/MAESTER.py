@@ -127,7 +127,6 @@ def main():
     # Filter MT-SNVs and calculate metrics
     
     # TO DO: cell_subset = pd.read_csv(cell_file)[0].to_list() if cell_file is not None else None
-    
     afm = sc.read(path_afm)
     afm = filter_cells(afm, **d['options']['cell_filter'])
     afm = filter_afm(
@@ -148,10 +147,7 @@ def main():
         return_tree=False
     )
 
-    # Add .uns for distance calculations
-    afm.uns['distance_calculations'] = {}
-    afm.uns['distance_calculations']['distances'] = {}
-    afm.uns['distance_calculations']['distances']['metric'] = d['options']['tree_kwargs']['metric']
+    # Write matrix
     afm.write('afm.h5ad')
             
 

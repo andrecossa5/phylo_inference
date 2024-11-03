@@ -93,7 +93,7 @@ def main():
 
     # Bootstrap
     AD_original = afm.layers['AD'].A
-    DP_original = afm.layers['DP'].A
+    DP_original = afm.layers['site_coverage'].A     # Use site, NBBB
 
     if boot_replicate != 'observed':
         if boot_strategy == 'jacknife':
@@ -107,12 +107,13 @@ def main():
     else:
         AD = AD_original
         DP = DP_original
+        idx = range(afm.shape[1])
     
     # Calculate distances
     AF = csr_matrix(np.divide(AD, (DP+.0000001)))
     AD = csr_matrix(AD)
     DP = csr_matrix(DP)
-    afm_new = AnnData(X=AF, obs=afm.obs, var=afm.var.iloc[idx,:], uns=afm.uns, layers={'AD':AD, 'DP':DP})
+    afm_new = AnnData(X=AF, obs=afm.obs, var=afm.var.iloc[idx,:], uns=afm.uns, layers={'AD':AD, 'site_coverage':DP})
     compute_distances(
         afm_new, 
         metric=metric, 

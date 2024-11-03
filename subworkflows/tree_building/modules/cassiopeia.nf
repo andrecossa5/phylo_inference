@@ -11,7 +11,7 @@ process CASSIOPEIA {
     tuple val(job_id),
         val(sample), 
         val(rep),
-        val(afm)
+        path(afm)
 
     output:
     tuple val(job_id),

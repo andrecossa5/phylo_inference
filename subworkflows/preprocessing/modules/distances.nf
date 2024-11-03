@@ -26,6 +26,7 @@ process DISTANCES {
     --afm ${afm} \
     --n_cores ${task.cpus} \
     --boot_strategy ${params.boot_strategy} \
+    --boot_replicate ${rep} \
     --frac_char_resampling ${params.frac_char_resampling}
     """
 

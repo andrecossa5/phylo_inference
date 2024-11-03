@@ -40,6 +40,6 @@ workflow preprocess {
 
     emit:
 
-        input = DISTANCES.out.distances.groupTuple(by: [0,1])
+        input = DISTANCES.out.distances
         
 } 

@@ -98,7 +98,7 @@ def main():
     # Load distance matrices
     D = {}
     for k,v in zip(replicates, path_afm):
-        D[k] = sc.read(v).obsp['distances'].A
+        D[k] = sc.read(v).obsp['distances']
 
     # Load cell meta
     idx_observed = [ i for i,x in enumerate(replicates) if x == 'observed' ][0]
@@ -110,7 +110,7 @@ def main():
         labels = meta[lineage_column].astype(str)
     
         # kNN metrics
-        idx = kNN_graph(D=D['observed'], k=K, from_distances=True)[0]
+        idx = kNN_graph(D=D['observed'].A, k=K, from_distances=True)[0]
         _, _, acc_rate = kbet(idx, labels, only_score=False)
         median_entropy = NN_entropy(idx, labels)
         median_purity = NN_purity(idx, labels)
@@ -119,12 +119,12 @@ def main():
         metrics['median_NN_purity'] = median_purity
     
         # AUPRC
-        metrics['AUPRC'] = distance_AUPRC(D['observed'], labels)
+        metrics['AUPRC'] = distance_AUPRC(D['observed'].A, labels)
 
     # Corr
     L = []
     for k in D:
-        L.append(D[k].flatten())
+        L.append(D[k].A.flatten())
     del D 
     metrics['corr'] = np.mean(np.corrcoef(np.array(L)))
 
