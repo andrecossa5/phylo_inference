@@ -61,7 +61,7 @@ def main():
     for k in range(2,maxK+1):
         print(f'Clone n: {k}')
         _model = BinomMixtureVB(n_var=afm.shape[1], n_cell=afm.shape[0], n_donor=k)
-        _model.fit(afm.layers['AD'].T, afm.layers['DP'].T, min_iter=30, max_iter=500, max_iter_pre=250, n_init=50, random_seed=1234)
+        _model.fit(afm.layers['AD'].T, afm.layers['site_coverage'].T, min_iter=30, max_iter=500, max_iter_pre=250, n_init=50, random_seed=1234)
         _ELBO_mat.append(_model.ELBO_inits)
 
     _ELBO_mat = np.row_stack(_ELBO_mat)
@@ -71,7 +71,7 @@ def main():
     n_clones = knee
 
     _model = BinomMixtureVB(n_var=afm.shape[1], n_cell=afm.shape[0], n_donor=n_clones)
-    _model.fit(afm.layers['AD'].T, afm.layers['DP'].T, min_iter=30, n_init=50, max_iter=500, max_iter_pre=250, random_seed=1234)
+    _model.fit(afm.layers['AD'].T, afm.layers['site_coverage'].T, min_iter=30, n_init=50, max_iter=500, max_iter_pre=250, random_seed=1234)
 
     clonal_assignment = _model.ID_prob
     idx = clonal_assignment.argmax(axis=1)
@@ -106,7 +106,7 @@ def main():
 
     # CClone
     afm.layers['ALT'] = afm.layers['AD'].A
-    afm.layers['REF'] = afm.layers['DP'].A - afm.layers['AD'].A
+    afm.layers['REF'] = afm.layers['site_coverage'].A - afm.layers['AD'].A
     afm.X = afm.X.A
 
     D['CClone'] = {}
