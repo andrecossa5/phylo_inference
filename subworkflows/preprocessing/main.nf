@@ -34,7 +34,7 @@ workflow preprocess {
         }
 
         // Calculate distances
-        replicates = Channel.of( 1..(params.n_boot_distances-1) ).concat(Channel.of( "observed" )) 
+        replicates = Channel.of( 1..(params.n_boot_distances-1) ).concat(Channel.of( "observed")) 
         DISTANCES(ch_afm.combine(replicates))
         DISTANCE_METRICS(DISTANCES.out.distances.groupTuple(by: [0,1]))
 
