@@ -8,33 +8,36 @@ include { hyper_tuning } from "./subworkflows/hyper_tuning/main"
 
 //
 
-// Input channel
-ch_jobs = Channel.fromPath(params.path_input)
-            .splitCsv(header: true)
-            .map { row -> [ row.sample, row.ch_matrix, row.job_id, row.cell_file ]}
-
-//
-
 //----------------------------------------------------------------------------//
 // phylo_inference workflow main entry point
 //----------------------------------------------------------------------------//
 
 workflow tuning {
 
+    ch_jobs = Channel.fromPath(params.path_input)
+        .splitCsv(header: true)
+        .map { row -> [ row.sample, row.ch_matrix, row.job_id, row.cell_file ]}
     hyper_tuning(ch_jobs)
     hyper_tuning.out.stats.view()
 
 }
 
+//
+
 workflow phylo {
 
-    preprocess(ch_jobs)
-    build_tree(preprocess.out.input)
-    process_tree(preprocess.out.input, build_tree.out.final_tree)
-    process_tree.out.metrics.view()
+    ch_jobs = Channel.fromPath(params.path_input)
+        .splitCsv(header: true)
+        .map { row -> [ row.sample, row.ch_matrix, row.job_id, row.cell_file ]}
+    ch_jobs.view()
+    // preprocess(ch_jobs)
+    // build_tree(preprocess.out.input)
+    // process_tree(preprocess.out.input, build_tree.out.final_tree)
+    // process_tree.out.metrics.view()
 
 }
 
+//
 
 // Mock
 
@@ -45,7 +48,7 @@ workflow {
     println "Hi there! This is the new version of the phylo_inference toolkit. The phylo entry point is currently supported."
     println "Usage: nextflow run main.nf -c <config> -params-file <params> -profile <profile> -entry <entry>"
     println "See https://github.com/.../main.nf ./config and ./params for configurations and options available."
-    println "N.B. BETA version under active development."
+    println "N.B. This is a BETA version under active development."
     println "\n"
 
 }
