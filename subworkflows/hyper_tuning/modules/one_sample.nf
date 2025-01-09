@@ -51,7 +51,6 @@ process ONESAMPLE {
     --solver ${params.solver} \
     --lineage_column ${params.lineage_column} \
     --ncores ${task.cpus} \
-    --cell_file ${params.cell_file} \
     --path_dbSNP ${params.path_dbSNP} \
     --path_REDIdb ${params.path_REDIdb}
     """

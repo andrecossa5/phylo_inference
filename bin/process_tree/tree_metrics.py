@@ -42,7 +42,7 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 path_tree = args.tree
-lineage_column = args.lineage_column
+lineage_column = args.lineage_column if args.lineage_column != 'null' else None
 job_id = args.job_id
 
 
@@ -107,7 +107,7 @@ def main():
     metrics['median_RI'] = np.median(RI(tree))
 
     # Benchmark specifics
-    if lineage_column is not None:
+    if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         test = ~tree.cell_meta['MT_clone'].isna()
         metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
         metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])

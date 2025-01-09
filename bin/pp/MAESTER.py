@@ -48,24 +48,10 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--lineage_column', 
-    type=str,
-    default=None,
-    help='Lineage column for benchmarking, if necessary. Default: None.'
-)
-
-my_parser.add_argument(
     '--n_cores', 
     type=int,
     default=1,
     help='n cores to use. Default: 8.'
-)
-
-my_parser.add_argument(
-    '--cell_file', 
-    type=str,
-    default="None",
-    help='Path to subset of cells to utilize for the analysis. Default: None.'
 )
 
 my_parser.add_argument(
@@ -93,9 +79,7 @@ path_afm = args.path_afm
 path_pickles = args.path_pickles
 sample = args.sample
 job_id = args.job_id
-lineage_column = args.lineage_column
 n_cores = args.n_cores
-cell_file = args.cell_file if args.cell_file != "None" else None
 path_dbSNP = args.path_dbSNP
 path_REDIdb = args.path_REDIdb
 
@@ -125,8 +109,6 @@ def main():
     afm = sc.read(path_afm)
     
     # Filter MT-SNVs and calculate metrics
-    
-    # TO DO: cell_subset = pd.read_csv(cell_file)[0].to_list() if cell_file is not None else None
     afm = sc.read(path_afm)
     afm = filter_cells(afm, **d['options']['cell_filter'])
     afm = filter_afm(

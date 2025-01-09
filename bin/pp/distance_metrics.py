@@ -71,7 +71,7 @@ path_afm = args.afm.strip('[|]').split(', ')
 replicates = args.replicates.strip('[|]').split(', ')
 K = args.K
 job_id = args.job_id
-lineage_column = args.lineage_column
+lineage_column = args.lineage_column if args.lineage_column != 'null' else None
 
 
 ##
@@ -105,7 +105,7 @@ def main():
     afm = sc.read(path_afm[idx_observed])
     meta = afm.obs
 
-    if lineage_column is not None:
+    if lineage_column is not None and lineage_column in meta.columns:
         
         labels = meta[lineage_column].astype(str)
     

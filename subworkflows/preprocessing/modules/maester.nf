@@ -11,8 +11,7 @@ process MAESTER {
     input:
     tuple val(sample), 
         val(ch_matrix), 
-        val(job_id), 
-        val(cell_file)
+        val(job_id)
  
     output:
     tuple val(job_id), 
@@ -26,9 +25,7 @@ process MAESTER {
     --path_pickles ${params.path_pickles} \
     --sample ${sample} \
     --job_id ${job_id} \
-    --lineage_column ${params.lineage_column} \
     --n_cores ${task.cpus} \
-    --cell_file ${cell_file} \
     --path_dbSNP ${params.path_dbSNP} \
     --path_REDIdb ${params.path_REDIdb}
     """

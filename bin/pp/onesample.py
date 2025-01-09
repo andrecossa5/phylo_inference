@@ -174,13 +174,6 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--cell_file', 
-    type=str,
-    default=None,
-    help='Path selected subset of cell barcodes to analyze (N.B. in <CB>_<sample_name> format). Default: None.'
-)
-
-my_parser.add_argument(
     '--path_dbSNP', 
     type=str,
     default=None,
@@ -221,9 +214,8 @@ min_cell_prevalence = args.min_cell_prevalence
 bin_method = args.bin_method
 metric = args.metric
 solver = args.solver
-lineage_column = args.lineage_column if args.cell_file != "None" else None
 ncores = args.ncores
-cell_file = args.cell_file if args.cell_file != "None" else None
+lineage_column = args.lineage_column if args.lineage_column != "null" else None
 path_dbSNP = args.path_dbSNP
 path_REDIdb = args.path_REDIdb
 
@@ -332,7 +324,7 @@ def main():
     metrics['mean_CI'] = np.median(CI(tree))
     metrics['mean_RI'] = np.median(RI(tree))
 
-    if lineage_column is not None:
+    if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
         metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
         metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
