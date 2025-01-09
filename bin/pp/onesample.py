@@ -221,7 +221,7 @@ min_cell_prevalence = args.min_cell_prevalence
 bin_method = args.bin_method
 metric = args.metric
 solver = args.solver
-lineage_column = args.lineage_column
+lineage_column = args.lineage_column if args.cell_file != "None" else None
 ncores = args.ncores
 cell_file = args.cell_file if args.cell_file != "None" else None
 path_dbSNP = args.path_dbSNP

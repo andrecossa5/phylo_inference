@@ -7,7 +7,7 @@
     "cell_filter": "filter2",
     "filtering": "MiTo",
 
-    "min_cell_number": 10,
+    "min_cell_number": 0,
     "min_cov": 3,
     "min_var_quality": 10, 
     "min_frac_negative": 0.2,
