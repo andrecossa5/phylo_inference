@@ -24,7 +24,7 @@ workflow hyper_tuning {
 
     main: 
 
-        ch_input = ch_input.map{ it -> tuple(it[0], it[1]) }
+        ch_input = ch_input.map{ it -> tuple(it[1], it[2]) }
                 .combine(Channel.fromList(params.min_n_positive))
                 .combine(Channel.fromList(params.af_confident_detection))
                 .combine(Channel.fromList(params.min_n_confidently_detected))

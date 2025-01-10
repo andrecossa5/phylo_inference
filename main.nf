@@ -16,9 +16,23 @@ workflow tuning {
 
     ch_jobs = Channel.fromPath(params.path_input)
         .splitCsv(header: true)
-        .map { row -> [ row.sample, row.ch_matrix ]}
+        .map { row -> [ row.job_id, row.sample, row.ch_matrix ]}
     hyper_tuning(ch_jobs)
     hyper_tuning.out.stats.view()
+
+}
+
+//
+
+workflow refining {
+
+    ch_jobs = Channel.fromPath(params.path_input)
+        .splitCsv(header: true)
+        .map { row -> [ row.job_id, row.sample, row.ch_matrix ]}
+    preprocess(ch_jobs)
+    build_tree(preprocess.out.input)
+    process_tree(preprocess.out.input, build_tree.out.final_tree)
+    process_tree.out.metrics.view()
 
 }
 
@@ -28,7 +42,7 @@ workflow phylo {
 
     ch_jobs = Channel.fromPath(params.path_input)
         .splitCsv(header: true)
-        .map { row -> [ row.sample, row.ch_matrix, row.job_id ]}
+        .map { row -> [ row.job_id, row.sample, row.ch_matrix ]}
     preprocess(ch_jobs)
     build_tree(preprocess.out.input)
     process_tree(preprocess.out.input, build_tree.out.final_tree)
