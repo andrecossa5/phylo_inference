@@ -16,67 +16,38 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--AD', 
+    '--afm', 
     type=str,
     default='..',
-    help='Path to AD.npz file, a table of AD counts. Default: .. .'
+    help='Path to afm.h5ad file. Default: .. .'
 )
 
 my_parser.add_argument(
-    '--DP', 
+    '--path_pickles', 
     type=str,
     default=None,
-    help='Path to DP.npz file, a table of DP counts. Default: .. .'
-)
-
-# Add arguments
-my_parser.add_argument(
-    '--cell_meta', 
-    type=str,
-    default='..',
-    help='Path to cell_meta.csv file. Default: .. .'
+    help='Path to pickles main folder. Default: None.'
 )
 
 my_parser.add_argument(
-    '--char_meta', 
+    '--sample', 
     type=str,
     default=None,
-    help='Path to char_meta.csv file. Default: .. .'
+    help='Sample name. Default: None.'
 )
 
 my_parser.add_argument(
-    '--dists', 
+    '--job_id', 
     type=str,
     default=None,
-    help='Path to dist.npz file, storing pairwise cell-cell distances. Default: .. .'
+    help='Job id. Default: None.'
 )
 
 my_parser.add_argument(
-    '--path_bin', 
+    '--solver', 
     type=str,
-    default=None,
-    help='Path to bin_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--path_tree', 
-    type=str,
-    default=None,
-    help='Path to tree_ops.json file. Default: None.'
-)
-
-my_parser.add_argument(
-    '--bin_key', 
-    type=str,
-    default='default',
-    help='Filtering option in bin_ops.json. Default: default.'
-)
-
-my_parser.add_argument(
-    '--tree_key', 
-    type=str,
-    default='default',
-    help='Filtering option in tree_ops.json. Default: default.'
+    default='NJ',
+    help='Cassiopeia solver. Default: NJ.'
 )
 
 my_parser.add_argument(
@@ -100,15 +71,11 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 
-path_AD = args.AD
-path_DP = args.DP
-path_cell_meta = args.cell_meta
-path_char_meta = args.char_meta
-path_dists = args.dists
-path_bin = args.path_bin
-path_tree = args.path_tree
-bin_key = args.bin_key
-tree_key = args.tree_key
+path_afm = args.afm
+path_pickles = args.path_pickles
+sample = args.sample
+job_id = args.job_id
+solver = args.solver
 n_cores = args.n_cores
 boot_replicate = args.boot_replicate
 
@@ -121,7 +88,7 @@ boot_replicate = args.boot_replicate
 # Preparing run: import code, prepare directories, set logger
 
 # Code
-from scipy.sparse import load_npz
+import pickle
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
@@ -134,23 +101,22 @@ from mito_utils.phylo import *
 # Main
 def main():
 
-    # Prep input
-    AD = load_npz(path_AD).A.T.astype(np.int16)
-    DP = load_npz(path_DP).A.T.astype(np.int16)
-    D = load_npz(path_dists).A
-    cell_meta = pd.read_csv(path_cell_meta, index_col=0)
-    char_meta = pd.read_csv(path_char_meta, index_col=0)
+    # Load job_id_stats
+    with open(os.path.join(path_pickles, sample, f'{job_id}_stats.pickle'), 'rb') as f:
+        d = pickle.load(f)
 
-    # Params
-    bin_method, bin_kwargs = process_bin_kwargs(path_bin, bin_key)
-    tree_kwargs = process_kwargs(path_tree, tree_key)
+    # Re-adjust solver, if needed
+    tree_kwargs = d['options']['tree_kwargs']
+    tree_kwargs['solver'] = solver
 
-    # Build tree
-    tree = build_tree(AD=AD, DP=DP, D=D, meta=cell_meta, var_names=char_meta.index, 
-                      bin_method=bin_method, binarization_kwargs=bin_kwargs, **tree_kwargs)
+    # Read afm
+    afm = sc.read(path_afm)
 
-    # Write tree
-    write_newick(tree, path=f'{boot_replicate}.newick')
+    # Tree
+    tree = build_tree(afm, precomputed=True, ncores=n_cores, **tree_kwargs)
+    
+    # Write out
+    write_newick(tree, path=f'rep_{boot_replicate}.newick')
     
 
     ##

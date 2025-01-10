@@ -4,23 +4,29 @@ nextflow.enable.dsl = 2
 
 process IQTREE {
 
-    tag "${sample}: ${job_id}"
+    tag "${sample}: ${job_id}, rep=${rep}"
 
-    input: 
-    tuple val(job_id), val(sample), path(input_folder)
+    input:
+    tuple val(job_id),
+        val(sample), 
+        val(rep),
+        val(afm)
 
     output:
-    tuple val(job_id), val(sample), path(input_folder), path("final_tree.newick"), emit: tree
+    tuple val(job_id),
+        val(sample), 
+        path("*.newick"), emit: tree
     
     script:
     """
-    iqtree -s ${input_folder}/genotypes.fa
-    python ${baseDir}/build_tree/iqtree_to_newick.py
+    python ${baseDir}/bin/build_tree/create_fasta.py ${afm}
+    iqtree -s genotypes.fa -m GTR
+    mv genotypes.fa.treefile rep_${rep}.newick
     """
 
     stub:
     """
-    touch final_tree.newick
+    touch rep_${rep}.newick
     """
 
 }

@@ -7,28 +7,24 @@ nextflow.enable.dsl = 2
 process DISTANCE_METRICS {
 
     tag "${sample}: ${job_id}"
+    publishDir "${params.outdir}/${sample}/${job_id}", mode: 'copy'
 
     input:
     tuple val(job_id),
         val(sample), 
-        val(bin_key), 
-        val(tree_key), 
-        path(input_folder), 
         val(rep),
-        val(dists)
+        val(afm)
 
     output:
     tuple val(job_id),
         val(sample),  
-        path(input_folder), 
-        path("distance_metrics.csv"), emit: distance_metrics
+        path("afm.h5ad"), emit: distance_metrics
     
     script:
     """
     python ${baseDir}/bin/pp/distance_metrics.py \
-    --path_dists "${dists}" \
+    --afm "${afm}" \
     --replicates "${rep}" \
-    --path_meta ${input_folder}/cell_meta.csv \
     --job_id ${job_id} \
     --K ${params.K} \
     --lineage_column ${params.lineage_column}
@@ -36,7 +32,7 @@ process DISTANCE_METRICS {
 
     stub:
     """
-    touch distance_metrics.csv
+    touch afm.h5ad
     """
 
 }

@@ -19,24 +19,17 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--path_dists', 
+    '--afm', 
     type=str,
     default=None,
-    help='List of paths to all distances .npz files. Default: None'
+    help='List of paths to all bootstrapped afm.h5ad files. Default: None'
 )
 
 my_parser.add_argument(
     '--replicates', 
     type=str,
     default=None,
-    help='List of replicates identifiers mapping to all distances .npz files. Default: None'
-)
-
-my_parser.add_argument(
-    '--path_meta', 
-    type=str,
-    default=None,
-    help='Path to cells_meta.csv file. Default: None .'
+    help='List of replicates identifiers mapping to all afm.h5ad files. Default: None'
 )
 
 my_parser.add_argument(
@@ -74,12 +67,11 @@ my_parser.add_argument(
 
 # Parse arguments
 args = my_parser.parse_args()
-path_dists = args.path_dists.strip('[|]').split(', ')
+path_afm = args.afm.strip('[|]').split(', ')
 replicates = args.replicates.strip('[|]').split(', ')
-path_meta = args.path_meta
 K = args.K
 job_id = args.job_id
-lineage_column = args.lineage_column
+lineage_column = args.lineage_column if args.lineage_column != 'null' else None
 
 
 ##
@@ -105,18 +97,20 @@ def main():
 
     # Load distance matrices
     D = {}
-    for k,v in zip(replicates, path_dists):
-        D[k] = load_npz(v).A
+    for k,v in zip(replicates, path_afm):
+        D[k] = sc.read(v).obsp['distances']
 
     # Load cell meta
-    meta = pd.read_csv(path_meta, index_col=0)
+    idx_observed = [ i for i,x in enumerate(replicates) if x == 'observed' ][0]
+    afm = sc.read(path_afm[idx_observed])
+    meta = afm.obs
 
-    if lineage_column is not None:
+    if lineage_column is not None and lineage_column in meta.columns:
         
         labels = meta[lineage_column].astype(str)
     
         # kNN metrics
-        idx = kNN_graph(D=D['observed'], k=K, from_distances=True)[0]
+        idx = kNN_graph(D=D['observed'].A, k=K, from_distances=True)[0]
         _, _, acc_rate = kbet(idx, labels, only_score=False)
         median_entropy = NN_entropy(idx, labels)
         median_purity = NN_purity(idx, labels)
@@ -125,18 +119,18 @@ def main():
         metrics['median_NN_purity'] = median_purity
     
         # AUPRC
-        metrics['AUPRC'] = distance_AUPRC(D['observed'], labels)
+        metrics['AUPRC'] = distance_AUPRC(D['observed'].A, labels)
 
     # Corr
     L = []
     for k in D:
-        L.append(D[k].flatten())
+        L.append(D[k].A.flatten())
     del D 
     metrics['corr'] = np.mean(np.corrcoef(np.array(L)))
 
     # Save
-    to_frame = lambda x: pd.Series(x).to_frame('value').reset_index(names='metric').assign(job_id=job_id)
-    to_frame(metrics).to_csv('distance_metrics.csv')
+    afm.uns['distance_metrics'] = metrics
+    afm.write('afm.h5ad')
 
 
 #######################################################################

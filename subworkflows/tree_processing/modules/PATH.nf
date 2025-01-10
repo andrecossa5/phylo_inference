@@ -1,9 +1,9 @@
-// PROCESS_TREE module
+// PATH module
 
 nextflow.enable.dsl = 2
 
 
-process PROCESS_TREE {
+process PATH {
 
     tag "${sample}: ${job_id}"
     publishDir "${params.outdir}/${sample}/${job_id}", mode: 'copy'
@@ -11,25 +11,21 @@ process PROCESS_TREE {
     input:
     tuple val(job_id),
         val(sample), 
-        val(observed),
-        path(afm),
         path(tree)
 
     output:
     tuple val(job_id),
         val(sample), 
-        path("annotated_tree.pickle"), emit: annotated_tree
+        path("phylocorr.csv"), emit: phylocorr
     
     script:
     """
-    python ${baseDir}/bin/process_tree/annotate_tree.py \
-    --tree ${tree} \
-    --afm ${afm}
+    Rscript ${baseDir}/bin/process_tree/PATH.r ${tree} ${params.path_meta} ${params.lineage_column}
     """
 
     stub:
     """
-    touch annotated_tree.pickle
+    touch phylocorr.csv
     """
 
 }

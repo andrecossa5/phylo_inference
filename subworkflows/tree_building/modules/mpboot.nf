@@ -4,23 +4,29 @@ nextflow.enable.dsl = 2
 
 process MPBOOT {
 
-    tag "${sample}: ${filtering_key}"
+    tag "${sample}: ${job_id}, rep=${rep}"
 
-    input: 
-    tuple val(sample), val(filtering_key), path(input_folder)
+    input:
+    tuple val(job_id),
+        val(sample), 
+        val(rep),
+        val(afm)
 
     output:
-    tuple val(sample), val(filtering_key), path(input_folder), path("final_tree.newick"), emit: tree
+    tuple val(job_id),
+        val(sample), 
+        path("*.newick"), emit: tree
     
     script:
     """
-    mpboot -s ${input_folder}/genotypes.fa -bb 1000
-    mv ${input_folder}/genotypes.fa.treefile final_tree.newick
+    python ${baseDir}/bin/build_tree/create_fasta.py ${afm}
+    mpboot -s genotypes.fa
+    mv genotypes.fa.treefile rep_${rep}.newick
     """
 
     stub:
     """
-    touch final_tree.newick
+    touch rep_${rep}.newick
     """
 
 }

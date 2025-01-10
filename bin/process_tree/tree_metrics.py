@@ -36,20 +36,13 @@ my_parser.add_argument(
 )
 
 
-
 ##
 
 
 # Parse arguments
 args = my_parser.parse_args()
-
-# os.chdir('/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/94/961e3f1d8b7a7fdcef424ef50c6a12')
-# path_tree = '/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/c0/dea9b7d53a9c82c66dea344b3f590a/annotated_tree.pickle'
-# lineage_column = 'GBC'
-# job_id = 'aa'
-
 path_tree = args.tree
-lineage_column = args.lineage_column
+lineage_column = args.lineage_column if args.lineage_column != 'null' else None
 job_id = args.job_id
 
 
@@ -63,11 +56,9 @@ job_id = args.job_id
 # Code
 import pickle
 from itertools import chain
-from sklearn.metrics import normalized_mutual_info_score
 from mito_utils.utils import *
 from mito_utils.metrics import *
 from mito_utils.phylo import *
-from mito_utils.clustering import *
 
 
 ##
@@ -85,23 +76,24 @@ def main():
     with open(path_tree, 'rb') as f:
         tree = pickle.load(f)
     
+    # General 
+    n_cells, n_vars = tree.layers['raw'].shape
+    metrics['n_cells'] = n_cells
+    metrics['n_vars'] = n_vars
+    metrics['median_var_per_cell'] = np.median(np.sum(tree.layers['transformed']==1, axis=1))
+    metrics['density'] = np.sum(tree.layers['transformed'].values==1) / np.product(tree.layers['transformed'].shape)
+
     # Bootstrap support
-    supports = []
-    times = []
-    nodes = []
-    for node in tree.internal_nodes:
-        try:
-            supports.append(tree.get_attribute(node, 'support'))
-            times.append(tree.get_time(node))
-            nodes.append(node)
-        except:
-            pass
-
-    df_support = pd.DataFrame({'support':supports, 'node':nodes, 'time':times})
+    df_support = get_internal_node_stats(tree)
     metrics['median_support'] = df_support['support'].median()
-    metrics['median_time'] = df_support['time'].median()
-    metrics['median_support_upmost_nodes'] = df_support.query('time<=10')['support'].median()
+    metrics['median_support_mut_clades'] = df_support.loc[df_support['mut'],'support'].median()
+    max_clade = np.percentile(df_support['clade_size'], 90)
+    metrics['median_support_biggest_clades'] = df_support.query(f'clade_size>={max_clade}')['support'].median()
 
+    # Time
+    metrics['median_time'] = df_support['time'].median()
+
+    # Others
     corr_dists, p_corr_dists = calculate_corr_distances(tree)
     metrics['corr_distances'] = corr_dists
     metrics['corr_distances_pvalue'] = p_corr_dists
@@ -114,20 +106,17 @@ def main():
     metrics['median_CI'] = np.median(CI(tree))
     metrics['median_RI'] = np.median(RI(tree))
 
-    if lineage_column is not None:
+    # Benchmark specifics
+    if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         test = ~tree.cell_meta['MT_clone'].isna()
         metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
         metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
-        C = cs.tl.compute_evolutionary_coupling(tree, meta_variable=lineage_column)
-        C = np.exp(-(C/np.max(np.abs(C))))
-        C.to_csv('evo_coupling.csv')
-    else:
-        pd.DataFrame().to_csv('evo_coupling.csv')
 
+    # Collapse tree
     n = len(tree.internal_nodes)
     tree.collapse_mutationless_edges(True)
     n_ = len(tree.internal_nodes)
-    metrics['ratio_char_supported_nodes_from_ASR'] = n_/n
+    metrics['frac_remaining_nodes_after_mutationless_edges_collapse'] = n_/n
 
     # Save
     to_frame = lambda x: pd.Series(x).to_frame('value').reset_index(names='metric').assign(job_id=job_id)
