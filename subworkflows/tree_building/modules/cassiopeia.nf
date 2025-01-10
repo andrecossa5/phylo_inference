@@ -26,6 +26,7 @@ process CASSIOPEIA {
     --sample ${sample} \
     --job_id ${job_id} \
     --solver ${params.cassiopeia_solver} \
+    --metric ${params.distance_metric} \
     --boot_replicate ${rep} \
     --n_cores ${task.cpus}
     """
@@ -36,3 +37,6 @@ process CASSIOPEIA {
     """
 
 }
+
+
+//

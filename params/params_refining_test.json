@@ -1,6 +1,6 @@
 { 
     
-    "tracing_system" : "MAESTER",
+    "scLT_system" : "MAESTER",
     "outdir" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/results/refining_test",
 
     "path_input" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/input_files/input_refining_test.csv",
@@ -16,7 +16,6 @@
     "lineage_column" : "GBC",
 
     "tree_algorithm" : "cassiopeia",
-    "cassiopeia_solver" : "UPMGA",
     "support_method" : "tbe"
 
 }
