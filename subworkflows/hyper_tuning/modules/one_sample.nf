@@ -48,7 +48,8 @@ process ONESAMPLE {
     --min_AD ${min_AD} \
     --min_cell_prevalence ${min_cell_prevalence} \
     --bin_method ${bin_method} \
-    --solver ${params.solver} \
+    --solver ${params.cassiopeia_solver} \
+    --metric ${params.distance_metric} \
     --lineage_column ${params.lineage_column} \
     --ncores ${task.cpus} \
     --path_dbSNP ${params.path_dbSNP} \
