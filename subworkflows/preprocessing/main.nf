@@ -2,8 +2,7 @@
 
 // Include here
 nextflow.enable.dsl = 2
-include { MAESTER } from "./modules/maester.nf"
-include { MAESTER_TUNE } from "./modules/maester.nf"
+include { MITO } from "./modules/mito.nf"
 include { DISTANCES } from "./modules/distances.nf"
 include { DISTANCE_METRICS } from "./modules/distance_metrics.nf"
 
@@ -22,19 +21,13 @@ workflow preprocess {
     main:
      
         // Process input AFMs, based on input scLT_system
-        if (params.scLT_system == "MAESTER") {
-            if (params.path_pickles) {              // Used with path_pickles, after tuning 
-                MAESTER_TUNE(ch_jobs)   
-                ch_afm = MAESTER_TUNE.out.afm
-            } else {
-                MAESTER(ch_jobs)   
-                ch_afm = MAESTER.out.afm
-            }
-        } 
-        
+        if (params.scLT_system == "MAESTER" || params.scLT_system == "RedeeM") {
+            MITO(ch_jobs)   
+            ch_afm = MITO.out.afm
+        }
         else {
-            println('Only valid option is MAESTER so far...')
-            println('Provide valid tracing system option! (e.g., MAESTER, RedeeM, scmtATAC, Cas9, scWGS)')
+            println('Only valid option are MAESTER and RedeeM so far...')
+            // println('Provide valid tracing system option! (e.g., MAESTER, RedeeM, scmtATAC, Cas9, scWGS)')
         } 
         
         // Calculate distances

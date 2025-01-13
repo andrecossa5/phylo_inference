@@ -20,6 +20,9 @@ process DISTANCE_METRICS {
         val(sample),  
         path("afm.h5ad"), emit: distance_metrics
     
+    // Handle CLI args
+    def lineage_column = params.lineage_column ? "--lineage_column ${params.lineage_column}" : ""
+
     script:
     """
     python ${baseDir}/bin/pp/distance_metrics.py \
@@ -27,7 +30,7 @@ process DISTANCE_METRICS {
     --replicates "${rep}" \
     --job_id ${job_id} \
     --K ${params.K} \
-    --lineage_column ${params.lineage_column}
+    ${lineage_column}
     """
 
     stub:

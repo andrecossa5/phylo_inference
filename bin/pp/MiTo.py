@@ -10,10 +10,10 @@ import argparse
 
 # Create the parser
 my_parser = argparse.ArgumentParser(
-    prog='MAESTER',
+    prog='MiTo',
     description=
     """
-    Prepare input for tree building, from MAESTER Allele Frequency Matrix.
+    Prepare input for tree building, from MAESTER or RedeeM Allele Frequency Matrix.
     """
 )
 
@@ -22,8 +22,8 @@ my_parser = argparse.ArgumentParser(
 my_parser.add_argument(
     '--path_afm', 
     type=str,
-    default='..',
-    help='Path to afm.h5ad file. Default: .. .'
+    default='.',
+    help='Path to afm.h5ad file. Default: . .'
 )
 
 my_parser.add_argument(
@@ -57,43 +57,43 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--filtering', 
     type=str,
-    default='MI_TO',
-    help='Variant filtering method. Default: MI_TO.'
+    default=None,
+    help='Variant filtering method. Default: None (i.e., all MT-SNVs variants will be retained).'
 )
 
 my_parser.add_argument(
     '--min_cell_number', 
     type=int,
     default=0,
-    help='Min number of cell in <lineage_column> categories to retain them. Default: 10.'
+    help='Min number of cell in <lineage_column> categories to retain them. Default: 0.'
 )
 
 my_parser.add_argument(
     '--min_cov', 
     type=int,
     default=10,
-    help='Minimum site coverage. Default: 10.'
+    help='Minimum mean coverage of the candidate variant site. Default: 10.'
 )
 
 my_parser.add_argument(
     '--min_var_quality', 
     type=int,
     default=30,
-    help='Min Q30 phred score of a MT-SNV ADs. Default: 30.'
+    help='Min phred score of a MT-SNV ADs. Default: 30.'
 )
 
 my_parser.add_argument(
     '--min_frac_negative', 
     type=float,
     default=.2,
-    help='Minimum fraction of -cells to consider a MT-SNV. Default: .2.'
+    help='Minimum fraction of negative (i.e., AF==0) cells to consider a MT-SNV. Default: .2.'
 )
 
 my_parser.add_argument(
     '--min_n_positive', 
     type=int,
-    default=5,
-    help='Minimum number of +cells to consider a MT-SNV. Default: 2.'
+    default=2,
+    help='Minimum number of positive (i.e., AF>0) cells to consider a MT-SNV. Default: 2.'
 )
 
 my_parser.add_argument(
@@ -107,35 +107,35 @@ my_parser.add_argument(
     '--min_n_confidently_detected', 
     type=int,
     default=2,
-    help='Minimum number of confidently detected +cells to consider a MT-SNV. Default: 2.'
+    help='Minimum number of confidently detected positive cells to consider a MT-SNV. Default: 2.'
 )
 
 my_parser.add_argument(
     '--min_mean_AD_in_positives', 
     type=float,
     default=1.5,
-    help='Minimum number of mean AD in +cells to consider a MT-SNV. Default: 1.5.'
+    help='Minimum number of mean AD in positive cells to consider a MT-SNV. Default: 1.5.'
 )
 
 my_parser.add_argument(
     '--min_mean_DP_in_positives', 
     type=float,
     default=20,
-    help='Minimum number of mean DP in +cells to consider a MT-SNV. Default: 20.'
+    help='Minimum number of mean DP in positive cells to consider a MT-SNV. Default: 20.'
 )
 
 my_parser.add_argument(
     '--t_prob', 
     type=float,
     default=.7,
-    help='Probability threshold for assigning cells to 0/1 mixture binomial components if bin_method=MI_TO. Default: .7.'
+    help='Probability threshold for assigning cells to 0/1 mixture binomial components if bin_method=MiTo. Default: .7.'
 )
 
 my_parser.add_argument(
     '--t_vanilla', 
     type=float,
     default=0,
-    help='AF threshold to assigning cells to 0/1 genotypes if bin_method=MI_TO or vanilla. Default: 0.'
+    help='AF threshold to assigning cells to 0/1 genotypes if bin_method=MiTo or vanilla. Default: 0.'
 )
 
 my_parser.add_argument(
@@ -155,8 +155,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--min_cell_prevalence', 
     type=float,
-    default=1,
-    help='Min number of AD to assign a 0/1 genotype. Default: 1.'
+    default=.1,
+    help='Min cell prevalence to assign 0/1 genotype with the MiTo method. Default: .1.'
 )
 
 my_parser.add_argument(
@@ -184,7 +184,7 @@ my_parser.add_argument(
     '--n_cores', 
     type=int,
     default=1,
-    help='n cores to use. Default: 8.'
+    help='n cores to use. Default: 1.'
 )
 
 my_parser.add_argument(
@@ -224,8 +224,8 @@ def main():
     path_pickles = args.path_pickles
     sample = args.sample
     job_id = args.job_id
-    cell_filter = args.cell_filter if args.cell_filter != "null" else None
-    filtering = args.filtering if args.filtering != "null" else None
+    cell_filter = args.cell_filter 
+    filtering = args.filtering
     min_cell_number = args.min_cell_number
     min_cov = args.min_cov
     min_var_quality = args.min_var_quality
@@ -242,7 +242,7 @@ def main():
     bin_method = args.bin_method
     solver = args.solver
     metric = args.metric
-    lineage_column = args.lineage_column if args.lineage_column != "null" else None
+    lineage_column = args.lineage_column
     n_cores = args.n_cores
     path_dbSNP = args.path_dbSNP
     path_REDIdb = args.path_REDIdb
@@ -251,7 +251,7 @@ def main():
     ##
 
 
-    # Get params
+    # Handle params
     if path_pickles is not None and job_id is not None:
 
         path_pickle = os.path.join(path_pickles, sample, f'{job_id}_stats.pickle')
