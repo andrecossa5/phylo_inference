@@ -1,4 +1,4 @@
-// MITO and MITO_TUNE module
+// MITO module
 
 nextflow.enable.dsl = 2 
 

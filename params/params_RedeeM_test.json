@@ -22,6 +22,7 @@
     "tree_algorithm" : "cassiopeia",
     "distance_metric" : "jaccard",
     "cassiopeia_solver" : "UPMGA",
-    "support_method" : "tbe"
+    "support_method" : "tbe",
+    "annotate_tree" : "MiTo"
 
 }

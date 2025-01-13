@@ -75,54 +75,48 @@ frac_char_resampling = args.frac_char_resampling
 # Preparing run: import code, prepare directories
 
 # Code
-from scipy.sparse import csr_matrix
-from anndata import AnnData
-from mito_utils.utils import *
-from mito_utils.phylo import *
+import scanpy as sc
+from mito_utils.distances import *
+from mito_utils.bootstrap import *
 
 ########################################################################
 
 # Main
 def main():
 
-    # Load afm and extract AD and DP and options
+    # Load afm and extract necessary .uns slots 
     afm = sc.read(path_afm)
     metric = afm.uns['distance_calculations']['distances']['metric']
     bin_method = afm.uns['genotyping']['bin_method']
     binarization_kwargs = afm.uns['genotyping']['binarization_kwargs']
+    scLT_system = afm.uns['scLT_system']
+
+    # Prep bootstrap kwargs
+    kwargs = {
+        'boot_replicate':boot_replicate, 
+        'boot_strategy':boot_strategy, 
+        'frac_char_resampling':frac_char_resampling
+    }
 
     # Bootstrap
-    AD_original = afm.layers['AD'].A
-    DP_original = afm.layers['site_coverage'].A     # Use site, NBBB
-
-    if boot_replicate != 'observed':
-        if boot_strategy == 'jacknife':
-            AD, DP, idx = jackknife_allele_tables(AD_original, DP_original)
-        elif boot_strategy == 'counts_resampling':
-            AD, DP, idx = bootstrap_allele_counts(AD_original, DP_original)
-        elif boot_strategy == 'feature_resampling':
-            AD, DP, idx = bootstrap_allele_tables(AD_original, DP_original, frac_resampled=frac_char_resampling)
-        else:
-            raise ValueError(f'{boot_strategy} boot_strategy is not supported...')
+    if scLT_system in ['MAESTER', 'RedeeM']:
+        afm_new = bootstrap_MiTo(afm, **kwargs)
+    elif scLT_system in ['scWGS', 'Cas9']:
+        afm_new = bootstrap_bin(afm, **kwargs)
     else:
-        AD = AD_original
-        DP = DP_original
-        idx = range(afm.shape[1])
-    
-    # Calculate distances
-    AF = csr_matrix(np.divide(AD, (DP+.0000001)))
-    AD = csr_matrix(AD)
-    DP = csr_matrix(DP)
-    afm_new = AnnData(X=AF, obs=afm.obs, var=afm.var.iloc[idx,:], uns=afm.uns, layers={'AD':AD, 'site_coverage':DP})
+        raise ValueError(f'{scLT_system} unavailable! Choose a scLT_system among MAESTER, RedeeeM, scWGS and Cas9.')
+
+    # Compute distances, recalling 
     compute_distances(
         afm_new, 
         metric=metric, 
+        precomputed=False if scLT_system in ['MAESTER', 'RedeeM'] else True,
         bin_method=bin_method, 
         binarization_kwargs=binarization_kwargs, 
         ncores=n_cores
     )
 
-    # Save dist matrix 
+    # Save bootstrapped matrix 
     afm_new.write('afm_new.h5ad')
 
 

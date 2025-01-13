@@ -3,6 +3,8 @@
 // Include here
 nextflow.enable.dsl = 2
 include { MITO } from "./modules/mito.nf"
+include { scWGS } from "./modules/scWGS.nf"
+include { CAS9 } from "./modules/cas9.nf"
 include { DISTANCES } from "./modules/distances.nf"
 include { DISTANCE_METRICS } from "./modules/distance_metrics.nf"
 
@@ -25,9 +27,16 @@ workflow preprocess {
             MITO(ch_jobs)   
             ch_afm = MITO.out.afm
         }
+        else if (params.scLT_system == "scWGS") {
+            scWGS(ch_jobs)   
+            ch_afm = scWGS.out.afm
+        }
+        else if (params.scLT_system == "Cas9") {
+            CAS9(ch_jobs)   
+            ch_afm = CAS9.out.afm
+        }
         else {
-            println('Only valid option are MAESTER and RedeeM so far...')
-            // println('Provide valid tracing system option! (e.g., MAESTER, RedeeM, scmtATAC, Cas9, scWGS)')
+            println('Provide valid tracing system option! (e.g., MAESTER, RedeeM, Cas9, scWGS)')
         } 
         
         // Calculate distances
