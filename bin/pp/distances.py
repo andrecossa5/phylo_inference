@@ -110,7 +110,7 @@ def main():
     compute_distances(
         afm_new, 
         metric=metric, 
-        precomputed=False if scLT_system in ['MAESTER', 'RedeeM'] else True,
+        precomputed=False if scLT_system in ['MAESTER', 'RedeeM'] else True, # Bin layer after bootstrapping
         bin_method=bin_method, 
         binarization_kwargs=binarization_kwargs, 
         ncores=n_cores

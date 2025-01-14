@@ -22,6 +22,7 @@ process DISTANCE_METRICS {
     
     // Handle CLI args
     def lineage_column = params.lineage_column ? "--lineage_column ${params.lineage_column}" : ""
+    def K = params.K ? "--K ${params.K}" : ""
 
     script:
     """
@@ -29,7 +30,7 @@ process DISTANCE_METRICS {
     --afm "${afm}" \
     --replicates "${rep}" \
     --job_id ${job_id} \
-    --K ${params.K} \
+    ${K} \
     ${lineage_column}
     """
 

@@ -7,7 +7,6 @@
     "n_boot_distances" : 5,
     "boot_strategy" : "feature_resampling",
     "frac_char_resampling" : 0.8,
-    "K" : 10,
 
     "tree_algorithm" : "cassiopeia",
     "distance_metric" : "jaccard",

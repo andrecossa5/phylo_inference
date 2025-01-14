@@ -16,6 +16,7 @@ process MITO {
 
     // Handle CLI from params-file
     def path_pickles = params.min_cell_number ? "--min_cell_number ${params.min_cell_number}" : ""
+    def cell_filter = params.cell_filter ? "--cell_filter ${params.cell_filter}" : ""
     def filtering = params.filtering ? "--filtering ${params.filtering}" : ""
     def min_cell_number = params.min_cell_number ? "--min_cell_number ${params.min_cell_number}" : ""
     def min_cov = params.min_cov ? "--min_cov ${params.min_cov}" : ""
@@ -27,6 +28,13 @@ process MITO {
     def min_mean_AD_in_positives = params.min_mean_AD_in_positives ? "--min_mean_AD_in_positives ${params.min_mean_AD_in_positives}" : "" 
     def min_mean_DP_in_positives = params.min_mean_DP_in_positives ? "--min_mean_DP_in_positives ${params.min_mean_DP_in_positives}" : ""
     def lineage_column = params.lineage_column ? "--lineage_column ${params.lineage_column}" : ""
+    def t_prob = params.t_prob ? "--t_prob ${params.t_prob}" : ""
+    def min_AD = params.min_AD ? "--min_AD ${params.min_AD}" : ""
+    def t_vanilla = params.t_vanilla ? "--t_vanilla ${params.t_vanilla}" : ""
+    def min_cell_prevalence = params.min_cell_prevalence ? "--min_cell_prevalence ${params.min_cell_prevalence}" : ""
+    def bin_method = params.bin_method ? "--bin_method ${params.bin_method}" : ""
+    def cassiopeia_solver = params.cassiopeia_solver ? "--solver ${params.cassiopeia_solver}" : ""
+    def distance_metric = params.distance_metric ? "--metric ${params.distance_metric}" : ""
     
     script:
     """
@@ -34,7 +42,7 @@ process MITO {
     --path_afm ${ch_matrix} \
     ${path_pickles} \
     --sample ${sample} \
-    --cell_filter ${params.cell_filter} \
+    ${cell_filter} \
     ${filtering} \
     ${min_cell_number} \
     ${min_cov} \
@@ -45,14 +53,14 @@ process MITO {
     ${min_n_confidently_detected} \
     ${min_mean_AD_in_positives} \
     ${min_mean_DP_in_positives} \
-    --t_prob ${params.t_prob} \
-    --t_vanilla ${params.t_vanilla} \
-    --min_AD ${params.min_AD} \
-    --min_cell_prevalence ${params.min_cell_prevalence} \
-    --bin_method ${params.bin_method} \
+    ${t_prob} \
+    ${t_vanilla} \
+    ${min_AD} \
+    ${min_cell_prevalence} \
+    ${bin_method} \
     ${lineage_column} \
-    --solver ${params.cassiopeia_solver} \
-    --metric ${params.distance_metric} \
+    ${cassiopeia_solver} \
+    ${distance_metric} \
     --n_cores ${task.cpus} \
     --path_dbSNP ${params.path_dbSNP} \
     --path_REDIdb ${params.path_REDIdb}

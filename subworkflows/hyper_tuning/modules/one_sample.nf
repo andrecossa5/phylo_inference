@@ -44,9 +44,9 @@ process ONESAMPLE {
     --job_id ${job_id} \
     ${cell_filter} \
     ${filtering} \
-    ${params.min_cell_number} \
+    ${min_cell_number} \
     ${min_cov} \
-    ${params.min_var_quality} \
+    ${min_var_quality} \
     ${min_frac_negative} \
     --min_n_positive ${min_n_positive} \
     --af_confident_detection ${af_confident_detection} \
