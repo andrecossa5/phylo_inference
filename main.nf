@@ -24,20 +24,6 @@ workflow tuning {
 
 //
 
-workflow refining {
-
-    ch_jobs = Channel.fromPath(params.path_input)
-        .splitCsv(header: true)
-        .map { row -> [ row.job_id, row.sample, row.ch_matrix ]}
-    preprocess(ch_jobs)
-    build_tree(preprocess.out.input)
-    process_tree(preprocess.out.input, build_tree.out.final_tree)
-    process_tree.out.metrics.view()
-
-}
-
-//
-
 workflow phylo {
 
     ch_jobs = Channel.fromPath(params.path_input)

@@ -17,12 +17,15 @@ process TREE_METRICS {
     tuple val(job_id),
         val(sample), 
         path("tree_metrics.csv"), emit: metrics
+
+    // Handle CLI args
+    def lineage_column = params.lineage_column ? "--lineage_column ${params.lineage_column}" : ""
     
     script:
     """
     python ${baseDir}/bin/process_tree/tree_metrics.py \
     --tree ${tree} \
-    --lineage_column ${params.lineage_column} \
+    ${lineage_column} \
     --job_id ${job_id}
     """
 

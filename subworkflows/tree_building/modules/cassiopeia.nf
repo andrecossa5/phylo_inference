@@ -17,12 +17,15 @@ process CASSIOPEIA {
     tuple val(job_id),
         val(sample), 
         path("*.newick"), emit: tree
-     
+    
+    // Handle CLI args
+    def path_pickles = params.path_pickles ? "--path_pickles ${params.path_pickles}" : ""
+
     script:
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
     --afm ${afm} \
-    --path_pickles ${params.path_pickles} \
+    ${path_pickles} \
     --sample ${sample} \
     --job_id ${job_id} \
     --solver ${params.cassiopeia_solver} \

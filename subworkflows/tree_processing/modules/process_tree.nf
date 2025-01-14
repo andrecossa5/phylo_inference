@@ -19,12 +19,16 @@ process PROCESS_TREE {
     tuple val(job_id),
         val(sample), 
         path("annotated_tree.pickle"), emit: annotated_tree
+
+    // Handle CLI args
+    def annotate_tree = params.annotate_tree ? "--annotate_tree ${params.annotate_tree}" : ""
     
     script:
     """
     python ${baseDir}/bin/process_tree/annotate_tree.py \
     --tree ${tree} \
-    --afm ${afm}
+    --afm ${afm} \
+    ${annotate_tree}
     """
 
     stub:

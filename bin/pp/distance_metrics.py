@@ -71,7 +71,7 @@ path_afm = args.afm.strip('[|]').split(', ')
 replicates = args.replicates.strip('[|]').split(', ')
 K = args.K
 job_id = args.job_id
-lineage_column = args.lineage_column if args.lineage_column != 'null' else None
+lineage_column = args.lineage_column
 
 
 ##

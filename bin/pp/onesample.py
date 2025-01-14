@@ -43,8 +43,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--filtering', 
     type=str,
-    default='MI_TO',
-    help='Variant filtering method. Default: MI_TO.'
+    default=None,
+    help='Variant filtering method. Default: None.'
 )
 
 my_parser.add_argument(
@@ -196,8 +196,8 @@ args = my_parser.parse_args()
 
 path_afm = args.path_afm
 job_id = args.job_id
-cell_filter = args.cell_filter if args.cell_filter != "None" else None
-filtering = args.filtering if args.filtering != "None" else None
+cell_filter = args.cell_filter
+filtering = args.filtering
 min_cell_number = args.min_cell_number
 min_cov = args.min_cov
 min_var_quality = args.min_var_quality
@@ -215,7 +215,7 @@ bin_method = args.bin_method
 metric = args.metric
 solver = args.solver
 ncores = args.ncores
-lineage_column = args.lineage_column if args.lineage_column != "null" else None
+lineage_column = args.lineage_column
 path_dbSNP = args.path_dbSNP
 path_REDIdb = args.path_REDIdb
 

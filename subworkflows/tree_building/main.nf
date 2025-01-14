@@ -22,13 +22,6 @@ workflow build_tree {
 
     main: 
 
-        // ch_flattened = ch_input.flatMap { 
-        //     job_id, sample, replicates, afms ->
-        //         replicates.indices.collect { i ->
-        //         tuple(job_id, sample, replicates[i], afms[i])
-        //    }
-        // } 
-
         if (params.tree_algorithm == "cassiopeia") {
             CASSIOPEIA(ch_input)
             trees = CASSIOPEIA.out.tree.groupTuple(by: [0,1])
@@ -41,7 +34,6 @@ workflow build_tree {
         } else {
             println('Provide valid tracing system option! (e.g., cassiopeia, mpboot, iqtree)')
         }
-
         BOOSTER(trees)
 
     emit:
@@ -49,6 +41,4 @@ workflow build_tree {
         final_tree = BOOSTER.out.final_tree
  
 }
- 
-
  
