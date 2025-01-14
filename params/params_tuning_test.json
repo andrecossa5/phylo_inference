@@ -6,6 +6,7 @@
     "path_input" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/input_files/input_tuning_test.csv",
     "cell_filter": "filter2",
     "filtering": "MiTo",
+    "lineage_column" : "GBC",
 
     "min_cell_number": 0,
     "min_cov": 3,

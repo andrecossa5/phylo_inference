@@ -91,7 +91,7 @@ def main():
     args = my_parser.parse_args()
 
     path_afm = args.afm
-    path_pickles = args.path_pickles if args.path_pickles != "null" else None
+    path_pickles = args.path_pickles
     sample = args.sample
     job_id = args.job_id
     solver = args.solver

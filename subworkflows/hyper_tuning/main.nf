@@ -37,7 +37,6 @@ workflow hyper_tuning {
                     def (a, b, c, d, e, f, g, h, i, l) = it
                     tuple(a, b, c, d, e, f, g, h, i, l, generateRandomCode())
                 }
-
         ONESAMPLE(ch_input)
 
     emit:

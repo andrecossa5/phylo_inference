@@ -29,6 +29,13 @@ my_parser.add_argument(
     help='Path to tree in .newick format. Default: .. .'
 )
 
+my_parser.add_argument(
+    '--annotate_tree', 
+    type=str,
+    default=None,
+    help='Path to tree in .newick format. Default: None.'
+)
+
 
 ##
 
@@ -37,6 +44,7 @@ my_parser.add_argument(
 args = my_parser.parse_args()
 path_tree = args.tree
 path_afm = args.afm
+annotate_tree = args.annotate_tree
 
 ##
 
@@ -67,17 +75,19 @@ def main():
     D = pd.DataFrame(afm.obsp['distances'].A, index=afm.obs_names, columns=afm.obs_names)
 
     # Filter MT-SNVs, as in build_tree
-    test_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95
-    test_too_rare = (X_bin==1).sum(axis=0) >= 2
-    test = (test_germline) & (test_too_rare)
-    X_raw = X_raw.loc[:,test].copy()
-    X_bin = X_bin.loc[:,test].copy()
+    if afm.uns['scLT_system'] != 'Cas9':
+        test_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95
+        test_too_rare = (X_bin==1).sum(axis=0) >= 2
+        test = (test_germline) & (test_too_rare)
+        X_raw = X_raw.loc[:,test].copy()
+        X_bin = X_bin.loc[:,test].copy()
 
     # Load tree
     tree = read_newick(path_tree, X_raw=X_raw, X_bin=X_bin, D=D, meta=cell_meta)
 
     # Cut and annotate tree
-    tree, _, _ = MiToTreeAnnotator(tree)
+    if annotate_tree == "MiTo":
+        tree, _, _ = MiToTreeAnnotator(tree)
 
     # Write as pickle
     with open('annotated_tree.pickle', 'wb') as f:
