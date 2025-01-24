@@ -41,6 +41,7 @@ process MITO {
     python ${baseDir}/bin/pp/MiTo.py \
     --path_afm ${ch_matrix} \
     ${path_pickles} \
+    --job_id ${job_id} \
     --sample ${sample} \
     ${cell_filter} \
     ${filtering} \
