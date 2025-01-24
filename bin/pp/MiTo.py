@@ -261,7 +261,7 @@ def main():
                 d = pickle.load(f)
 
             params = d['options']
-            cell_filter = params['cell_filter']
+            cell_filter = params['cell_filter']['cell_filter']
             min_cell_number = params['min_cell_number']
             lineage_column = params['lineage_column']
             filtering = params['filtering']

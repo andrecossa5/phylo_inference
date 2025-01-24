@@ -15,7 +15,7 @@ process MITO {
     tuple val(job_id), val(sample), path("afm.h5ad"), emit: afm
 
     // Handle CLI from params-file
-    def path_pickles = params.min_cell_number ? "--min_cell_number ${params.min_cell_number}" : ""
+    def path_pickles = params.path_pickles ? "--path_pickles ${params.path_pickles}" : ""
     def cell_filter = params.cell_filter ? "--cell_filter ${params.cell_filter}" : ""
     def filtering = params.filtering ? "--filtering ${params.filtering}" : ""
     def min_cell_number = params.min_cell_number ? "--min_cell_number ${params.min_cell_number}" : ""
@@ -41,6 +41,7 @@ process MITO {
     python ${baseDir}/bin/pp/MiTo.py \
     --path_afm ${ch_matrix} \
     ${path_pickles} \
+    --job_id ${job_id} \
     --sample ${sample} \
     ${cell_filter} \
     ${filtering} \

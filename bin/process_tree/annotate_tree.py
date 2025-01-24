@@ -76,9 +76,9 @@ def main():
 
     # Filter MT-SNVs, as in build_tree
     if afm.uns['scLT_system'] != 'Cas9':
-        test_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95
-        test_too_rare = (X_bin==1).sum(axis=0) >= 2
-        test = (test_germline) & (test_too_rare)
+        test_not_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95        # Prevalence <= 95%
+        test_not_too_rare = (X_bin==1).sum(axis=0) >= 2                             # At least 2 cells
+        test = (test_not_germline) & (test_not_too_rare)
         X_raw = X_raw.loc[:,test].copy()
         X_bin = X_bin.loc[:,test].copy()
 
@@ -104,3 +104,7 @@ if __name__ == "__main__":
     main()
 
 #######################################################################
+
+
+
+
