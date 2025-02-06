@@ -46,8 +46,8 @@ def main():
 
     labels = leiden_clustering(conn, res=resolutions[np.argmax(scores)])
     D['leiden']['% unassigned'] = 0                                                 # No unassigned here 
-    D['leiden']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
-    D['leiden']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
+    D['leiden']['ARI'] = custom_ARI(afm.obs['GBC'], labels)
+    D['leiden']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'], labels)
     D['leiden']['labels'] = pd.Series([ f'leiden_{x}' for x in labels ], index=afm.obs_names)
 
 
