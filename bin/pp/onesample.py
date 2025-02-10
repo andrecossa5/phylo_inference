@@ -327,8 +327,9 @@ def main():
     if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
         metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
-        metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
-        metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.dropna()[lineage_column], tree.cell_meta.dropna()['MT_clone'])
+        test = (~tree.cell_meta['MT_clone'].isna())
+        metrics['ARI'] = custom_ARI(tree.cell_meta[test, lineage_column], tree.cell_meta[test, 'MT_clone'])
+        metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta[test, lineage_column], tree.cell_meta[test, 'MT_clone'])
 
     if 'raw_basecalls_metrics' in afm.uns:
         metrics.update(afm.uns['raw_basecalls_metrics'])
