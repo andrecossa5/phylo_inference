@@ -99,8 +99,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--af_confident_detection', 
     type=float,
-    default=.01,
-    help='Allelic Frequency of confident detection. Default: .01.'
+    default=.02,
+    help='Allelic Frequency of confident detection. Default: .02.'
 )
 
 my_parser.add_argument(
@@ -146,10 +146,31 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
+    '--k', 
+    type=int,
+    default=5,
+    help='k neighbors to smooth genotipe if bin_method==MiTo_smooth. Default: 5.'
+)
+
+my_parser.add_argument(
+    '--gamma', 
+    type=float,
+    default=.2,
+    help='% posterior probability that is smoothed in bin_method==MiTo_smooth. Default: .2.'
+)
+
+my_parser.add_argument(
     '--bin_method', 
     type=str,
     default='MiTo',
     help='Binarization method. Default: MiTo.'
+)
+
+my_parser.add_argument(
+    '--min_n_var', 
+    type=int,
+    default=2,
+    help='Min n variants. Default: 2.'
 )
 
 my_parser.add_argument(
@@ -176,8 +197,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='jaccard',
-    help='Distance metric. Default: jaccard.'
+    default='weighted_jaccard',
+    help='Distance metric. Default: weighted_jaccard.'
 )
 
 my_parser.add_argument(
@@ -238,8 +259,11 @@ def main():
     t_prob = args.t_prob
     t_vanilla = args.t_vanilla
     min_AD = args.min_AD
+    k = args.k
+    gamma = args.gamma
     min_cell_prevalence = args.min_cell_prevalence
     bin_method = args.bin_method
+    min_n_var = args.min_n_var
     solver = args.solver
     metric = args.metric
     lineage_column = args.lineage_column
@@ -269,6 +293,7 @@ def main():
             tree_kwargs = params['tree_kwargs']
             binarization_kwargs = params['binarization_kwargs']
             bin_method = params['bin_method']
+            min_n_var = params['min_n_var']
         
         else:
             raise ValueError(f'{path_pickle} does not exists!')
@@ -290,6 +315,9 @@ def main():
             't_vanilla' : t_vanilla,
             'min_AD' : min_AD,
             'min_cell_prevalence' : min_cell_prevalence,
+            'k' : k, 
+            'gamma' : gamma, 
+            'resample' : False
         }
         tree_kwargs = {'solver':solver, 'metric':metric}
 
@@ -304,6 +332,7 @@ def main():
         filtering_kwargs=filtering_kwargs,
         binarization_kwargs=binarization_kwargs,
         bin_method=bin_method,
+        min_n_var=min_n_var,
         tree_kwargs=tree_kwargs,
         path_dbSNP=path_dbSNP, 
         path_REDIdb=path_REDIdb,
@@ -316,7 +345,7 @@ def main():
 
     # Write out filtered matrix
     afm.write('afm.h5ad')
-            
+
 
     ##
 

@@ -53,8 +53,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='jaccard',
-    help='Distance metric. Default: jaccard.'
+    default='weighted_jaccard',
+    help='Distance metric. Default: weighted_jaccard.'
 )
 
 my_parser.add_argument(

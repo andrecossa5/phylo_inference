@@ -35,6 +35,10 @@ process MITO {
     def bin_method = params.bin_method ? "--bin_method ${params.bin_method}" : ""
     def cassiopeia_solver = params.cassiopeia_solver ? "--solver ${params.cassiopeia_solver}" : ""
     def distance_metric = params.distance_metric ? "--metric ${params.distance_metric}" : ""
+    def k = params.k ? "--k ${params.k}" : ""
+    def gamma = params.gamma ? "--gamma ${params.gamma}" : ""
+    def min_n_var = params.min_n_var ? "--min_n_var ${params.min_n_var}" : ""
+    
     
     script:
     """
@@ -62,6 +66,9 @@ process MITO {
     ${lineage_column} \
     ${cassiopeia_solver} \
     ${distance_metric} \
+    ${k} \
+    ${gamma} \
+    ${min_n_var} \
     --n_cores ${task.cpus} \
     --path_dbSNP ${params.path_dbSNP} \
     --path_REDIdb ${params.path_REDIdb}

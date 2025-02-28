@@ -36,8 +36,11 @@ process ONESAMPLE {
     def min_frac_negative = params.min_frac_negative ? "--min_frac_negative ${params.min_frac_negative}" : ""
     def min_mean_DP_in_positives = params.min_mean_DP_in_positives ? "--min_mean_DP_in_positives ${params.min_mean_DP_in_positives}" : ""
     def lineage_column = params.lineage_column ? "--lineage_column ${params.lineage_column}" : ""
+    def k = params.k ? "--k ${params.k}" : ""
+    def gamma = params.gamma ? "--gamma ${params.gamma}" : ""
+    def min_n_var = params.min_n_var ? "--min_n_var ${params.min_n_var}" : ""
 
-    script:
+    script: 
     """
     python ${baseDir}/bin/pp/onesample.py \
     --path_afm ${path_afm} \
@@ -58,6 +61,9 @@ process ONESAMPLE {
     --min_AD ${min_AD} \
     --min_cell_prevalence ${min_cell_prevalence} \
     --bin_method ${bin_method} \
+    ${k} \
+    ${gamma} \
+    ${min_n_var} \
     --solver ${params.cassiopeia_solver} \
     --metric ${params.distance_metric} \
     ${lineage_column} \

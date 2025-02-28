@@ -101,7 +101,7 @@ def main():
     # Bootstrap support
     df_internal = get_internal_node_stats(tree)
     metrics['median_support'] = df_internal['support'].median()
-    if 'MT_clone' in tree.cell_meta.columns:
+    if 'MiTo clone' in tree.cell_meta.columns:
         metrics['median_support_mut_clades'] = df_internal.loc[df_internal['mut'],'support'].median()
     max_clade = np.percentile(df_internal['clade_size'], 90)
     metrics['median_support_biggest_clades'] = df_internal.query(f'clade_size>={max_clade}')['support'].median()
@@ -115,19 +115,19 @@ def main():
     metrics['corr_distances_pvalue'] = p_corr_dists
 
     # Clonal assignment metrics
-    if 'MT_clone' in tree.cell_meta.columns:
-        metrics['n_clones'] = tree.cell_meta['MT_clone'].nunique()
-        metrics['median_n_cells_clone'] = tree.cell_meta['MT_clone'].value_counts().median()
-        metrics['min_n_cells_clone'] = tree.cell_meta['MT_clone'].value_counts().min()
-        metrics['max_n_cells_clone'] = tree.cell_meta['MT_clone'].value_counts().max()
-        metrics['median_n_assigned_char_per_clone'] = np.median([ len(x.split(';')) for x in tree.cell_meta['clone_muts'].loc[lambda x: ~x.isna()].unique() ])
-        metrics['total_assigned_char'] = len(list(chain.from_iterable([ x.split(';') for x in tree.cell_meta['clone_muts'].loc[lambda x: ~x.isna()].unique() ])))
+    if 'MiTo clone' in tree.cell_meta.columns:
+        metrics['n_clones'] = tree.cell_meta['MiTo clone'].nunique()
+        metrics['median_n_cells_clone'] = tree.cell_meta['MiTo clone'].value_counts().median()
+        metrics['min_n_cells_clone'] = tree.cell_meta['MiTo clone'].value_counts().min()
+        metrics['max_n_cells_clone'] = tree.cell_meta['MiTo clone'].value_counts().max()
+        metrics['median_n_assigned_char_per_clone'] = np.median([ len(x.split(';')) for x in tree.cell_meta['muts'].loc[lambda x: ~x.isna()].unique() ])
+        metrics['total_assigned_char'] = len(list(chain.from_iterable([ x.split(';') for x in tree.cell_meta['muts'].loc[lambda x: ~x.isna()].unique() ])))
 
     # Benchmark specifics
     if lineage_column is not None and lineage_column in tree.cell_meta.columns:
-        test = ~tree.cell_meta['MT_clone'].isna()
-        metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
-        metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MT_clone'])
+        test = ~tree.cell_meta['MiTo clone'].isna()
+        metrics['ARI'] = custom_ARI(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MiTo clone'])
+        metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.loc[test, lineage_column], tree.cell_meta.loc[test, 'MiTo clone'])
 
     # Collapse tree
     n = len(tree.internal_nodes)

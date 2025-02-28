@@ -134,22 +134,43 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--bin_method', 
     type=str,
-    default='MI_TO',
-    help='Binarization method. Default: MI_TO.'
+    default='MiTo',
+    help='Binarization method. Default: MiTo.'
+)
+
+my_parser.add_argument(
+    '--k', 
+    type=int,
+    default=5,
+    help='k neighbors to smooth genotipe if bin_method==MiTo_smooth. Default: 5.'
+)
+
+my_parser.add_argument(
+    '--gamma', 
+    type=float,
+    default=.2,
+    help='% posterior probability that is smoothed in bin_method==MiTo_smooth. Default: .2.'
+)
+
+my_parser.add_argument(
+    '--min_n_var', 
+    type=int,
+    default=2,
+    help='Min n variants. Default: 2.'
 )
 
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='jaccard',
-    help='Distance metric for cell-cell distance computation. Default: jaccard.'
+    default='weighted_jaccard',
+    help='Distance metric for cell-cell distance computation. Default: weighted_jaccard.'
 )
 
 my_parser.add_argument(
     '--solver', 
     type=str,
-    default='NJ',
-    help='Tree-building algorithm for fast lineage inference. Default: NJ.'
+    default='UPMGA',
+    help='Tree-building algorithm for fast lineage inference. Default: UPMGA.'
 )
 
 my_parser.add_argument(
@@ -210,8 +231,11 @@ min_mean_DP_in_positives = args.min_mean_DP_in_positives
 t_prob = args.t_prob
 t_vanilla = args.t_vanilla
 min_AD = args.min_AD
+k = args.k
+gamma = args.gamma
 min_cell_prevalence = args.min_cell_prevalence
 bin_method = args.bin_method
+min_n_var = args.min_n_var
 metric = args.metric
 solver = args.solver
 ncores = args.ncores
@@ -248,6 +272,7 @@ import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 from mito_utils.phylo import *
+from mito_utils.MiToTreeAnnotator import *
 from mito_utils.metrics import *
 
 ########################################################################
@@ -275,7 +300,12 @@ def main():
         filtering_kwargs = {}
 
     binarization_kwargs = {
-        't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
+        't_prob' : t_prob, 
+        't_vanilla' : t_vanilla, 
+        'min_AD' : min_AD, 
+        'min_cell_prevalence' : min_cell_prevalence,
+        'k' : k,
+        'gamma' : gamma
     }
     tree_kwargs = {'metric':metric, 'solver':solver}
 
@@ -293,12 +323,14 @@ def main():
         path_REDIdb=path_REDIdb,
         spatial_metrics=True,
         compute_enrichment=True,
+        min_n_var=min_n_var,
         max_AD_counts=2,
         ncores=ncores,
         return_tree=True
     )
-    # MT-clones
-    tree, _, _ = MiToTreeAnnotator(tree)
+    # MiTo clones
+    model = MiToTreeAnnotator(tree)
+    model.infer_clones()
     
     # Prep stats dictionary
     stats = {}
@@ -312,14 +344,16 @@ def main():
     options['filtering'] = filtering
     options['filtering_kwargs'] = filtering_kwargs
     options['bin_method'] = bin_method
+    options['min_n_var'] = min_n_var
     options['binarization_kwargs'] = binarization_kwargs
     options['tree_kwargs'] = tree_kwargs
     stats['options'] = options
 
     # Metrics
+    tree = model.tree.copy()
     metrics = {}
-    metrics['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
-    metrics['unassigned'] = tree.cell_meta['MT_clone'].isna().sum()
+    metrics['unassigned'] = tree.cell_meta['MiTo clone'].isna().sum()
+    metrics['n MiTo clone'] = tree.cell_meta['MiTo clone'].nunique()
     metrics['corr'] = calculate_corr_distances(tree)[0]
     metrics['mean_CI'] = np.median(CI(tree))
     metrics['mean_RI'] = np.median(RI(tree))
@@ -327,7 +361,7 @@ def main():
     if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
         metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
-        test = tree.cell_meta['MT_clone'].isna()
+        test = tree.cell_meta['MiTo clone'].isna()
         metrics['ARI'] = custom_ARI(tree.cell_meta.loc[~test, lineage_column], tree.cell_meta.loc[~test, 'MT_clone'])
         metrics['NMI'] = normalized_mutual_info_score(
             tree.cell_meta.loc[~test, lineage_column], tree.cell_meta.loc[~test, 'MT_clone']
