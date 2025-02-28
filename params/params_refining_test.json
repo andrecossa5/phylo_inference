@@ -10,7 +10,7 @@
     "path_REDIdb" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/data/miscellanea/REDIdb_MT.txt",
     "lineage_column" : "GBC",
 
-    "n_boot_distances" : 3,
+    "n_boot_distances" : 5,
     "boot_strategy" : "feature_resampling",
     "frac_char_resampling" : 0.8,
     "K" : 10,
