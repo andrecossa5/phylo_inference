@@ -330,7 +330,7 @@ def main():
     )
     # MiTo clones
     model = MiToTreeAnnotator(tree)
-    model.infer_clones()
+    model.clonal_inference()
     
     # Prep stats dictionary
     stats = {}
