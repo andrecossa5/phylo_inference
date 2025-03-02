@@ -89,7 +89,7 @@ def main():
     # Cut and annotate tree
     if annotate_tree == "MiTo":
         model = MiToTreeAnnotator(tree)
-        model.infer_clones()
+        model.clonal_inference()
 
     # Write as pickle
     with open('annotated_tree.pickle', 'wb') as f:
