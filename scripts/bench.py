@@ -100,7 +100,7 @@ def main():
     D['MiTo'] = {}
     tree = build_tree(afm, precomputed=True)
     model = MiToTreeAnnotator(tree)
-    model.infer_clones()
+    model.clonal_inference()
     tree = model.tree.copy()
     assert (tree.cell_meta.index == afm.obs_names).all()
     labels = tree.cell_meta['MiTo clone']
