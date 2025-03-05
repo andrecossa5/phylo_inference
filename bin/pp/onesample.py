@@ -292,7 +292,6 @@ path_REDIdb = args.path_REDIdb
 
 # Code
 import os
-import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 from mito_utils.phylo import *
@@ -374,7 +373,7 @@ def main():
         pd.Series(options)
         .to_frame('value').reset_index(names='option')
         .assign(sample=sample, job_id=job_id)
-        [['sample', 'job_id', 'value', 'option']]
+        [['sample', 'job_id', 'option', 'value']]
         .to_csv(f'job_{job_id}_options.csv', index=False, header=False)
     )
 
@@ -408,7 +407,7 @@ def main():
         pd.Series(metrics)
         .to_frame('value').reset_index(names='metric')
         .assign(sample=sample, job_id=job_id)
-        [['sample', 'job_id', 'value', 'metric']]
+        [['sample', 'job_id', 'metric', 'value']]
         .to_csv(f'job_{job_id}_metrics.csv', index=False, header=False)
     )
 

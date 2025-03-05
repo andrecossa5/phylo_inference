@@ -23,10 +23,10 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--path_pickles', 
+    '--path_tuning', 
     type=str,
     default=None,
-    help='Path to pickles main folder. Default: None.'
+    help='Path to tuning main folder. Default: None.'
 )
 
 my_parser.add_argument(
@@ -91,7 +91,7 @@ def main():
     args = my_parser.parse_args()
 
     path_afm = args.afm
-    path_pickles = args.path_pickles
+    path_tuning = args.path_tuning
     sample = args.sample
     job_id = args.job_id
     solver = args.solver
@@ -100,17 +100,17 @@ def main():
     boot_replicate = args.boot_replicate
 
     # Modify if job_id pickle from tuning, if present
-    if path_pickles is not None and job_id is not None:
+    if path_tuning is not None and job_id is not None:
 
-        path_pickle = os.path.join(path_pickles, sample, f'{job_id}_stats.pickle')
+        path_options = os.path.join(path_tuning, 'all_options_final.csv')
 
-        if os.path.exists(path_pickle):
-            with open(path_pickle, 'rb') as f:
-                d = pickle.load(f)
-            tree_kwargs = d['options']['tree_kwargs']
+        if os.path.exists(path_options):
+            df_options = pd.read_csv(path_options).query('job_id==@job_id')
+            d = { k:v for k,v in zip(df_options['option'],df_options['value']) }
+            tree_kwargs = {'solver' : d['solver'], 'metric': d['metric']}
         
         else:
-            raise ValueError(f'{path_pickle} does not exists!')
+            raise ValueError(f'{path_tuning} does not exists!')
     
     else:
         tree_kwargs = {'solver' : solver, 'metric': metric}

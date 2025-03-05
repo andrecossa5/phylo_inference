@@ -27,10 +27,10 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--path_pickles', 
+    '--path_tuning', 
     type=str,
     default=None,
-    help='Path to pickles main folder. Default: None.'
+    help='Path to tuning output folder. Default: None.'
 )
 
 my_parser.add_argument(
@@ -229,7 +229,6 @@ my_parser.add_argument(
 ########################################################################
 
 # Code
-import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 
@@ -242,7 +241,7 @@ def main():
     args = my_parser.parse_args()
 
     path_afm = args.path_afm
-    path_pickles = args.path_pickles
+    path_tuning = args.path_tuning
     sample = args.sample
     job_id = args.job_id
     cell_filter = args.cell_filter 
@@ -276,30 +275,45 @@ def main():
 
 
     # Handle params
-    if path_pickles is not None and job_id is not None:
-
-        path_pickle = os.path.join(path_pickles, sample, f'{job_id}_stats.pickle')
-
-        if os.path.exists(path_pickle):
-            with open(path_pickle, 'rb') as f:
-                d = pickle.load(f)
-
-            params = d['options']
-            cell_filter = params['cell_filter']['cell_filter']
-            min_cell_number = params['min_cell_number']
-            lineage_column = params['lineage_column']
-            filtering = params['filtering']
-            filtering_kwargs = params['filtering_kwargs']
-            tree_kwargs = params['tree_kwargs']
-            binarization_kwargs = params['binarization_kwargs']
-            bin_method = params['bin_method']
-            min_n_var = params['min_n_var']
+    if path_tuning is not None and job_id is not None:
         
-        else:
-            raise ValueError(f'{path_pickle} does not exists!')
-    
-    else:
+        path_options = os.path.join(path_tuning, 'all_options_final.csv')
+        if os.path.exists(path_options):
+            
+            df_options = pd.read_csv(path_options).query('job_id==@job_id')
+            d = { k:v for k,v in zip(df_options['option'],df_options['value']) }
 
+            cell_filter = d['cell_filter']
+            min_cell_number = int(d['min_cell_number'])
+            lineage_column = d['lineage_column']
+            filtering = d['filtering']
+            filtering_kwargs = {
+                'min_cov' : int(d['min_cov']),
+                'min_var_quality': int(d['min_var_quality']),
+                'min_frac_negative' : float(d['min_frac_negative']),
+                'min_n_positive' : int(d['min_n_positive']),
+                'af_confident_detection' : float(d['af_confident_detection']),
+                'min_n_confidently_detected' : int(d['min_n_confidently_detected']),
+                'min_mean_AD_in_positives' : float(d['min_mean_AD_in_positives']),
+                'min_mean_DP_in_positives' : float(d['min_mean_DP_in_positives']) 
+            }
+            tree_kwargs = {'solver':d['solver'], 'metric':d['metric']}
+            binarization_kwargs = {
+                't_prob' : float(d['t_prob']), 
+                't_vanilla' : float(d['t_vanilla']),
+                'min_AD' : int(d['min_AD']),
+                'min_cell_prevalence' : float(d['min_cell_prevalence']),
+                'k' : int(d['k']), 
+                'gamma' :  float(d['gamma']), 
+                'resample' : False
+            }
+            bin_method = d['bin_method']
+            min_n_var = int(d['min_n_var'])
+
+        else:
+            raise ValueError(f'{path_options} does not exists!')
+
+    else:
         filtering_kwargs = {
             'min_cov' : min_cov,
             'min_var_quality': min_var_quality,

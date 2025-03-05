@@ -19,13 +19,13 @@ process CASSIOPEIA {
         path("*.newick"), emit: tree
     
     // Handle CLI args
-    def path_pickles = params.path_pickles ? "--path_pickles ${params.path_pickles}" : ""
+    def path_tuning = params.path_tuning ? "--path_tuning ${params.path_tuning}" : ""
 
     script:
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
     --afm ${afm} \
-    ${path_pickles} \
+    ${path_tuning} \
     --sample ${sample} \
     --job_id ${job_id} \
     --solver ${params.cassiopeia_solver} \
