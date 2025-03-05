@@ -7,7 +7,6 @@ nextflow.enable.dsl = 2
 process ONESAMPLE {
 
     tag "${sample}: tuning${job_id}"
-    publishDir "${params.outdir}/${sample}", mode: "copy"
 
     input:
     tuple val(sample), 
@@ -25,7 +24,8 @@ process ONESAMPLE {
     output:
     tuple val(job_id), 
         val(sample), 
-        path("tuning${job_id}_stats.pickle"), emit: stats
+        path("job_${job_id}_metrics.csv"),
+        path("job_${job_id}_options.csv"), emit: stats
     
     // Hadle CLI
     def cell_filter = params.cell_filter ? "--cell_filter ${params.cell_filter}" : ""
@@ -45,6 +45,7 @@ process ONESAMPLE {
     python ${baseDir}/bin/pp/onesample.py \
     --path_afm ${path_afm} \
     --job_id ${job_id} \
+    --sample ${sample} \
     ${cell_filter} \
     ${filtering} \
     ${min_cell_number} \
@@ -74,7 +75,8 @@ process ONESAMPLE {
 
     stub:
     """
-    touch tuning${job_id}_stats.pickle
+    touch job_${job_id}_metrics.csv
+    touch job_${job_id}_options.csv
     """
 
 }

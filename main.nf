@@ -18,7 +18,7 @@ workflow tuning {
         .splitCsv(header: true)
         .map { row -> [ row.job_id, row.sample, row.ch_matrix ]}
     hyper_tuning(ch_jobs)
-    hyper_tuning.out.stats.view()
+    hyper_tuning.out.summary.view()
 
 }
 
