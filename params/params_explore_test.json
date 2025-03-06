@@ -8,7 +8,6 @@
     "path_tuning" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/results/tuning_test",
     "path_dbSNP" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/data/miscellanea/dbSNP_MT.txt",
     "path_REDIdb" : "/Users/IEO5505/Desktop/MI_TO/phylo_inference/scratch/data/miscellanea/REDIdb_MT.txt",
-
     "covariate": "GBC"
 
 }
