@@ -202,7 +202,7 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--n_cores', 
+    '--ncores', 
     type=int,
     default=1,
     help='n cores to use. Default: 1.'
@@ -226,6 +226,13 @@ my_parser.add_argument(
 ##
 
 
+# Parse arguments
+args = my_parser.parse_args()
+
+
+##
+
+
 ########################################################################
 
 # Code
@@ -237,124 +244,23 @@ from mito_utils.preprocessing import *
 # Main
 def main():
 
-    # Parse arguments
-    args = my_parser.parse_args()
-
-    path_afm = args.path_afm
-    path_tuning = args.path_tuning
-    sample = args.sample
-    job_id = args.job_id
-    cell_filter = args.cell_filter 
-    filtering = args.filtering
-    min_cell_number = args.min_cell_number
-    min_cov = args.min_cov
-    min_var_quality = args.min_var_quality
-    min_frac_negative = args.min_frac_negative
-    min_n_positive = args.min_n_positive
-    af_confident_detection = args.af_confident_detection
-    min_n_confidently_detected = args.min_n_confidently_detected
-    min_mean_AD_in_positives = args.min_mean_AD_in_positives
-    min_mean_DP_in_positives = args.min_mean_DP_in_positives
-    t_prob = args.t_prob
-    t_vanilla = args.t_vanilla
-    min_AD = args.min_AD
-    k = args.k
-    gamma = args.gamma
-    min_cell_prevalence = args.min_cell_prevalence
-    bin_method = args.bin_method
-    min_n_var = args.min_n_var
-    solver = args.solver
-    metric = args.metric
-    lineage_column = args.lineage_column
-    n_cores = args.n_cores
-    path_dbSNP = args.path_dbSNP
-    path_REDIdb = args.path_REDIdb
-
-
-    ##
-
-
-    # Handle params
-    if path_tuning is not None and job_id is not None:
-        
-        path_options = os.path.join(path_tuning, 'all_options_final.csv')
-        if os.path.exists(path_options):
-            
-            df_options = pd.read_csv(path_options).query('job_id==@job_id')
-            d = { k:v for k,v in zip(df_options['option'],df_options['value']) }
-
-            cell_filter = d['cell_filter']
-            min_cell_number = int(d['min_cell_number'])
-            lineage_column = d['lineage_column']
-            filtering = d['filtering']
-            filtering_kwargs = {
-                'min_cov' : int(d['min_cov']),
-                'min_var_quality': int(d['min_var_quality']),
-                'min_frac_negative' : float(d['min_frac_negative']),
-                'min_n_positive' : int(d['min_n_positive']),
-                'af_confident_detection' : float(d['af_confident_detection']),
-                'min_n_confidently_detected' : int(d['min_n_confidently_detected']),
-                'min_mean_AD_in_positives' : float(d['min_mean_AD_in_positives']),
-                'min_mean_DP_in_positives' : float(d['min_mean_DP_in_positives']) 
-            }
-            tree_kwargs = {'solver':d['solver'], 'metric':d['metric']}
-            binarization_kwargs = {
-                't_prob' : float(d['t_prob']), 
-                't_vanilla' : float(d['t_vanilla']),
-                'min_AD' : int(d['min_AD']),
-                'min_cell_prevalence' : float(d['min_cell_prevalence']),
-                'k' : int(d['k']), 
-                'gamma' :  float(d['gamma']), 
-                'resample' : False
-            }
-            bin_method = d['bin_method']
-            min_n_var = int(d['min_n_var'])
-
-        else:
-            raise ValueError(f'{path_options} does not exists!')
-
-    else:
-        filtering_kwargs = {
-            'min_cov' : min_cov,
-            'min_var_quality': min_var_quality,
-            'min_frac_negative' : min_frac_negative,
-            'min_n_positive' : min_n_positive,
-            'af_confident_detection' : af_confident_detection,
-            'min_n_confidently_detected' : min_n_confidently_detected,
-            'min_mean_AD_in_positives' : min_mean_AD_in_positives,
-            'min_mean_DP_in_positives' : min_mean_DP_in_positives 
-        }
-        binarization_kwargs = {
-            't_prob' : t_prob, 
-            't_vanilla' : t_vanilla,
-            'min_AD' : min_AD,
-            'min_cell_prevalence' : min_cell_prevalence,
-            'k' : k, 
-            'gamma' : gamma, 
-            'resample' : False
-        }
-        tree_kwargs = {'solver':solver, 'metric':metric}
+    # Extract kwargs
+    cell_filter, kwargs, filtering_kwargs, \
+    binarization_kwargs, tree_kwargs = extract_kwargs(args)
 
     # Filter matrix and calculate metrics
-    afm = sc.read(path_afm)
+    afm = sc.read(args.path_afm)
     afm = filter_cells(afm, cell_filter=cell_filter)
     afm = filter_afm(
         afm,
-        min_cell_number=min_cell_number,
-        lineage_column=lineage_column,
-        filtering=filtering,
         filtering_kwargs=filtering_kwargs,
         binarization_kwargs=binarization_kwargs,
-        bin_method=bin_method,
-        min_n_var=min_n_var,
         tree_kwargs=tree_kwargs,
-        path_dbSNP=path_dbSNP, 
-        path_REDIdb=path_REDIdb,
         spatial_metrics=True,
         compute_enrichment=True,
         max_AD_counts=2,
-        ncores=n_cores,
         return_tree=False,
+        **kwargs
     )
 
     # Write out filtered matrix

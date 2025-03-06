@@ -16,7 +16,7 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--afm', 
+    '--path_afm', 
     type=str,
     default='..',
     help='Path to afm.h5ad file. Default: .. .'
@@ -58,7 +58,7 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--n_cores', 
+    '--ncores', 
     type=int,
     default='8',
     help='n cores to use. Default: 8.'
@@ -75,10 +75,16 @@ my_parser.add_argument(
 ##
 
 
+# Parse arguments
+args = my_parser.parse_args()
+
+
+##
+
+
 ########################################################################
 
 # Code
-import pickle
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
@@ -87,40 +93,15 @@ from mito_utils.phylo import *
 # Main
 def main():
 
-    # Parse arguments
-    args = my_parser.parse_args()
-
-    path_afm = args.afm
-    path_tuning = args.path_tuning
-    sample = args.sample
-    job_id = args.job_id
-    solver = args.solver
-    metric = args.metric
-    n_cores = args.n_cores
-    boot_replicate = args.boot_replicate
-
-    # Modify if job_id pickle from tuning, if present
-    if path_tuning is not None and job_id is not None:
-
-        path_options = os.path.join(path_tuning, 'all_options_final.csv')
-
-        if os.path.exists(path_options):
-            df_options = pd.read_csv(path_options).query('job_id==@job_id')
-            d = { k:v for k,v in zip(df_options['option'],df_options['value']) }
-            tree_kwargs = {'solver' : d['solver'], 'metric': d['metric']}
-        
-        else:
-            raise ValueError(f'{path_tuning} does not exists!')
-    
-    else:
-        tree_kwargs = {'solver' : solver, 'metric': metric}
+    # Extract kwargs
+    _, _, _, _, tree_kwargs = extract_kwargs(args, only_tree=True)
 
     # Build tree
-    afm = sc.read(path_afm)
-    tree = build_tree(afm, precomputed=True, ncores=n_cores, **tree_kwargs)
+    afm = sc.read(args.path_afm)
+    tree = build_tree(afm, precomputed=True, ncores=args.ncores, **tree_kwargs)
     
     # Write out
-    write_newick(tree, path=f'rep_{boot_replicate}.newick')
+    write_newick(tree, path=f'rep_{args.boot_replicate}.newick')
     
 
     ##

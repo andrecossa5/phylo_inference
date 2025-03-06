@@ -24,14 +24,14 @@ process CASSIOPEIA {
     script:
     """
     python ${baseDir}/bin/build_tree/build_cassiopeia.py \
-    --afm ${afm} \
+    --path_afm ${afm} \
     ${path_tuning} \
     --sample ${sample} \
     --job_id ${job_id} \
     --solver ${params.cassiopeia_solver} \
     --metric ${params.distance_metric} \
     --boot_replicate ${rep} \
-    --n_cores ${task.cpus}
+    --ncores ${task.cpus}
     """
 
     stub:

@@ -222,66 +222,6 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 
-path_afm = args.path_afm
-sample = args.sample
-job_id = args.job_id
-cell_filter = args.cell_filter
-filtering = args.filtering
-min_cell_number = args.min_cell_number
-min_cov = args.min_cov
-min_var_quality = args.min_var_quality
-min_frac_negative = args.min_frac_negative
-min_n_positive = args.min_n_positive
-af_confident_detection = args.af_confident_detection
-min_n_confidently_detected = args.min_n_confidently_detected
-min_mean_AD_in_positives = args.min_mean_AD_in_positives
-min_mean_DP_in_positives = args.min_mean_DP_in_positives
-t_prob = args.t_prob
-t_vanilla = args.t_vanilla
-min_AD = args.min_AD
-k = args.k
-gamma = args.gamma
-min_cell_prevalence = args.min_cell_prevalence
-bin_method = args.bin_method
-min_n_var = args.min_n_var
-metric = args.metric
-solver = args.solver
-ncores = args.ncores
-lineage_column = args.lineage_column
-path_dbSNP = args.path_dbSNP
-path_REDIdb = args.path_REDIdb
-
-##
-
-# os.chdir('/Users/IEO5505/Desktop/MI_TO/phylo_inference/work/24/740e0f1d624914de5bfca763e6e413')
-# path_afm = 'afm.h5ad'
-# sample = 'MDA_clones'
-# cell_filter = 'filter2'
-# job_id = 'aa'
-# filtering = 'MiTo'
-# min_cell_number = 10
-# min_cov = 5
-# min_var_quality = 30
-# min_frac_negative = .2
-# min_n_positive = 5
-# af_confident_detection = .02
-# min_n_confidently_detected = 2
-# min_mean_AD_in_positives = 1.25
-# min_mean_DP_in_positives = 25
-# t_prob = .7
-# t_vanilla = 0
-# min_AD = 2
-# k = 5
-# gamma = .2
-# min_cell_prevalence = .1
-# bin_method = 'MiTo'
-# min_n_var = 1
-# metric = 'weighted_jaccard'
-# solver = 'UPMGA'
-# ncores = 1
-# lineage_column = 'GBC'
-# path_dbSNP = None
-# path_REDIdb = None
 
 ##
 
@@ -303,68 +243,40 @@ from mito_utils.metrics import *
 
 def main():
 
-    # Read AFM and filter cells
-    afm = sc.read(path_afm)
+    # Extract kwargs
+    cell_filter, kwargs, filtering_kwargs, \
+    binarization_kwargs, tree_kwargs = extract_kwargs(args)
+
+    # Filter matrix and calculate metrics
+    afm = sc.read(args.path_afm)
     afm = filter_cells(afm, cell_filter=cell_filter)
-
-    # Prep kwargs
-    if filtering == "MiTo":
-        filtering_kwargs = {
-            'min_cov' : min_cov,
-            'min_var_quality' : min_var_quality,
-            'min_frac_negative' : min_frac_negative,
-            'min_n_positive' : min_n_positive,
-            'af_confident_detection' : af_confident_detection,
-            'min_n_confidently_detected' : min_n_confidently_detected,
-            'min_mean_AD_in_positives' : min_mean_AD_in_positives,       # 1.25,
-            'min_mean_DP_in_positives' : min_mean_DP_in_positives
-        }
-    else:
-        filtering_kwargs = {}
-
-    binarization_kwargs = {
-        't_prob' : t_prob, 
-        't_vanilla' : t_vanilla, 
-        'min_AD' : min_AD, 
-        'min_cell_prevalence' : min_cell_prevalence,
-        'k' : k,
-        'gamma' : gamma
-    }
-    tree_kwargs = {'metric':metric, 'solver':solver}
-
-    # Filter MT-SNVs and cells, make fast NJ tree 
     afm, tree = filter_afm(
         afm,
-        min_cell_number=min_cell_number,
-        lineage_column=lineage_column,
-        filtering=filtering,
         filtering_kwargs=filtering_kwargs,
         binarization_kwargs=binarization_kwargs,
-        bin_method=bin_method,
         tree_kwargs=tree_kwargs,
-        path_dbSNP=path_dbSNP, 
-        path_REDIdb=path_REDIdb,
         spatial_metrics=True,
         compute_enrichment=True,
-        min_n_var=min_n_var,
         max_AD_counts=2,
-        ncores=ncores,
-        return_tree=True
+        return_tree=True,
+        **kwargs
     )
+
     # MiTo clones
     model = MiToTreeAnnotator(tree)
     model.clonal_inference()
     
-    # Save options
+    # Save info
 
     # Options
     options = {}
+    options['scLT_system'] = afm.uns['scLT_system']
     options['pp_method'] = afm.uns['pp_method']
-    options['min_cell_number'] = min_cell_number
-    options['lineage_column'] = lineage_column
-    options['filtering'] = filtering
-    options['bin_method'] = bin_method
-    options['min_n_var'] = min_n_var
+    options['min_cell_number'] = kwargs['min_cell_number']
+    options['lineage_column'] = kwargs['lineage_column']
+    options['filtering'] = kwargs['filtering']
+    options['bin_method'] = kwargs['bin_method']
+    options['min_n_var'] = kwargs['min_n_var']
     options = {
         **options, **filtering_kwargs, **binarization_kwargs, 
         **afm.uns['cell_filter'], **tree_kwargs
@@ -372,9 +284,9 @@ def main():
     (
         pd.Series(options)
         .to_frame('value').reset_index(names='option')
-        .assign(sample=sample, job_id=job_id)
+        .assign(sample=args.sample, job_id=args.job_id)
         [['sample', 'job_id', 'option', 'value']]
-        .to_csv(f'job_{job_id}_options.csv', index=False, header=False)
+        .to_csv(f'job_{args.job_id}_options.csv', index=False, header=False)
     )
 
     # Metrics
@@ -386,6 +298,7 @@ def main():
     metrics['mean_CI'] = np.median(CI(tree))
     metrics['mean_RI'] = np.median(RI(tree))
 
+    lineage_column = kwargs['lineage_column']
     if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
         metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
@@ -406,9 +319,9 @@ def main():
     (
         pd.Series(metrics)
         .to_frame('value').reset_index(names='metric')
-        .assign(sample=sample, job_id=job_id)
+        .assign(sample=args.sample, job_id=args.job_id)
         [['sample', 'job_id', 'metric', 'value']]
-        .to_csv(f'job_{job_id}_metrics.csv', index=False, header=False)
+        .to_csv(f'job_{args.job_id}_metrics.csv', index=False, header=False)
     )
 
 

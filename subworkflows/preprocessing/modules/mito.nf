@@ -69,7 +69,7 @@ process MITO {
     ${k} \
     ${gamma} \
     ${min_n_var} \
-    --n_cores ${task.cpus} \
+    --ncores ${task.cpus} \
     --path_dbSNP ${params.path_dbSNP} \
     --path_REDIdb ${params.path_REDIdb}
     """
