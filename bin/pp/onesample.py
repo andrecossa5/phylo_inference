@@ -27,6 +27,13 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
+    '--sample', 
+    type=str,
+    default=None,
+    help='Sample name. Default: None.'
+)
+
+my_parser.add_argument(
     '--job_id', 
     type=str,
     default='job_0',
@@ -134,22 +141,43 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--bin_method', 
     type=str,
-    default='MI_TO',
-    help='Binarization method. Default: MI_TO.'
+    default='MiTo',
+    help='Binarization method. Default: MiTo.'
+)
+
+my_parser.add_argument(
+    '--k', 
+    type=int,
+    default=5,
+    help='k neighbors to smooth genotipe if bin_method==MiTo_smooth. Default: 5.'
+)
+
+my_parser.add_argument(
+    '--gamma', 
+    type=float,
+    default=.2,
+    help='% posterior probability that is smoothed in bin_method==MiTo_smooth. Default: .2.'
+)
+
+my_parser.add_argument(
+    '--min_n_var', 
+    type=int,
+    default=2,
+    help='Min n variants. Default: 2.'
 )
 
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='jaccard',
-    help='Distance metric for cell-cell distance computation. Default: jaccard.'
+    default='weighted_jaccard',
+    help='Distance metric for cell-cell distance computation. Default: weighted_jaccard.'
 )
 
 my_parser.add_argument(
     '--solver', 
     type=str,
-    default='NJ',
-    help='Tree-building algorithm for fast lineage inference. Default: NJ.'
+    default='UPMGA',
+    help='Tree-building algorithm for fast lineage inference. Default: UPMGA.'
 )
 
 my_parser.add_argument(
@@ -194,46 +222,6 @@ my_parser.add_argument(
 # Parse arguments
 args = my_parser.parse_args()
 
-path_afm = args.path_afm
-job_id = args.job_id
-cell_filter = args.cell_filter
-filtering = args.filtering
-min_cell_number = args.min_cell_number
-min_cov = args.min_cov
-min_var_quality = args.min_var_quality
-min_frac_negative = args.min_frac_negative
-min_n_positive = args.min_n_positive
-af_confident_detection = args.af_confident_detection
-min_n_confidently_detected = args.min_n_confidently_detected
-min_mean_AD_in_positives = args.min_mean_AD_in_positives
-min_mean_DP_in_positives = args.min_mean_DP_in_positives
-t_prob = args.t_prob
-t_vanilla = args.t_vanilla
-min_AD = args.min_AD
-min_cell_prevalence = args.min_cell_prevalence
-bin_method = args.bin_method
-metric = args.metric
-solver = args.solver
-ncores = args.ncores
-lineage_column = args.lineage_column
-path_dbSNP = args.path_dbSNP
-path_REDIdb = args.path_REDIdb
-
-##
-
-# Parameter space
-# grid = list(
-#     product(
-#         ['mito_preprocessing', 'maegatk'],  # pp_method
-#         np.linspace(.005, .05, 5),          # af_confident_detection
-#         np.arange(1, 3+1, 1),               # min_n_confidently_detected
-#         np.linspace(1, 3, 5),               # min_mean_AD_in_positives
-#         [1,2],                              # min_AD 
-#         ['vanilla', 'MI_TO']                # bin_method 
-#     )
-# )
-# ntot = len(grid)
-
 
 ##
 
@@ -244,10 +232,10 @@ path_REDIdb = args.path_REDIdb
 
 # Code
 import os
-import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 from mito_utils.phylo import *
+from mito_utils.MiToTreeAnnotator import *
 from mito_utils.metrics import *
 
 ########################################################################
@@ -255,80 +243,70 @@ from mito_utils.metrics import *
 
 def main():
 
-    # Read AFM and filter cells
-    afm = sc.read(path_afm)
+    # Extract kwargs
+    cell_filter, kwargs, filtering_kwargs, \
+    binarization_kwargs, tree_kwargs = extract_kwargs(args)
+
+    # Filter matrix and calculate metrics
+    afm = sc.read(args.path_afm)
     afm = filter_cells(afm, cell_filter=cell_filter)
-
-    # Prep kwargs
-    if filtering == "MiTo":
-        filtering_kwargs = {
-            'min_cov' : min_cov,
-            'min_var_quality' : min_var_quality,
-            'min_frac_negative' : min_frac_negative,
-            'min_n_positive' : min_n_positive,
-            'af_confident_detection' : af_confident_detection,
-            'min_n_confidently_detected' : min_n_confidently_detected,
-            'min_mean_AD_in_positives' : min_mean_AD_in_positives,       # 1.25,
-            'min_mean_DP_in_positives' : min_mean_DP_in_positives
-        }
-    else:
-        filtering_kwargs = {}
-
-    binarization_kwargs = {
-        't_prob':t_prob, 't_vanilla':t_vanilla, 'min_AD':min_AD, 'min_cell_prevalence':min_cell_prevalence
-    }
-    tree_kwargs = {'metric':metric, 'solver':solver}
-
-    # Filter MT-SNVs and cells, make fast NJ tree 
     afm, tree = filter_afm(
         afm,
-        min_cell_number=min_cell_number,
-        lineage_column=lineage_column,
-        filtering=filtering,
         filtering_kwargs=filtering_kwargs,
         binarization_kwargs=binarization_kwargs,
-        bin_method=bin_method,
         tree_kwargs=tree_kwargs,
-        path_dbSNP=path_dbSNP, 
-        path_REDIdb=path_REDIdb,
         spatial_metrics=True,
         compute_enrichment=True,
         max_AD_counts=2,
-        ncores=ncores,
-        return_tree=True
+        return_tree=True,
+        **kwargs
     )
-    # MT-clones
-    tree, _, _ = MiToTreeAnnotator(tree)
+
+    # MiTo clones
+    model = MiToTreeAnnotator(tree)
+    model.clonal_inference()
     
-    # Prep stats dictionary
-    stats = {}
-    
+    # Save info
+
     # Options
     options = {}
+    options['scLT_system'] = afm.uns['scLT_system']
     options['pp_method'] = afm.uns['pp_method']
-    options['min_cell_number'] = min_cell_number
-    options['lineage_column'] = lineage_column
-    options['cell_filter'] = afm.uns['cell_filter']
-    options['filtering'] = filtering
-    options['filtering_kwargs'] = filtering_kwargs
-    options['bin_method'] = bin_method
-    options['binarization_kwargs'] = binarization_kwargs
-    options['tree_kwargs'] = tree_kwargs
-    stats['options'] = options
+    options['min_cell_number'] = kwargs['min_cell_number']
+    options['lineage_column'] = kwargs['lineage_column']
+    options['filtering'] = kwargs['filtering']
+    options['bin_method'] = kwargs['bin_method']
+    options['min_n_var'] = kwargs['min_n_var']
+    options = {
+        **options, **filtering_kwargs, **binarization_kwargs, 
+        **afm.uns['cell_filter'], **tree_kwargs
+    }
+    (
+        pd.Series(options)
+        .to_frame('value').reset_index(names='option')
+        .assign(sample=args.sample, job_id=args.job_id)
+        [['sample', 'job_id', 'option', 'value']]
+        .to_csv(f'job_{args.job_id}_options.csv', index=False, header=False)
+    )
 
     # Metrics
+    tree = model.tree.copy()
     metrics = {}
-    metrics['n_MT_clone'] = tree.cell_meta['MT_clone'].nunique()
-    metrics['unassigned'] = tree.cell_meta['MT_clone'].isna().sum()
+    metrics['unassigned'] = tree.cell_meta['MiTo clone'].isna().sum()
+    metrics['n MiTo clone'] = tree.cell_meta['MiTo clone'].nunique()
     metrics['corr'] = calculate_corr_distances(tree)[0]
     metrics['mean_CI'] = np.median(CI(tree))
     metrics['mean_RI'] = np.median(RI(tree))
 
+    lineage_column = kwargs['lineage_column']
     if lineage_column is not None and lineage_column in tree.cell_meta.columns:
         metrics[f'n_{lineage_column}_groups'] = tree.cell_meta[lineage_column].nunique()
         metrics['AUPRC'] = distance_AUPRC(afm.obsp['distances'].A, afm.obs[lineage_column])
-        metrics['ARI'] = custom_ARI(tree.cell_meta[lineage_column], tree.cell_meta['MT_clone'])
-        metrics['NMI'] = normalized_mutual_info_score(tree.cell_meta.dropna()[lineage_column], tree.cell_meta.dropna()['MT_clone'])
+        test = tree.cell_meta['MiTo clone'].isna()
+        metrics['ARI'] = custom_ARI(tree.cell_meta.loc[~test, lineage_column], tree.cell_meta.loc[~test, 'MiTo clone'])
+        metrics['NMI'] = normalized_mutual_info_score(
+            tree.cell_meta.loc[~test, lineage_column], tree.cell_meta.loc[~test, 'MiTo clone']
+        )
 
     if 'raw_basecalls_metrics' in afm.uns:
         metrics.update(afm.uns['raw_basecalls_metrics'])
@@ -336,15 +314,15 @@ def main():
     metrics.update(afm.uns['dataset_metrics'])
     metrics['n_dbSNP'] = afm.uns['char_filter']['n_dbSNP'] 
     metrics['n_REDIdb'] = afm.uns['char_filter']['n_REDIdb'] 
-    stats['metrics'] = metrics
-
-    # Cells and vars
-    stats['cells'] = afm.obs_names
-    stats['vars'] = afm.var_names
 
     # Save
-    with open(f'tuning{job_id}_stats.pickle', 'wb') as f:
-        pickle.dump(stats, f)
+    (
+        pd.Series(metrics)
+        .to_frame('value').reset_index(names='metric')
+        .assign(sample=args.sample, job_id=args.job_id)
+        [['sample', 'job_id', 'metric', 'value']]
+        .to_csv(f'job_{args.job_id}_metrics.csv', index=False, header=False)
+    )
 
 
 ##

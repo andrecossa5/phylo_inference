@@ -9,7 +9,7 @@
     "frac_char_resampling" : 0.8,
 
     "tree_algorithm" : "cassiopeia",
-    "distance_metric" : "jaccard",
+    "distance_metric" : "hamming",
     "cassiopeia_solver" : "UPMGA",
     "support_method" : "tbe"
 

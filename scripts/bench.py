@@ -10,14 +10,15 @@ from mito_utils.utils import *
 from mito_utils.kNN import kNN_graph
 from mito_utils.clustering import leiden_clustering
 from mito_utils.metrics import custom_ARI
-from mito_utils.phylo import build_tree, MiToTreeAnnotator
+from mito_utils.phylo import build_tree
+from mito_utils.MiToTreeAnnotator import MiToTreeAnnotator
 
 
 ##
 
 
 # Paths
-# path_afm = '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/distance/MDA_PT/job2/afm.h5ad'
+# path_afm = '/Users/IEO5505/Desktop/MI_TO/MI_TO_analysis_repro/results/MI_TO_bench/phylo_inference/trees/top_spaces/tuning8299d6b8bc/afm.h5ad'
 # maxK = 50
 
 
@@ -45,11 +46,10 @@ def main():
         scores.append(silhouette_avg)
 
     labels = leiden_clustering(conn, res=resolutions[np.argmax(scores)])
-    test = np.isnan(labels)
-    D['leiden']['labels'] = labels
-    D['leiden']['NA'] = test.sum() / labels.size
-    D['leiden']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
-    D['leiden']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
+    D['leiden']['% unassigned'] = 0                                                 # No unassigned here 
+    D['leiden']['ARI'] = custom_ARI(afm.obs['GBC'], labels)
+    D['leiden']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'], labels)
+    D['leiden']['labels'] = pd.Series([ f'leiden_{x}' for x in labels ], index=afm.obs_names)
 
 
     ## 
@@ -71,7 +71,8 @@ def main():
     n_clones = knee
 
     _model = BinomMixtureVB(n_var=afm.shape[1], n_cell=afm.shape[0], n_donor=n_clones)
-    _model.fit(afm.layers['AD'].T, afm.layers['site_coverage'].T, min_iter=30, n_init=50, max_iter=500, max_iter_pre=250, random_seed=1234)
+    _model.fit(afm.layers['AD'].T, afm.layers['site_coverage'].T, 
+               min_iter=30, n_init=50, max_iter=500, max_iter_pre=250, random_seed=1234)
 
     clonal_assignment = _model.ID_prob
     idx = clonal_assignment.argmax(axis=1)
@@ -80,25 +81,34 @@ def main():
         labels[i] = clone_idx if clonal_assignment[i,clone_idx]>=.7 else np.nan
 
     test = np.isnan(labels)
-    D['vireoSNP']['labels'] = labels
-    D['vireoSNP']['NA'] = test.sum() / labels.size
+    D['vireoSNP']['% unassigned'] = test.sum() / labels.size
     D['vireoSNP']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
-    D['vireoSNP']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])       
+    D['vireoSNP']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
+    D['vireoSNP']['labels'] = pd.Series(labels, index=afm.obs_names)   
+    D['vireoSNP']['labels'].loc[lambda x: ~x.isna()] = (
+        D['vireoSNP']['labels']
+        .loc[lambda x: ~x.isna()]
+        .map(lambda x: f'vireoSNP_{int(x)}')
+    )
 
 
     ##
 
 
-    # MI_TO
-    D['MI_TO'] = {}
+    # MiTo
+    afm.uns['scLT_system'] = 'MAESTER'
+    D['MiTo'] = {}
     tree = build_tree(afm, precomputed=True)
-    tree, _,_ = MiToTreeAnnotator(tree)
-    labels = tree.cell_meta['MT_clone'].values
-    test = tree.cell_meta['MT_clone'].isna().values
-    D['MI_TO']['labels'] = labels
-    D['MI_TO']['NA'] = test.sum() / labels.size
-    D['MI_TO']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
-    D['MI_TO']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
+    model = MiToTreeAnnotator(tree)
+    model.clonal_inference()
+    tree = model.tree.copy()
+    assert (tree.cell_meta.index == afm.obs_names).all()
+    labels = tree.cell_meta['MiTo clone']
+    test = tree.cell_meta['MiTo clone'].isna()
+    D['MiTo']['labels'] = labels
+    D['MiTo']['% unassigned'] = test.sum() / labels.size
+    D['MiTo']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
+    D['MiTo']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
 
 
     ##
@@ -110,7 +120,6 @@ def main():
     afm.X = afm.X.A
 
     D['CClone'] = {}
-
     scores = []
     for k in range(2,maxK+1):
 
@@ -124,10 +133,10 @@ def main():
     C, _ = NMF_weighted(afm, k=k, max_cycles=100, parallel=True, n_jobs=-1)
     labels = np.argmax(C, axis=1)
     test = np.isnan(labels)
-    D['CClone']['labels'] = labels
-    D['CClone']['NA'] = test.sum() / labels.size
+    D['CClone']['% unassigned'] = test.sum() / labels.size
     D['CClone']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
     D['CClone']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])  
+    D['CClone']['labels'] = pd.Series([ f'CClone_{x}' for x in labels ], index=afm.obs_names)
     
     # Save
     with open(os.path.join(os.path.dirname(sys.argv[1]), 'bench_clonal_recontruction.pickle'), 'wb') as f:
