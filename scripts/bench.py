@@ -84,9 +84,9 @@ def main():
     D['vireoSNP']['% unassigned'] = test.sum() / labels.size
     D['vireoSNP']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
     D['vireoSNP']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
-    D['leiden']['labels'] = pd.Series(labels, index=afm.obs_names)   
-    D['leiden']['labels'].loc[lambda x: ~x.isna()] = (
-        D['leiden']['labels']
+    D['vireoSNP']['labels'] = pd.Series(labels, index=afm.obs_names)   
+    D['vireoSNP']['labels'].loc[lambda x: ~x.isna()] = (
+        D['vireoSNP']['labels']
         .loc[lambda x: ~x.isna()]
         .map(lambda x: f'vireoSNP_{int(x)}')
     )
