@@ -1,4 +1,4 @@
-// phylo_inference
+// phylo_inference LAST ALL TOGETHER
 
 nextflow.enable.dsl = 2
 include { preprocess } from "./subworkflows/preprocessing/main"
