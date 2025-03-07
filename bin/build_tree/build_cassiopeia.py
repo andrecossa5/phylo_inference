@@ -16,17 +16,17 @@ my_parser = argparse.ArgumentParser(
 
 # Add arguments
 my_parser.add_argument(
-    '--afm', 
+    '--path_afm', 
     type=str,
     default='..',
     help='Path to afm.h5ad file. Default: .. .'
 )
 
 my_parser.add_argument(
-    '--path_pickles', 
+    '--path_tuning', 
     type=str,
     default=None,
-    help='Path to pickles main folder. Default: None.'
+    help='Path to tuning main folder. Default: None.'
 )
 
 my_parser.add_argument(
@@ -53,12 +53,12 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='jaccard',
-    help='Distance metric. Default: jaccard.'
+    default='weighted_jaccard',
+    help='Distance metric. Default: weighted_jaccard.'
 )
 
 my_parser.add_argument(
-    '--n_cores', 
+    '--ncores', 
     type=int,
     default='8',
     help='n cores to use. Default: 8.'
@@ -75,10 +75,16 @@ my_parser.add_argument(
 ##
 
 
+# Parse arguments
+args = my_parser.parse_args()
+
+
+##
+
+
 ########################################################################
 
 # Code
-import pickle
 from mito_utils.utils import *
 from mito_utils.phylo import *
 
@@ -87,40 +93,15 @@ from mito_utils.phylo import *
 # Main
 def main():
 
-    # Parse arguments
-    args = my_parser.parse_args()
-
-    path_afm = args.afm
-    path_pickles = args.path_pickles
-    sample = args.sample
-    job_id = args.job_id
-    solver = args.solver
-    metric = args.metric
-    n_cores = args.n_cores
-    boot_replicate = args.boot_replicate
-
-    # Modify if job_id pickle from tuning, if present
-    if path_pickles is not None and job_id is not None:
-
-        path_pickle = os.path.join(path_pickles, sample, f'{job_id}_stats.pickle')
-
-        if os.path.exists(path_pickle):
-            with open(path_pickle, 'rb') as f:
-                d = pickle.load(f)
-            tree_kwargs = d['options']['tree_kwargs']
-        
-        else:
-            raise ValueError(f'{path_pickle} does not exists!')
-    
-    else:
-        tree_kwargs = {'solver' : solver, 'metric': metric}
+    # Extract kwargs
+    _, _, _, _, tree_kwargs = extract_kwargs(args, only_tree=True)
 
     # Build tree
-    afm = sc.read(path_afm)
-    tree = build_tree(afm, precomputed=True, ncores=n_cores, **tree_kwargs)
+    afm = sc.read(args.path_afm)
+    tree = build_tree(afm, precomputed=True, ncores=args.ncores, **tree_kwargs)
     
     # Write out
-    write_newick(tree, path=f'rep_{boot_replicate}.newick')
+    write_newick(tree, path=f'rep_{args.boot_replicate}.newick')
     
 
     ##

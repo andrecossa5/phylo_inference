@@ -27,10 +27,10 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
-    '--path_pickles', 
+    '--path_tuning', 
     type=str,
     default=None,
-    help='Path to pickles main folder. Default: None.'
+    help='Path to tuning output folder. Default: None.'
 )
 
 my_parser.add_argument(
@@ -99,8 +99,8 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--af_confident_detection', 
     type=float,
-    default=.01,
-    help='Allelic Frequency of confident detection. Default: .01.'
+    default=.02,
+    help='Allelic Frequency of confident detection. Default: .02.'
 )
 
 my_parser.add_argument(
@@ -146,10 +146,31 @@ my_parser.add_argument(
 )
 
 my_parser.add_argument(
+    '--k', 
+    type=int,
+    default=5,
+    help='k neighbors to smooth genotipe if bin_method==MiTo_smooth. Default: 5.'
+)
+
+my_parser.add_argument(
+    '--gamma', 
+    type=float,
+    default=.2,
+    help='% posterior probability that is smoothed in bin_method==MiTo_smooth. Default: .2.'
+)
+
+my_parser.add_argument(
     '--bin_method', 
     type=str,
     default='MiTo',
     help='Binarization method. Default: MiTo.'
+)
+
+my_parser.add_argument(
+    '--min_n_var', 
+    type=int,
+    default=2,
+    help='Min n variants. Default: 2.'
 )
 
 my_parser.add_argument(
@@ -176,12 +197,12 @@ my_parser.add_argument(
 my_parser.add_argument(
     '--metric', 
     type=str,
-    default='jaccard',
-    help='Distance metric. Default: jaccard.'
+    default='weighted_jaccard',
+    help='Distance metric. Default: weighted_jaccard.'
 )
 
 my_parser.add_argument(
-    '--n_cores', 
+    '--ncores', 
     type=int,
     default=1,
     help='n cores to use. Default: 1.'
@@ -205,10 +226,16 @@ my_parser.add_argument(
 ##
 
 
+# Parse arguments
+args = my_parser.parse_args()
+
+
+##
+
+
 ########################################################################
 
 # Code
-import pickle
 from mito_utils.utils import *
 from mito_utils.preprocessing import *
 
@@ -217,106 +244,28 @@ from mito_utils.preprocessing import *
 # Main
 def main():
 
-    # Parse arguments
-    args = my_parser.parse_args()
-
-    path_afm = args.path_afm
-    path_pickles = args.path_pickles
-    sample = args.sample
-    job_id = args.job_id
-    cell_filter = args.cell_filter 
-    filtering = args.filtering
-    min_cell_number = args.min_cell_number
-    min_cov = args.min_cov
-    min_var_quality = args.min_var_quality
-    min_frac_negative = args.min_frac_negative
-    min_n_positive = args.min_n_positive
-    af_confident_detection = args.af_confident_detection
-    min_n_confidently_detected = args.min_n_confidently_detected
-    min_mean_AD_in_positives = args.min_mean_AD_in_positives
-    min_mean_DP_in_positives = args.min_mean_DP_in_positives
-    t_prob = args.t_prob
-    t_vanilla = args.t_vanilla
-    min_AD = args.min_AD
-    min_cell_prevalence = args.min_cell_prevalence
-    bin_method = args.bin_method
-    solver = args.solver
-    metric = args.metric
-    lineage_column = args.lineage_column
-    n_cores = args.n_cores
-    path_dbSNP = args.path_dbSNP
-    path_REDIdb = args.path_REDIdb
-
-
-    ##
-
-
-    # Handle params
-    if path_pickles is not None and job_id is not None:
-
-        path_pickle = os.path.join(path_pickles, sample, f'{job_id}_stats.pickle')
-
-        if os.path.exists(path_pickle):
-            with open(path_pickle, 'rb') as f:
-                d = pickle.load(f)
-
-            params = d['options']
-            cell_filter = params['cell_filter']['cell_filter']
-            min_cell_number = params['min_cell_number']
-            lineage_column = params['lineage_column']
-            filtering = params['filtering']
-            filtering_kwargs = params['filtering_kwargs']
-            tree_kwargs = params['tree_kwargs']
-            binarization_kwargs = params['binarization_kwargs']
-            bin_method = params['bin_method']
-        
-        else:
-            raise ValueError(f'{path_pickle} does not exists!')
-    
-    else:
-
-        filtering_kwargs = {
-            'min_cov' : min_cov,
-            'min_var_quality': min_var_quality,
-            'min_frac_negative' : min_frac_negative,
-            'min_n_positive' : min_n_positive,
-            'af_confident_detection' : af_confident_detection,
-            'min_n_confidently_detected' : min_n_confidently_detected,
-            'min_mean_AD_in_positives' : min_mean_AD_in_positives,
-            'min_mean_DP_in_positives' : min_mean_DP_in_positives 
-        }
-        binarization_kwargs = {
-            't_prob' : t_prob, 
-            't_vanilla' : t_vanilla,
-            'min_AD' : min_AD,
-            'min_cell_prevalence' : min_cell_prevalence,
-        }
-        tree_kwargs = {'solver':solver, 'metric':metric}
+    # Extract kwargs
+    cell_filter, kwargs, filtering_kwargs, \
+    binarization_kwargs, tree_kwargs = extract_kwargs(args)
 
     # Filter matrix and calculate metrics
-    afm = sc.read(path_afm)
+    afm = sc.read(args.path_afm)
     afm = filter_cells(afm, cell_filter=cell_filter)
     afm = filter_afm(
         afm,
-        min_cell_number=min_cell_number,
-        lineage_column=lineage_column,
-        filtering=filtering,
         filtering_kwargs=filtering_kwargs,
         binarization_kwargs=binarization_kwargs,
-        bin_method=bin_method,
         tree_kwargs=tree_kwargs,
-        path_dbSNP=path_dbSNP, 
-        path_REDIdb=path_REDIdb,
         spatial_metrics=True,
         compute_enrichment=True,
         max_AD_counts=2,
-        ncores=n_cores,
         return_tree=False,
+        **kwargs
     )
 
     # Write out filtered matrix
     afm.write('afm.h5ad')
-            
+
 
     ##
 

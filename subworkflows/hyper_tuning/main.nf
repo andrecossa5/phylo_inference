@@ -3,6 +3,7 @@
 // Include here
 nextflow.enable.dsl = 2
 include { ONESAMPLE } from "./modules/one_sample.nf"
+include { SUMMARISE } from "./modules/summarise.nf"
 
 // 
 
@@ -38,8 +39,9 @@ workflow hyper_tuning {
                     tuple(a, b, c, d, e, f, g, h, i, l, generateRandomCode())
                 }
         ONESAMPLE(ch_input)
+        SUMMARISE(ONESAMPLE.out.stats.flatMap{ it -> [it[2], it[3]] }.collect() )
 
     emit:
-        stats = ONESAMPLE.out.stats
+        summary = SUMMARISE.out.summary
         
 } 

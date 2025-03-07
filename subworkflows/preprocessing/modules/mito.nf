@@ -15,7 +15,7 @@ process MITO {
     tuple val(job_id), val(sample), path("afm.h5ad"), emit: afm
 
     // Handle CLI from params-file
-    def path_pickles = params.path_pickles ? "--path_pickles ${params.path_pickles}" : ""
+    def path_tuning = params.path_tuning ? "--path_tuning ${params.path_tuning}" : ""
     def cell_filter = params.cell_filter ? "--cell_filter ${params.cell_filter}" : ""
     def filtering = params.filtering ? "--filtering ${params.filtering}" : ""
     def min_cell_number = params.min_cell_number ? "--min_cell_number ${params.min_cell_number}" : ""
@@ -35,12 +35,16 @@ process MITO {
     def bin_method = params.bin_method ? "--bin_method ${params.bin_method}" : ""
     def cassiopeia_solver = params.cassiopeia_solver ? "--solver ${params.cassiopeia_solver}" : ""
     def distance_metric = params.distance_metric ? "--metric ${params.distance_metric}" : ""
+    def k = params.k ? "--k ${params.k}" : ""
+    def gamma = params.gamma ? "--gamma ${params.gamma}" : ""
+    def min_n_var = params.min_n_var ? "--min_n_var ${params.min_n_var}" : ""
+    
     
     script:
     """
     python ${baseDir}/bin/pp/MiTo.py \
     --path_afm ${ch_matrix} \
-    ${path_pickles} \
+    ${path_tuning} \
     --job_id ${job_id} \
     --sample ${sample} \
     ${cell_filter} \
@@ -62,7 +66,10 @@ process MITO {
     ${lineage_column} \
     ${cassiopeia_solver} \
     ${distance_metric} \
-    --n_cores ${task.cpus} \
+    ${k} \
+    ${gamma} \
+    ${min_n_var} \
+    --ncores ${task.cpus} \
     --path_dbSNP ${params.path_dbSNP} \
     --path_REDIdb ${params.path_REDIdb}
     """

@@ -7,7 +7,6 @@ nextflow.enable.dsl = 2
 process ONESAMPLE {
 
     tag "${sample}: tuning${job_id}"
-    publishDir "${params.outdir}/${sample}", mode: "copy"
 
     input:
     tuple val(sample), 
@@ -25,7 +24,8 @@ process ONESAMPLE {
     output:
     tuple val(job_id), 
         val(sample), 
-        path("tuning${job_id}_stats.pickle"), emit: stats
+        path("job_${job_id}_metrics.csv"),
+        path("job_${job_id}_options.csv"), emit: stats
     
     // Hadle CLI
     def cell_filter = params.cell_filter ? "--cell_filter ${params.cell_filter}" : ""
@@ -36,12 +36,16 @@ process ONESAMPLE {
     def min_frac_negative = params.min_frac_negative ? "--min_frac_negative ${params.min_frac_negative}" : ""
     def min_mean_DP_in_positives = params.min_mean_DP_in_positives ? "--min_mean_DP_in_positives ${params.min_mean_DP_in_positives}" : ""
     def lineage_column = params.lineage_column ? "--lineage_column ${params.lineage_column}" : ""
+    def k = params.k ? "--k ${params.k}" : ""
+    def gamma = params.gamma ? "--gamma ${params.gamma}" : ""
+    def min_n_var = params.min_n_var ? "--min_n_var ${params.min_n_var}" : ""
 
-    script:
+    script: 
     """
     python ${baseDir}/bin/pp/onesample.py \
     --path_afm ${path_afm} \
     --job_id ${job_id} \
+    --sample ${sample} \
     ${cell_filter} \
     ${filtering} \
     ${min_cell_number} \
@@ -58,6 +62,9 @@ process ONESAMPLE {
     --min_AD ${min_AD} \
     --min_cell_prevalence ${min_cell_prevalence} \
     --bin_method ${bin_method} \
+    ${k} \
+    ${gamma} \
+    ${min_n_var} \
     --solver ${params.cassiopeia_solver} \
     --metric ${params.distance_metric} \
     ${lineage_column} \
@@ -68,7 +75,8 @@ process ONESAMPLE {
 
     stub:
     """
-    touch tuning${job_id}_stats.pickle
+    touch job_${job_id}_metrics.csv
+    touch job_${job_id}_options.csv
     """
 
 }

@@ -57,6 +57,7 @@ annotate_tree = args.annotate_tree
 import pickle
 from mito_utils.utils import *
 from mito_utils.phylo import *
+from mito_utils.MiToTreeAnnotator import *
 
 
 ##
@@ -74,24 +75,25 @@ def main():
     X_bin = pd.DataFrame(afm.layers['bin'].A, index=afm.obs_names, columns=afm.var_names)
     D = pd.DataFrame(afm.obsp['distances'].A, index=afm.obs_names, columns=afm.obs_names)
 
-    # Filter MT-SNVs, as in build_tree
-    if afm.uns['scLT_system'] != 'Cas9':
-        test_not_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95        # Prevalence <= 95%
-        test_not_too_rare = (X_bin==1).sum(axis=0) >= 2                             # At least 2 cells
-        test = (test_not_germline) & (test_not_too_rare)
-        X_raw = X_raw.loc[:,test].copy()
-        X_bin = X_bin.loc[:,test].copy()
+    # # Filter MT-SNVs, as in build_tree
+    # if afm.uns['scLT_system'] != 'Cas9':
+    #     test_not_germline = ((X_bin==1).sum(axis=0) / X_bin.shape[0]) <= .95        # Prevalence <= 95%
+    #     test_not_too_rare = (X_bin==1).sum(axis=0) >= 2                             # At least 2 cells
+    #     test = (test_not_germline) & (test_not_too_rare)
+    #     X_raw = X_raw.loc[:,test].copy()
+    #     X_bin = X_bin.loc[:,test].copy()
 
     # Load tree
     tree = read_newick(path_tree, X_raw=X_raw, X_bin=X_bin, D=D, meta=cell_meta)
 
     # Cut and annotate tree
     if annotate_tree == "MiTo":
-        tree, _, _ = MiToTreeAnnotator(tree)
+        model = MiToTreeAnnotator(tree)
+        model.clonal_inference()
 
     # Write as pickle
     with open('annotated_tree.pickle', 'wb') as f:
-        pickle.dump(tree, f)
+        pickle.dump(model.tree.copy(), f)
     
 
     ##
@@ -104,7 +106,3 @@ if __name__ == "__main__":
     main()
 
 #######################################################################
-
-
-
-

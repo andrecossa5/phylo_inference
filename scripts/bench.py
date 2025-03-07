@@ -10,7 +10,8 @@ from mito_utils.utils import *
 from mito_utils.kNN import kNN_graph
 from mito_utils.clustering import leiden_clustering
 from mito_utils.metrics import custom_ARI
-from mito_utils.phylo import build_tree, MiToTreeAnnotator
+from mito_utils.phylo import build_tree
+from mito_utils.MiToTreeAnnotator import MiToTreeAnnotator
 
 
 ##
@@ -83,9 +84,9 @@ def main():
     D['vireoSNP']['% unassigned'] = test.sum() / labels.size
     D['vireoSNP']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
     D['vireoSNP']['NMI'] = normalized_mutual_info_score(afm.obs['GBC'][~test], labels[~test])
-    D['leiden']['labels'] = pd.Series(labels, index=afm.obs_names)   
-    D['leiden']['labels'].loc[lambda x: ~x.isna()] = (
-        D['leiden']['labels']
+    D['vireoSNP']['labels'] = pd.Series(labels, index=afm.obs_names)   
+    D['vireoSNP']['labels'].loc[lambda x: ~x.isna()] = (
+        D['vireoSNP']['labels']
         .loc[lambda x: ~x.isna()]
         .map(lambda x: f'vireoSNP_{int(x)}')
     )
@@ -98,9 +99,12 @@ def main():
     afm.uns['scLT_system'] = 'MAESTER'
     D['MiTo'] = {}
     tree = build_tree(afm, precomputed=True)
-    tree, _,_ = MiToTreeAnnotator(tree)
-    labels = tree.cell_meta['MT_clone']
-    test = tree.cell_meta['MT_clone'].isna()
+    model = MiToTreeAnnotator(tree)
+    model.clonal_inference()
+    tree = model.tree.copy()
+    assert (tree.cell_meta.index == afm.obs_names).all()
+    labels = tree.cell_meta['MiTo clone']
+    test = tree.cell_meta['MiTo clone'].isna()
     D['MiTo']['labels'] = labels
     D['MiTo']['% unassigned'] = test.sum() / labels.size
     D['MiTo']['ARI'] = custom_ARI(afm.obs['GBC'][~test], labels[~test])
